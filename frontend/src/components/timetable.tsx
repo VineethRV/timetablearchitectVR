@@ -1,6 +1,12 @@
 import React from "react";
 import { Table, Button } from "antd";
 
+// Define the type for the button status state
+interface TimetableProps {
+  buttonStatus: string[][]; // Array of arrays with "Free" or "Busy"
+  setButtonStatus: (status: string[][]) => void; // Function to update button status
+}
+
 const weekdays = [
   "Monday",
   "Tuesday",
@@ -9,6 +15,7 @@ const weekdays = [
   "Friday",
   "Saturday",
 ];
+
 const timeslots = [
   "9:00-10:00",
   "10:00-11:00",
@@ -18,17 +25,22 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const Timetable = ({ buttonStatus, setButtonStatus }) => {
-
-  const handleButtonClick = (rowIndex, colIndex) => {
-    const updatedStatus = [...buttonStatus];
-    updatedStatus[rowIndex][colIndex] =
-      updatedStatus[rowIndex][colIndex] === "Free" ? "Busy" : "Free";
+const Timetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) => {
+  // Handle button click to toggle status
+  const handleButtonClick = (rowIndex: number, colIndex: number) => {
+    const updatedStatus = buttonStatus.map((row, rIdx) =>
+      rIdx === rowIndex
+        ? row.map((status, cIdx) =>
+            cIdx === colIndex ? (status === "Free" ? "Busy" : "Free") : status
+          )
+        : row
+    );
     setButtonStatus(updatedStatus);
   };
 
+  // Data source for the table
   const dataSource = weekdays.map((day, rowIndex) => ({
-    key: rowIndex,
+    key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
       <Button
@@ -45,12 +57,13 @@ const Timetable = ({ buttonStatus, setButtonStatus }) => {
     )),
   }));
 
+  // Columns for the table
   const columns = [
     {
       title: "Timeslots",
       dataIndex: "day",
       key: "day",
-      render: (text) => (
+      render: (text: string) => (
         <strong className="text-normal" style={{ fontFamily: "Inter" }}>
           {text}
         </strong>
@@ -60,7 +73,7 @@ const Timetable = ({ buttonStatus, setButtonStatus }) => {
       title: slot,
       dataIndex: `button${index}`,
       key: `button${index}`,
-      render: (_, record) => (
+      render: (_: any, record: { buttons: React.ReactNode[] }) => (
         <span className="text-normal" style={{ fontFamily: "Inter" }}>
           {record.buttons[index]}
         </span>

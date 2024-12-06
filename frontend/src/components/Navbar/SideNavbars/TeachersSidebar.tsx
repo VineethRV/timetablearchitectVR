@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Divider, Button, Layout } from "antd";
 import {
   FaCalendar,
@@ -8,21 +6,20 @@ import {
   FaChalkboardUser,
   FaClockRotateLeft,
 } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Sider } = Layout;
 
 const TeachersSidebar = () => {
-  const router = useRouter();
-  const pathname = usePathname();
+  const location = useLocation();  // Correctly using useLocation from React Router
+  const navigate = useNavigate();  // Using useNavigate for programmatic navigation
 
-  const handleClick = (label: string, url: string) => {
-    router.push(`/dashboard/teacher${url}`);
+  const handleClick = (url:string) => {
+    navigate(`/dashboard/teachers${url}`);
   };
 
   return (
-    <Sider className="h-screen bg-white border-r-[0.5px]">
+    <Sider className="h-screen bg-white border-r-[0.5px] ">
       <div className="flex justify-left text-black-bold items-center pt-[20px] pl-[20px] space-x-2 h-[7vh]">
       <FaChalkboardUser className="w-[30px] h-[40px]" />
         <span
@@ -38,31 +35,31 @@ const TeachersSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Add a Teacher", "/add")}
+          onClick={() => handleClick( "/add")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
-            pathname == "/dashboard/teacher/add"
+            location.pathname == "/dashboard/teachers/add"
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaUserPlus className="w-5 h-5" />
           <span>Add a Teacher</span>
-          {pathname == "/dashboard/teacher/add" && (
+          {location.pathname == "/dashboard/teachers/add" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
 
         <div
-          onClick={() => handleClick("Modify Attributes", "")}
+          onClick={() => handleClick( "")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
-            (pathname == "/dashboard/teacher" || pathname.includes("/dashboard/teacher/edit"))
+            (location.pathname == "/dashboard/teachers" || location.pathname.includes("/dashboard/teachers/edit"))
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaUserPen className="w-5 h-5" />
           <span>Modify Attributes</span>
-          {(pathname == "/dashboard/teacher" || pathname.includes("/dashboard/teacher/edit")) && (
+          {(location.pathname == "/dashboard/teachers" || location.pathname.includes("/dashboard/teachers/edit")) && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
@@ -73,38 +70,37 @@ const TeachersSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Rank Timewise", "/")}
+          onClick={() => handleClick("/")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${
-            pathname === "/dashboard/rank-timewise"
+            location.pathname === "/dashboard/teachers/rank-timewise"
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaClockRotateLeft className="w-5 h-5" />
           <span>Rank Timewise</span>
-          {pathname === "/dashboard/rank-timewise" && (
+          {location.pathname === "/dashboard/teachers/rank-timewise" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
 
         <div
-          onClick={() => handleClick("Timeslot Dependent", "/")}
+          onClick={() => handleClick( "/")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
-            pathname === "/dashboard/timeslot-dependent"
+            location.pathname === "/dashboard/teachers/timeslot-dependent"
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaCalendar className="w-5 h-5" />
           <span>Timeslot Dependent</span>
-          {pathname === "/dashboard/timeslot-dependent" && (
+          {location.pathname === "/dashboard/teachers/timeslot-dependent" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
       </div>
       <div className="flex justify-center">
         <Button
-          onClick={() => router.push(`/teacher/consolidated`)}
           className="mt-2 bg-[#636AE8FF] text-white"
         >
           Generate Consolidated
