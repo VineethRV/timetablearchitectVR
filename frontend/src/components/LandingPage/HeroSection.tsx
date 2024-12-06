@@ -1,8 +1,8 @@
 "use client";
 import { Button } from "antd";
-import Avatar1 from "../../../public/Avatars/avatar1.png";
-import Avatar2 from "../../../public/Avatars/avatar2.png";
-import Scrum from "../../../public/Illustrations/Scrum.png";
+import Avatar1 from "/Avatars/avatar1.png";
+import Avatar2 from "/Avatars/avatar2.png";
+import Scrum from "/Illustrations/Scrum.png";
 
 const HeroSection = () => {
   async function getStartedClickHandler() {

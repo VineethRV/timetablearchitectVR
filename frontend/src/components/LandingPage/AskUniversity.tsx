@@ -1,4 +1,3 @@
-"use client";
 import { Button, Card } from "antd";
 import { Link } from "react-router-dom";
 

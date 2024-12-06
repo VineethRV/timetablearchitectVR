@@ -1,8 +1,8 @@
-import Logo from "../../../public/Logo.png";
-import FBIcon from "../../../public/social_icons/facebook.png";
-import XIcon from "../../../public/social_icons/x.png";
-import YTIcon from "../../../public/social_icons/yt.png";
-import LinkedInIcon from "../../../public/social_icons/linkedin.png";
+import Logo from "/Logo.png";
+import FBIcon from "/social_icons/facebook.png";
+import XIcon from "/social_icons/x.png";
+import YTIcon from "/social_icons/yt.png";
+import LinkedInIcon from "/social_icons/linkedin.png";
 import { Divider } from "antd";
 
 const Footer = () => {

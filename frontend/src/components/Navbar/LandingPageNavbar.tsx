@@ -1,5 +1,5 @@
 "use client";
-import Logo from "../../../public/Logo.png";
+import Logo from "/Logo.png";
 
 import { Button } from "antd";
 import { Link } from "react-router-dom";
@@ -19,7 +19,7 @@ const LandingPageNavbar = () => {
             </Button>
           </Link>
           <Link to="/signup">
-            <Button className="bg-primary text-primary">Sign up</Button>
+            <Button className="text-primary">Sign up</Button>
           </Link>
         </div>
       </div>

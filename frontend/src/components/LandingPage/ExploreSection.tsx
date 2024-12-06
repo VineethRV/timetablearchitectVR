@@ -1,6 +1,6 @@
 import { Button } from "antd";
-import Teaching from "../../../public/Illustrations/Teaching.png";
-import TeamCollab from "../../../public/Illustrations/TeamCollab.png";
+import Teaching from "/Illustrations/Teaching.png";
+import TeamCollab from "/Illustrations/TeamCollab.png";
 
 const ExploreSection = () => {
   return (

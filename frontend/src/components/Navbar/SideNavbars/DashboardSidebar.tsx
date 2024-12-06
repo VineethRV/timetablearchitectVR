@@ -9,7 +9,7 @@ import {
   FaChalkboardUser,
   FaGear,
 } from "react-icons/fa6";
-import Logo from "@/public/Logo.png";
+import Logo from "/Logo.png";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
