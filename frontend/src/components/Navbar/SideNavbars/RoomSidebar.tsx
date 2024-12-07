@@ -14,7 +14,7 @@ const RoomsSidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const handleClick = (label: string, url: string) => {
+  const handleClick = (url: string) => {
     navigate(`/dashboard/rooms${url}`);
   };
 
@@ -35,7 +35,7 @@ const RoomsSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Add a rooms", "/add")}
+          onClick={() => handleClick("/add")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
             pathname == "/dashboard/rooms/add"
               ? "text-[#636AE8FF] font-bold"
@@ -50,7 +50,7 @@ const RoomsSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick("Modify Attributes", "")}
+          onClick={() => handleClick( "")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
             pathname == "/dashboard/rooms" ||
             pathname.includes("/dashboard/rooms/edit")
@@ -72,7 +72,7 @@ const RoomsSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Rank Timewise", "/")}
+          onClick={() => handleClick( "/")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${
             pathname === "/dashboard/rank-timewise"
               ? "text-[#636AE8FF] font-bold"
@@ -87,7 +87,7 @@ const RoomsSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick("Timeslot Dependent", "/")}
+          onClick={() => handleClick( "/")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
             pathname === "/dashboard/timeslot-dependent"
               ? "text-[#636AE8FF] font-bold"
