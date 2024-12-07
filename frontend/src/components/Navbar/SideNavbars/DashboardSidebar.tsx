@@ -37,7 +37,7 @@ const DashboardSidebar = () => {
         className="flex flex-col justify-center items-center space-y-3 mt-[5vh] left-0"
       >
         <div
-          onClick={() => handleClick("/")}
+          onClick={() => handleClick("")}
           className={`flex relative items-center p-2 cursor-pointer ${
             pathname == "/dashboard" ? "text-[#636AE8FF]" : "text-[#565E6CFF]"
           }`}
@@ -48,16 +48,16 @@ const DashboardSidebar = () => {
           <FaGear className="m-1" />
         </div>
         <div
-          onClick={() => handleClick("/teacher")}
+          onClick={() => handleClick("/teachers")}
           className={`flex relative items-center pl-2 pr-1 py-2 cursor-pointer ${
-            pathname == "/dashboard/teacher" ||
-            pathname.includes("/dashboard/teacher")
+            pathname == "/dashboard/teachers" ||
+            pathname.includes("/dashboard/teachers")
               ? "text-[#636AE8FF]"
               : "text-[#565E6CFF]"
           }`}
         >
-          {(pathname == "/dashboard/teacher" ||
-            pathname.includes("/dashboard/teacher")) && (
+          {(pathname == "/dashboard/teachers" ||
+            pathname.includes("/dashboard/teachers")) && (
             <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
           <FaChalkboardUser className="m-1" />

@@ -11,17 +11,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 const { Sider } = Layout;
 
 const TeachersSidebar = () => {
-  const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const navigate = useNavigate();  
+  const { pathname } = useLocation(); 
 
-  const handleClick = (label: string, url: string) => {
-    navigate(`/dashboard/teacher${url}`);
+  const handleClick = (url:string) => {
+    navigate(`/dashboard/teachers${url}`);
   };
 
   return (
-    <Sider className="h-screen bg-white border-r-[0.5px]">
+    <Sider className="h-screen bg-white border-r-[0.5px] ">
       <div className="flex justify-left text-black-bold items-center pt-[20px] pl-[20px] space-x-2 h-[7vh]">
-        <FaChalkboardUser className="w-[30px] h-[40px]" />
+      <FaChalkboardUser className="w-[30px] h-[40px]" />
         <span
           className="text-xl font-semibold text-[#171A1FFF]"
           style={{ fontFamily: "Archivo" }}
@@ -35,33 +35,31 @@ const TeachersSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Add a Teacher", "/add")}
+          onClick={() => handleClick( "/add")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
-            pathname == "/dashboard/teacher/add"
+            pathname == "/dashboard/teachers/add"
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaUserPlus className="w-5 h-5" />
           <span>Add a Teacher</span>
-          {pathname == "/dashboard/teacher/add" && (
+          {pathname == "/dashboard/teachers/add" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
 
         <div
-          onClick={() => handleClick("Modify Attributes", "")}
+          onClick={() => handleClick( "")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
-            pathname == "/dashboard/teacher" ||
-            pathname.includes("/dashboard/teacher/edit")
+            (pathname == "/dashboard/teachers" || pathname.includes("/dashboard/teachers/edit"))
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaUserPen className="w-5 h-5" />
           <span>Modify Attributes</span>
-          {(pathname == "/dashboard/teacher" ||
-            pathname.includes("/dashboard/teacher/edit")) && (
+          {(pathname == "/dashboard/teachers" || pathname.includes("/dashboard/teachers/edit")) && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
@@ -72,38 +70,37 @@ const TeachersSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Rank Timewise", "/")}
+          onClick={() => handleClick("/")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${
-            pathname === "/dashboard/rank-timewise"
+            pathname === "/dashboard/teachers/rank-timewise"
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaClockRotateLeft className="w-5 h-5" />
           <span>Rank Timewise</span>
-          {pathname === "/dashboard/rank-timewise" && (
+          {pathname === "/dashboard/teachers/rank-timewise" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
 
         <div
-          onClick={() => handleClick("Timeslot Dependent", "/")}
+          onClick={() => handleClick( "/")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
-            pathname === "/dashboard/timeslot-dependent"
+            pathname === "/dashboard/teachers/timeslot-dependent"
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaCalendar className="w-5 h-5" />
           <span>Timeslot Dependent</span>
-          {pathname === "/dashboard/timeslot-dependent" && (
+          {pathname === "/dashboard/teachers/timeslot-dependent" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
       </div>
       <div className="flex justify-center">
         <Button
-          onClick={() => navigate(`/teacher/consolidated`)}
           className="mt-2 bg-[#636AE8FF] text-white"
         >
           Generate Consolidated
