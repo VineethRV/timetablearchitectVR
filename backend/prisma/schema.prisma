@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  hashedPass String
+  organisation String? 
+  role String?
+  hasAccess Boolean
+  department String?
+}
+
+model Room{
+  id Int @id @default(autoincrement())
+  name String
+  organisation String?
+  department String?
+  lab Boolean?
+  timetable String?
+  
+  @@unique([name, department, organisation])
+}
+
+
+model Teacher{
+  id Int @id @default(autoincrement())
+  name String
+  initials String?
+  email String?
+  department String?
+  alternateDepartments String?
+  timetable String?
+  labtable String?
+  organisation String?
+
+  @@unique([name, department, organisation])
+}
+
+model Course{
+  id Int @id @default(autoincrement())
+  name String
+  code String
+  department String?
+  organisation String?
+  semester Int?
+}
+
+model Lab{
+  id Int @id @default(autoincrement())
+  name String
+  department String?
+  organisation String?
+  semester Int?
+  batches String?
+  teachers String?
+  rooms String?
+  timetable String?
+}
+
+
+model Elective{
+  id Int @id @default(autoincrement())
+  name String
+  department String?
+  courses String?
+  teachers String?
+  rooms String?
+  semester Int?
+  organisation String?
+  timetable String?
+}
