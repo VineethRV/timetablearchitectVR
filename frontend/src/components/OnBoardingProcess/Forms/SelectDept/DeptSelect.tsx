@@ -1,6 +1,6 @@
-import React, { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { Select } from "antd";
-import { OrganisationSchema } from "@/app/types/main";
+import { OrganisationSchema } from "../../../../types/main";
 
 const OPTIONS = [
   "Aeronautical Engineering",
@@ -33,7 +33,9 @@ const DeptSelect = ({
   organisationDetails: OrganisationSchema;
   setOrganisationDetails: Dispatch<SetStateAction<OrganisationSchema>>;
 }) => {
-  const filteredOptions = OPTIONS.filter((o) => !organisationDetails.depts_list.includes(o));
+  const filteredOptions = OPTIONS.filter(
+    (o) => !organisationDetails.depts_list.includes(o)
+  );
 
   return (
     <Select

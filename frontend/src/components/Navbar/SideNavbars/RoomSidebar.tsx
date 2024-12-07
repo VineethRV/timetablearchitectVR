@@ -1,5 +1,3 @@
-import React from "react";
-
 import { Divider, Button, Layout } from "antd";
 import {
   FaCalendar,
@@ -8,17 +6,16 @@ import {
   FaClockRotateLeft,
   FaPenToSquare,
 } from "react-icons/fa6";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const { Sider } = Layout;
 
 const RoomsSidebar = () => {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const handleClick = (label: string, url: string) => {
-    router.push(`/dashboard/rooms${url}`);
+    navigate(`/dashboard/rooms${url}`);
   };
 
   return (
@@ -55,14 +52,16 @@ const RoomsSidebar = () => {
         <div
           onClick={() => handleClick("Modify Attributes", "")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
-            (pathname == "/dashboard/rooms" || pathname.includes("/dashboard/rooms/edit"))
+            pathname == "/dashboard/rooms" ||
+            pathname.includes("/dashboard/rooms/edit")
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaPenToSquare className="w-5 h-5" />
           <span>Modify Attributes</span>
-          {(pathname == "/dashboard/rooms" || pathname.includes("/dashboard/rooms/edit"))&& (
+          {(pathname == "/dashboard/rooms" ||
+            pathname.includes("/dashboard/rooms/edit")) && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
@@ -104,7 +103,7 @@ const RoomsSidebar = () => {
       </div>
       <div className="flex justify-center">
         <Button
-          onClick={() => router.push(`/rooms/consolidated`)}
+          onClick={() => navigate(`/rooms/consolidated`)}
           className="mt-2 bg-[#636AE8FF] text-white"
         >
           Generate Consolidated

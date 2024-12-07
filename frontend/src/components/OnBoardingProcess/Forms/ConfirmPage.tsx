@@ -1,9 +1,9 @@
 "use client";
 import { Button, Card, Typography } from "antd";
-import React, { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import SuccessTick from "../../LottieComponents/SuccessTick";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
@@ -14,7 +14,7 @@ const ConfirmPage = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const handleSubmit = () => {
     setLoading(true);
@@ -27,7 +27,7 @@ const ConfirmPage = ({
       const promise = () =>
         new Promise((resolve) =>
           setTimeout(() => {
-            router.push("/");
+            navigate("/");
             resolve("");
           }, 5000)
         );
@@ -61,7 +61,6 @@ const ConfirmPage = ({
               Please click the button below to confirm your registration.
             </Paragraph>
             <Button
-              
               size="large"
               className={`bg-green-600 border-green-600 bg-primary text-white rounded-md w-full mt-4 ${
                 loading ? "cursor-not-allowed" : ""

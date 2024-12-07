@@ -11,17 +11,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 const { Sider } = Layout;
 
 const TeachersSidebar = () => {
-  const location = useLocation();  // Correctly using useLocation from React Router
-  const navigate = useNavigate();  // Using useNavigate for programmatic navigation
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
-  const handleClick = (url:string) => {
-    navigate(`/dashboard/teachers${url}`);
+  const handleClick = (label: string, url: string) => {
+    navigate(`/dashboard/teacher${url}`);
   };
 
   return (
     <Sider className="h-screen bg-white border-r-[0.5px] ">
       <div className="flex justify-left text-black-bold items-center pt-[20px] pl-[20px] space-x-2 h-[7vh]">
-      <FaChalkboardUser className="w-[30px] h-[40px]" />
+        <FaChalkboardUser className="w-[30px] h-[40px]" />
         <span
           className="text-xl font-semibold text-[#171A1FFF]"
           style={{ fontFamily: "Archivo" }}
@@ -52,14 +52,16 @@ const TeachersSidebar = () => {
         <div
           onClick={() => handleClick( "")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
-            (location.pathname == "/dashboard/teachers" || location.pathname.includes("/dashboard/teachers/edit"))
+            pathname == "/dashboard/teacher" ||
+            pathname.includes("/dashboard/teacher/edit")
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaUserPen className="w-5 h-5" />
           <span>Modify Attributes</span>
-          {(location.pathname == "/dashboard/teachers" || location.pathname.includes("/dashboard/teachers/edit")) && (
+          {(pathname == "/dashboard/teacher" ||
+            pathname.includes("/dashboard/teacher/edit")) && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
@@ -101,6 +103,7 @@ const TeachersSidebar = () => {
       </div>
       <div className="flex justify-center">
         <Button
+          onClick={() => navigate(`/teacher/consolidated`)}
           className="mt-2 bg-[#636AE8FF] text-white"
         >
           Generate Consolidated

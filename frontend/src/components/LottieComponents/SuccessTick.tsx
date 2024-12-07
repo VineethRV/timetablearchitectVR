@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import Lottie, { LottieRefCurrentProps } from 'lottie-react';
-import successAnimation from '@/app/lottie-animations/success-anim.json';
+import successAnimation from '../../lottie-animations/success-anim.json';
 
 const SuccessTick = () => {
   const lottieRef = useRef<LottieRefCurrentProps | null>(null);

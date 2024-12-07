@@ -1,7 +1,7 @@
 "use client";
-import React, { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction } from "react";
 import DeptSelect from "./SelectDept/DeptSelect";
-import { OrganisationSchema } from "@/app/types/main";
+import { OrganisationSchema } from "../../../types/main";
 
 const Form3 = ({
   organisationDetails,
