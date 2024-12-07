@@ -38,7 +38,7 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const AddTeacherpage=() => {
+const EditTeacherpage=() => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -179,4 +179,4 @@ const AddTeacherpage=() => {
   );
 };
 
-export default AddTeacherpage;
+export default EditTeacherpage;
