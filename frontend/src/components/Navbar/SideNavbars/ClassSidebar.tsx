@@ -1,30 +1,27 @@
-import React from "react";
-
-import { Divider,Layout, Select, SliderSingleProps,Slider } from "antd";
-import {
-  FaCirclePlus,
-  FaPenToSquare,
-  FaCircleMinus,
-} from "react-icons/fa6";
+import { Divider, Layout, Select, SliderSingleProps, Slider } from "antd";
+import { FaCirclePlus, FaPenToSquare, FaCircleMinus } from "react-icons/fa6";
 import { SiGoogleclassroom } from "react-icons/si";
-import { useRouter } from "next/navigation";
-import { usePathname } from "next/navigation";
-import { semesterOptions } from "@/app/components/semester/semester";
+// import { useRouter } from "next/navigation";
+// import { usePathname } from "next/navigation";
+import { useNavigate, useLocation } from "react-router-dom";
+import { semesterOptions } from "../../../components/semester/semester";
 const { Sider } = Layout;
 
-const formatter: NonNullable<SliderSingleProps['tooltip']>['formatter'] = (value) => `${value}%`;
+const formatter: NonNullable<SliderSingleProps["tooltip"]>["formatter"] = (
+  value
+) => `${value}%`;
 
 const ClassSidebar = () => {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
   const handleClick = (label: string, url: string) => {
-    router.push(`/dashboard/section${url}`);
+    navigate(`/dashboard/section${url}`);
   };
 
   return (
     <Sider className="h-screen bg-white border-r-[0.5px]">
       <div className="flex justify-left text-black-bold items-center pt-[20px] pl-[20px] space-x-2 h-[7vh]">
-      <SiGoogleclassroom className="w-[30px] h-[40px]" />
+        <SiGoogleclassroom className="w-[30px] h-[40px]" />
         <span
           className="text-xl font-semibold text-[#171A1FFF]"
           style={{ fontFamily: "Archivo" }}
@@ -84,18 +81,18 @@ const ClassSidebar = () => {
       </div>
       <Divider />
       <div className="flex justify-center items-center h-[10vh]">
-           <Select
-        placeholder="Select a semester"
-        options={semesterOptions}
-        className="font-normal"
-      />
+        <Select
+          placeholder="Select a semester"
+          options={semesterOptions}
+          className="font-normal"
+        />
       </div>
-      <Divider/>
+      <Divider />
       <div className="flex flex-col justify-center m-4">
-      <Slider tooltip={{ formatter }} />
-      <Slider tooltip={{ formatter }} />
-      <Slider tooltip={{ formatter }} />
-      <Slider tooltip={{ formatter }} />
+        <Slider tooltip={{ formatter }} />
+        <Slider tooltip={{ formatter }} />
+        <Slider tooltip={{ formatter }} />
+        <Slider tooltip={{ formatter }} />
       </div>
     </Sider>
   );

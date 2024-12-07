@@ -1,6 +1,4 @@
 import Sider from "antd/es/layout/Sider";
-import { useRouter } from "next/navigation";
-import React from "react";
 import { motion } from "framer-motion";
 import {
   FaBook,
@@ -10,15 +8,14 @@ import {
   FaGear,
 } from "react-icons/fa6";
 import Logo from "/Logo.png";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const DashboardSidebar = () => {
-  const router = useRouter();
-  const pathname = usePathname();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const handleClick = (url: string) => {
-    router.push(`/dashboard${url}`);
+    navigate(`/dashboard${url}`);
   };
 
   return (
@@ -27,7 +24,7 @@ const DashboardSidebar = () => {
       className="h-screen bg-[#1D2128FF] flex flex-col justify-between"
     >
       <div className="flex justify-center items-center my-4">
-        <Image alt="Logo" src={Logo} className="w-8 h-8" />
+        <img alt="Logo" src={Logo} className="w-8 h-8" />
       </div>
 
       <motion.div

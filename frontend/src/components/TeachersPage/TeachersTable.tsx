@@ -1,16 +1,25 @@
 "use client";
 import React, { useMemo, useState } from "react";
-import { Avatar, Button, ConfigProvider, Input, Select, Table, Tooltip } from "antd";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  Input,
+  Select,
+  Table,
+  Tooltip,
+} from "antd";
 import type { TableColumnsType, TableProps } from "antd";
 import { MdDelete, MdEdit } from "react-icons/md";
-import { Teacher } from "@/app/types/main";
-import { deleteTeachers } from "@/lib/actions/teacher";
-import { statusCodes } from "@/app/types/statusCodes";
+import { Teacher } from "../../types/main";
+// import { deleteTeachers } from "@/lib/actions/teacher";
+import { statusCodes } from "../../types/statusCodes";
 import { toast } from "sonner";
 import { TbTrash } from "react-icons/tb";
-import { DEPARTMENTS_OPTIONS } from "@/info";
+import { DEPARTMENTS_OPTIONS } from "../../../info";
 import { CiSearch } from "react-icons/ci";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
@@ -20,8 +29,6 @@ const getRandomColor = () => {
   }
   return color;
 };
-
-
 
 const colorCombos: Record<string, string>[] = [
   { textColor: "#FFFFFF", backgroundColor: "#000000" },
@@ -39,21 +46,33 @@ const colorCombos: Record<string, string>[] = [
 const deptColors: Record<string, string> = {};
 let cnt = 0;
 
-const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher[], setTeachersData: React.Dispatch<React.SetStateAction<Teacher[]>> }) => {
-
-  const router=useRouter();
+const TeachersTable = ({
+  teachersData,
+  setTeachersData,
+}: {
+  teachersData: Teacher[];
+  setTeachersData: React.Dispatch<React.SetStateAction<Teacher[]>>;
+}) => {
+  // const router= useRouter();
+  const navigate = useNavigate();
 
   const handleEditClick = (name: string, department: string) => {
-    router.push(`/dashboard/teacher/edit/${encodeURIComponent(name)}/${encodeURIComponent(department)}`);
+    navigate(
+      `/dashboard/teacher/edit/${encodeURIComponent(name)}/${encodeURIComponent(
+        department
+      )}`
+    );
   };
 
- const  handleDeleteClick=(teacher:Teacher)=>{
-    setSelectedTeachers([teacher])
-    deleteTeachersHandler()
- }
+  const handleDeleteClick = (teacher: Teacher) => {
+    setSelectedTeachers([teacher]);
+    deleteTeachersHandler();
+  };
 
-  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([])
-  const [departmentFilter, setDepartmentFilter] = useState("Select a department");
+  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
+  const [departmentFilter, setDepartmentFilter] = useState(
+    "Select a department"
+  );
 
   // Function to clear all fliters
   function clearFilters() {
@@ -63,14 +82,13 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
   // Row Selection logic by ant design
   const rowSelection: TableProps<Teacher>["rowSelection"] = {
     onChange: (selectedRowKeys: React.Key[], selectedRows: Teacher[]) => {
-      setSelectedTeachers(selectedRows)
+      setSelectedTeachers(selectedRows);
     },
     getCheckboxProps: (record: Teacher) => ({
       disabled: record.name === "Disabled User",
       name: record.name,
     }),
   };
-
 
   const columns: TableColumnsType<Teacher> = [
     {
@@ -80,7 +98,10 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
         return (
           <Avatar
             className="text-xl"
-            style={{ backgroundColor: getRandomColor(), verticalAlign: "middle" }}
+            style={{
+              backgroundColor: getRandomColor(),
+              verticalAlign: "middle",
+            }}
             size="large"
           >
             {text.slice(0, 1)}
@@ -124,7 +145,12 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
       render: (record) => {
         return (
           <Tooltip title="Edit">
-            <Button type="primary"  onClick={() => handleEditClick(record.name, record.department)} shape="circle" icon={<MdEdit />} />
+            <Button
+              type="primary"
+              onClick={() => handleEditClick(record.name, record.department)}
+              shape="circle"
+              icon={<MdEdit />}
+            />
           </Tooltip>
         );
       },
@@ -138,7 +164,7 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
               className="bg-red-400"
               type="primary"
               shape="circle"
-              onClick={()=>handleDeleteClick(record)}
+              onClick={() => handleDeleteClick(record)}
               icon={<MdDelete />}
             />
           </Tooltip>
@@ -146,8 +172,6 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
       },
     },
   ];
-  
-  
 
   // function handling deleting the teachers logic
   function deleteTeachersHandler() {
@@ -155,33 +179,33 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
       toast.info("Select teachers to delete !!");
       return;
     }
-    const res = deleteTeachers(localStorage.getItem('token') || "", selectedTeachers).then((res) => {
-      const statusCode = res.status;
-      switch (statusCode) {
-        case statusCodes.OK:
-          setTeachersData((teachers) => {
-            const newTeachers = teachers.filter((t) => {
-              for (let i = 0; i < selectedTeachers.length; i++) {
-                if (selectedTeachers[i].name == t.name) return false;
-              }
-              return true;
-            })
-            return newTeachers
-          })
-          setSelectedTeachers([])
-          toast.success("Teachers deleted successfully");
-          break;
-        case statusCodes.BAD_REQUEST:
-          toast.error("Invalid request");
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Server error")
-      }
-    })
+    // const res = deleteTeachers(localStorage.getItem('token') || "", selectedTeachers).then((res) => {
+    //   const statusCode = res.status;
+    //   switch (statusCode) {
+    //     case statusCodes.OK:
+    //       setTeachersData((teachers) => {
+    //         const newTeachers = teachers.filter((t) => {
+    //           for (let i = 0; i < selectedTeachers.length; i++) {
+    //             if (selectedTeachers[i].name == t.name) return false;
+    //           }
+    //           return true;
+    //         })
+    //         return newTeachers
+    //       })
+    //       setSelectedTeachers([])
+    //       toast.success("Teachers deleted successfully");
+    //       break;
+    //     case statusCodes.BAD_REQUEST:
+    //       toast.error("Invalid request");
+    //       break;
+    //     case statusCodes.INTERNAL_SERVER_ERROR:
+    //       toast.error("Server error")
+    //   }
+    // })
 
-    toast.promise(res, {
-      loading: "Deleting teachers ..."
-    })
+    // toast.promise(res, {
+    //   loading: "Deleting teachers ..."
+    // })
   }
 
   // Assigning department colors for consistency
@@ -193,17 +217,17 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
     }
   });
 
-
   // Memoizing the result of filteredTeachers -> Used for filtering the teachers
   const filteredTeachersData = useMemo(() => {
     if (departmentFilter == "Select a department") {
       return teachersData;
     }
 
-    const new_teachers = teachersData.filter((t) => t.department == departmentFilter)
+    const new_teachers = teachersData.filter(
+      (t) => t.department == departmentFilter
+    );
     return new_teachers;
-  }, [departmentFilter,teachersData])
-
+  }, [departmentFilter, teachersData]);
 
   // Add a unique key to each teacher record (email is assumed to be unique)
   const dataWithKeys = filteredTeachersData.map((teacher) => ({
@@ -246,15 +270,16 @@ const TeachersTable = ({ teachersData, setTeachersData}: { teachersData: Teacher
           </div>
         </ConfigProvider>
         <div className="flex space-x-2">
-          <Button onClick={deleteTeachersHandler} className="bg-red-500 text-white font-bold">
+          <Button
+            onClick={deleteTeachersHandler}
+            className="bg-red-500 text-white font-bold"
+          >
             <TbTrash />
             Delete
           </Button>
           <Button onClick={clearFilters}>Clear filters</Button>
         </div>
       </div>
-
-
 
       <Table<Teacher>
         rowSelection={{ type: "checkbox", ...rowSelection }}
