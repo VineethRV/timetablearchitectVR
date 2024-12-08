@@ -1,0 +1,36 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend for timetable architect",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VineethRV/timetablearchitectVR.git"
+  },
+  "author": "Vineeth",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VineethRV/timetablearchitectVR/issues"
+  },
+  "homepage": "https://github.com/VineethRV/timetablearchitectVR#readme",
+  "dependencies": {
+    "@prisma/client": "^6.0.1",
+    "axios": "^1.7.9",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "prisma": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.1",
+    "express": "^4.21.2",
+    "typescript": "^5.7.2"
+  }
+}
