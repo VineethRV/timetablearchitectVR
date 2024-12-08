@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { statusCodes } from "../types/statusCodes";
 import { User } from "../types/main";
 
-const secretKey = process.env.JWT_SECRET_KEY || "bob";
+const secretKey = 'bob';
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
 
 export const checkAuthentication = async (token: string): Promise<boolean> => {
@@ -123,7 +123,7 @@ export async function getPosition(
 ): Promise<{ status: number; user: User | null }> {
   try {
     //getting user id from token
-    const jwtParsed = jwt.decode(JWTtoken) ;
+    const jwtParsed = jwt.decode(JWTtoken) as  jwt.JwtPayload;
     const userId = jwtParsed.id;
     const userEmail = jwtParsed.email;
     //find user info from DB using id

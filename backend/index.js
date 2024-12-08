@@ -1,6 +1,5 @@
 const express = require('express');
-const axios = require('axios');
-const auth = require('./lib/actions/auth');
+const auth = require('./lib/actions/auth.js');
 
 const app = express();
 const port = 3000;
@@ -72,6 +71,7 @@ app.post('/api/getPosition', async (req, res) => {
         res.status(500).send(error.message);
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
