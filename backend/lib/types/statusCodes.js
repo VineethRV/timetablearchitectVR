@@ -1,0 +1,73 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.statusCodes = void 0;
+var statusCodes;
+(function (statusCodes) {
+    statusCodes[statusCodes["PROXY_AUTHENTICATION_REQUIRED"] = 407] = "PROXY_AUTHENTICATION_REQUIRED";
+    statusCodes[statusCodes["REQUEST_TIMEOUT"] = 408] = "REQUEST_TIMEOUT";
+    statusCodes[statusCodes["CONFLICT"] = 409] = "CONFLICT";
+    statusCodes[statusCodes["GONE"] = 410] = "GONE";
+    statusCodes[statusCodes["LENGTH_REQUIRED"] = 411] = "LENGTH_REQUIRED";
+    statusCodes[statusCodes["PRECONDITION_FAILED"] = 412] = "PRECONDITION_FAILED";
+    statusCodes[statusCodes["PAYLOAD_TOO_LARGE"] = 413] = "PAYLOAD_TOO_LARGE";
+    statusCodes[statusCodes["URI_TOO_LONG"] = 414] = "URI_TOO_LONG";
+    statusCodes[statusCodes["UNSUPPORTED_MEDIA_TYPE"] = 415] = "UNSUPPORTED_MEDIA_TYPE";
+    statusCodes[statusCodes["RANGE_NOT_SATISFIABLE"] = 416] = "RANGE_NOT_SATISFIABLE";
+    statusCodes[statusCodes["EXPECTATION_FAILED"] = 417] = "EXPECTATION_FAILED";
+    statusCodes[statusCodes["IM_A_TEAPOT"] = 418] = "IM_A_TEAPOT";
+    statusCodes[statusCodes["MISDIRECTED_REQUEST"] = 421] = "MISDIRECTED_REQUEST";
+    statusCodes[statusCodes["UNPROCESSABLE_ENTITY"] = 422] = "UNPROCESSABLE_ENTITY";
+    statusCodes[statusCodes["LOCKED"] = 423] = "LOCKED";
+    statusCodes[statusCodes["FAILED_DEPENDENCY"] = 424] = "FAILED_DEPENDENCY";
+    statusCodes[statusCodes["TOO_EARLY"] = 425] = "TOO_EARLY";
+    statusCodes[statusCodes["UPGRADE_REQUIRED"] = 426] = "UPGRADE_REQUIRED";
+    statusCodes[statusCodes["PRECONDITION_REQUIRED"] = 428] = "PRECONDITION_REQUIRED";
+    statusCodes[statusCodes["TOO_MANY_REQUESTS"] = 429] = "TOO_MANY_REQUESTS";
+    statusCodes[statusCodes["REQUEST_HEADER_FIELDS_TOO_LARGE"] = 431] = "REQUEST_HEADER_FIELDS_TOO_LARGE";
+    statusCodes[statusCodes["UNAVAILABLE_FOR_LEGAL_REASONS"] = 451] = "UNAVAILABLE_FOR_LEGAL_REASONS";
+    // 5xx Server Errors
+    statusCodes[statusCodes["INTERNAL_SERVER_ERROR"] = 500] = "INTERNAL_SERVER_ERROR";
+    statusCodes[statusCodes["NOT_IMPLEMENTED"] = 501] = "NOT_IMPLEMENTED";
+    statusCodes[statusCodes["BAD_GATEWAY"] = 502] = "BAD_GATEWAY";
+    statusCodes[statusCodes["SERVICE_UNAVAILABLE"] = 503] = "SERVICE_UNAVAILABLE";
+    statusCodes[statusCodes["GATEWAY_TIMEOUT"] = 504] = "GATEWAY_TIMEOUT";
+    statusCodes[statusCodes["HTTP_VERSION_NOT_SUPPORTED"] = 505] = "HTTP_VERSION_NOT_SUPPORTED";
+    statusCodes[statusCodes["VARIANT_ALSO_NEGOTIATES"] = 506] = "VARIANT_ALSO_NEGOTIATES";
+    statusCodes[statusCodes["INSUFFICIENT_STORAGE"] = 507] = "INSUFFICIENT_STORAGE";
+    statusCodes[statusCodes["LOOP_DETECTED"] = 508] = "LOOP_DETECTED";
+    statusCodes[statusCodes["NOT_EXTENDED"] = 510] = "NOT_EXTENDED";
+    statusCodes[statusCodes["NETWORK_AUTHENTICATION_REQUIRED"] = 511] = "NETWORK_AUTHENTICATION_REQUIRED";
+    // 1xx Informational
+    statusCodes[statusCodes["CONTINUE"] = 100] = "CONTINUE";
+    statusCodes[statusCodes["SWITCHING_PROTOCOLS"] = 101] = "SWITCHING_PROTOCOLS";
+    statusCodes[statusCodes["PROCESSING"] = 102] = "PROCESSING";
+    statusCodes[statusCodes["EARLY_HINTS"] = 103] = "EARLY_HINTS";
+    // 2xx Success
+    statusCodes[statusCodes["OK"] = 200] = "OK";
+    statusCodes[statusCodes["CREATED"] = 201] = "CREATED";
+    statusCodes[statusCodes["ACCEPTED"] = 202] = "ACCEPTED";
+    statusCodes[statusCodes["NON_AUTHORITATIVE_INFORMATION"] = 203] = "NON_AUTHORITATIVE_INFORMATION";
+    statusCodes[statusCodes["NO_CONTENT"] = 204] = "NO_CONTENT";
+    statusCodes[statusCodes["RESET_CONTENT"] = 205] = "RESET_CONTENT";
+    statusCodes[statusCodes["PARTIAL_CONTENT"] = 206] = "PARTIAL_CONTENT";
+    statusCodes[statusCodes["MULTI_STATUS"] = 207] = "MULTI_STATUS";
+    statusCodes[statusCodes["ALREADY_REPORTED"] = 208] = "ALREADY_REPORTED";
+    statusCodes[statusCodes["IM_USED"] = 226] = "IM_USED";
+    // 3xx Redirection
+    statusCodes[statusCodes["MULTIPLE_CHOICES"] = 300] = "MULTIPLE_CHOICES";
+    statusCodes[statusCodes["MOVED_PERMANENTLY"] = 301] = "MOVED_PERMANENTLY";
+    statusCodes[statusCodes["FOUND"] = 302] = "FOUND";
+    statusCodes[statusCodes["SEE_OTHER"] = 303] = "SEE_OTHER";
+    statusCodes[statusCodes["NOT_MODIFIED"] = 304] = "NOT_MODIFIED";
+    statusCodes[statusCodes["USE_PROXY"] = 305] = "USE_PROXY";
+    statusCodes[statusCodes["TEMPORARY_REDIRECT"] = 307] = "TEMPORARY_REDIRECT";
+    statusCodes[statusCodes["PERMANENT_REDIRECT"] = 308] = "PERMANENT_REDIRECT";
+    // 4xx Client Errors
+    statusCodes[statusCodes["BAD_REQUEST"] = 400] = "BAD_REQUEST";
+    statusCodes[statusCodes["UNAUTHORIZED"] = 401] = "UNAUTHORIZED";
+    statusCodes[statusCodes["PAYMENT_REQUIRED"] = 402] = "PAYMENT_REQUIRED";
+    statusCodes[statusCodes["FORBIDDEN"] = 403] = "FORBIDDEN";
+    statusCodes[statusCodes["NOT_FOUND"] = 404] = "NOT_FOUND";
+    statusCodes[statusCodes["METHOD_NOT_ALLOWED"] = 405] = "METHOD_NOT_ALLOWED";
+    statusCodes[statusCodes["NOT_ACCEPTABLE"] = 406] = "NOT_ACCEPTABLE";
+})(statusCodes || (exports.statusCodes = statusCodes = {}));
