@@ -1,49 +1,52 @@
 import { Button, Card, Input } from "antd";
 import { useState } from "react";
 import { Checkbox } from "antd";
-
-// import { toast } from "sonner";
 import { FaEye, FaEyeSlash, FaUnlockAlt } from "react-icons/fa";
 import { CiMail } from "react-icons/ci";
 import { Link } from "react-router-dom";
-
-// import { statusCodes } from "@/app/types/statusCodes";
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
+import { toast } from "sonner";
+import { statusCodes } from "../../types/statusCodes";
+import { useNavigate } from "react-router-dom";
 
 const SigninFormCard = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [keepLogged, setKeepLogged] = useState(false);
+  const navigate = useNavigate();
 
   function signInHandler() {
-    console.log(keepLogged);
-    // const response = login(email, password).then((res) => {
-    //   const statusCode = res.status;
+    const response = axios
+      .post(BACKEND_URL + "/login", { email, password })
+      .then((res) => {
+        const statusCode = res.status;
 
-    //   switch (statusCode) {
-    //     case statusCodes.OK:
-    //       toast.success("User logged in successfully");
-    //       localStorage.setItem('token', res.token)
-    //       if (keepLogged) localStorage.setItem('keepLogged', "true")
-    //       router.push('/dashboard');
-    //       break;
-    //     case statusCodes.NOT_ACCEPTABLE:
-    //       toast.error("Please verify your email to continue");
-    //       break;
-    //     case statusCodes.NOT_FOUND:
-    //       toast.error("User does not exist");
-    //       break;
-    //     case statusCodes.UNAUTHORIZED:
-    //       toast.error("Wrong credentials")
-    //       break;
-    //     case statusCodes.INTERNAL_SERVER_ERROR:
-    //       toast.error("Server error")
-    //       break;
-    //   }
-    // })
+        switch (statusCode) {
+          case statusCodes.OK:
+            toast.success("User logged in successfully");
+            localStorage.setItem("token", res.data.token);
+            if (keepLogged) localStorage.setItem("keepLogged", "true");
+            navigate("/dashboard");
+            break;
+          case statusCodes.NOT_ACCEPTABLE:
+            toast.error("Please verify your email to continue");
+            break;
+          case statusCodes.NOT_FOUND:
+            toast.error("User does not exist");
+            break;
+          case statusCodes.UNAUTHORIZED:
+            toast.error("Wrong credentials");
+            break;
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            toast.error("Server error");
+            break;
+        }
+      });
 
-    // toast.promise(response, {
-    //   loading: "Logging in !!"
-    // })
+    toast.promise(response, {
+      loading: "Logging in !!",
+    });
   }
 
   return (

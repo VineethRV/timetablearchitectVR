@@ -1,30 +1,46 @@
-"use client"
-import { useEffect, useState } from 'react';
-import Header from '../components/SigninPage/Header';
-import SigninFormCard from '../components/SigninPage/SigninFormCard';
-import SignInIllus1 from '/Illustrations/Sign1.png';
-import SignInIllus2 from '/Illustrations/Sign2.png';
-import { motion } from 'framer-motion'
-// import { checkAuthentication } from '@/lib/actions/auth';
-// import { toast } from 'sonner';
-import Loading from '../components/Loading/Loading'
+"use client";
+import { useEffect, useState } from "react";
+import Header from "../components/SigninPage/Header";
+import SigninFormCard from "../components/SigninPage/SigninFormCard";
+import SignInIllus1 from "/Illustrations/Sign1.png";
+import SignInIllus2 from "/Illustrations/Sign2.png";
+import { motion } from "framer-motion";
+import Loading from "../components/Loading/Loading";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { BACKEND_URL } from "../../config";
 
 const Signin = () => {
   const [loading, setLoading] = useState(false);
-  
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // checkAuthentication(localStorage.getItem('token') || "").then((verify) => {
-    //   if (verify) {
-    //     router.push('/dashboard');
-    //     toast.success("User is already logged in !!");
-    //   }
+    axios
+      .post(
+        BACKEND_URL + "/checkAuthentication",
+        {},
+        {
+          headers: {
+            token: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then((res) => {
+        const status = res.status;
 
-      // setTimeout(() => setLoading(false), 1000);
-    // })
-  }, [])
+        if (status == 200) {
+          navigate("/dashboard");
+          toast.success("User is already logged in!!");
+        }
 
-  if (loading) return <Loading />
+        setLoading(false);
+      }).catch(()=>{
+
+      })
+  }, []);
+
+  if (loading) return <Loading />;
 
   return (
     <>
@@ -46,7 +62,9 @@ const Signin = () => {
           transition={{
             duration: 0.5,
             ease: "easeInOut",
-          }} className="flex justify-center items-center h-[86vh]">
+          }}
+          className="flex justify-center items-center h-[86vh]"
+        >
           <SigninFormCard />
         </motion.div>
       </div>
