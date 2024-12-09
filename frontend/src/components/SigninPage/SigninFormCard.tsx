@@ -20,12 +20,12 @@ const SigninFormCard = () => {
     const response = axios
       .post(BACKEND_URL + "/login", { email, password })
       .then((res) => {
-        const statusCode = res.status;
+        const statusCode = res.data.status;
 
         switch (statusCode) {
           case statusCodes.OK:
             toast.success("User logged in successfully");
-            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("token", "Bearer " + res.data.message);
             if (keepLogged) localStorage.setItem("keepLogged", "true");
             navigate("/dashboard");
             break;

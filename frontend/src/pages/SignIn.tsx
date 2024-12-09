@@ -22,12 +22,12 @@ const Signin = () => {
         {},
         {
           headers: {
-            token: localStorage.getItem("token"),
+            authorization: localStorage.getItem("token"),
           },
         }
       )
       .then((res) => {
-        const status = res.status;
+        const status = res.data.status;
 
         if (status == 200) {
           navigate("/dashboard");
@@ -35,8 +35,6 @@ const Signin = () => {
         }
 
         setLoading(false);
-      }).catch(()=>{
-
       })
   }, []);
 

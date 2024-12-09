@@ -21,7 +21,7 @@ const SignupForm = () => {
     const response = axios
       .post(BACKEND_URL + "/register", { name, email, password })
       .then((res) => {
-        const statusCode = res.status;
+        const statusCode = res.data.status;
 
         switch (statusCode) {
           case statusCodes.INTERNAL_SERVER_ERROR:
