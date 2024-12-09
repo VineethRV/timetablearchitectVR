@@ -9,7 +9,7 @@ import {
   Upload,
   Radio,
 } from "antd";
-import TimeTable from "../../components/timetable"
+import TimeTable from "../../../components/timetable"
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import {useNavigate } from "react-router-dom";

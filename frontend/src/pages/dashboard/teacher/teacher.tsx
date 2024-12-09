@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import TeachersSidebar from "../../components/Navbar/SideNavbars/TeachersSidebar";
+import TeachersSidebar from "../../../components/Navbar/SideNavbars/TeachersSidebar";
 
 const Teacher = () => {
   return (

@@ -1,11 +1,11 @@
 import { Outlet } from "react-router-dom";
-import RoomSidebar from "../../components/Navbar/SideNavbars/RoomSidebar";
+import CourseSidebar from "../../../components/Navbar/SideNavbars/CourseSidebar";
 
-const Room = () => {
+const Course = () => {
   return (
     <div className="flex h-screen">
         <div>
-      <RoomSidebar />
+      <CourseSidebar />
       </div>
       <div className="w-full" >
         <Outlet />
@@ -14,4 +14,4 @@ const Room = () => {
   );
 };
 
-export default Room;
+export default Course;

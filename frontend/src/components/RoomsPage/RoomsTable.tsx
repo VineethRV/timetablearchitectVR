@@ -15,7 +15,7 @@ import { Room } from "../../types/main";
 // import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 // import { deleteRooms } from "@/lib/actions/room";
-import { statusCodes } from "../../types/statusCodes";
+//import { statusCodes } from "../../types/statusCodes";
 import { TbTrash } from "react-icons/tb";
 import { DEPARTMENTS_OPTIONS } from "../../../info";
 import { CiSearch } from "react-icons/ci";

@@ -13,8 +13,8 @@ import {
   Modal,
 } from "antd";
 import { motion } from "framer-motion";
-import LabAddTable from "../../components/CoursePage/Labaddtable";
-import Timetable from "../../components/timetable";
+import LabAddTable from "../../../../components/CoursePage/Labaddtable";
+import Timetable from "../../../../components/timetable";
 import { useNavigate } from "react-router-dom";
 const formItemLayout = {
   labelCol: {
@@ -134,8 +134,8 @@ const AddLabpage: React.FC = () => {
                     ]}
                   >
                     <div>
-                      <label>Subject</label>
-                      <Input placeholder="Subject" />
+                      <label>Course</label>
+                      <Input placeholder="Course" />
                       <label>Teachers</label>
                       <Select placeholder="teacher" />
                       <label>Rooms</label>
@@ -149,8 +149,8 @@ const AddLabpage: React.FC = () => {
                       { required: true, message: "Please input Field 1!" },
                     ]}
                   >
-                    <label>Subject</label>
-                    <Input placeholder="Subject" />
+                    <label>Course</label>
+                    <Input placeholder="Course" />
                     <label>Teachers</label>
                     <Select placeholder="teacher" />
                     <label>Rooms</label>

@@ -7,13 +7,15 @@ import {
   Select,
   Tooltip,
   Upload,
-  Radio,
+  InputNumber,
+  Modal,
 } from "antd";
-import TimeTable from "../../components/timetable"
+import TimeTable from "../../../components/timetable"
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import {useNavigate } from "react-router-dom";
 import { IoIosInformationCircleOutline } from "react-icons/io";
+import SectionAddTable from "../../../components/SectionPage/sectionaddtable";
 //import { DEPARTMENTS_OPTIONS } from "@/info";
 //import { createRoom } from "@/lib/actions/room";
 //import { toast } from "sonner";
@@ -47,13 +49,23 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const EditRoomPage: React.FC = () => {
+const AddSectionPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
+
+  
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    form.resetFields(); // Clear form on modal close
+  };
 
   function clearFields() {
     form.setFieldValue('className', "");
@@ -96,7 +108,7 @@ const EditRoomPage: React.FC = () => {
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] font-inter text-xl text-bold">
         <div
           onClick={() => {
-            navigate("/dashboard/rooms");
+            navigate("/dashboard/section");
           }}
           className="flex text-base w-fit cursor-pointer space-x-2"
         >
@@ -122,22 +134,76 @@ const EditRoomPage: React.FC = () => {
         className="flex justify-left items-center mt-12 ml-4"
       >
         <Form {...formItemLayout} form={form} layout="vertical" requiredMark className="w-96">
-          <Form.Item name="className" label="Classroom Name" required>
+          <Form.Item name="className" label="Class Name" required>
             <Input placeholder="Name" className="font-inter font-normal" />
           </Form.Item>
-          <Form.Item name="lab" label="Is it a Lab?" required>
-            <Radio.Group>
-              <Radio value={1}>Yes</Radio>
-              <Radio value={2} className="ml-4 color-[#636AE8FF]">
-                No
-              </Radio>
-            </Radio.Group>
+          <Form.Item name="classBatch" label="Class Batch(Year of Admission)" required>
+            <InputNumber placeholder="Year of Admission" min={2020} className="font-inter font-normal w-96" />
           </Form.Item>
-          <Form.Item label="Department" name="department">
-            <Select  className="font-inter font-normal" />
+          <label>
+            <div>
+              <span className="inline-flex items-center space-x-10">
+                Lab Courses for the Batch
+                <Tooltip title="Click on Add to add the lab courses applicable for the batch">
+                  <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
+                </Tooltip>
+              </span>
+              <Button
+                color="primary"
+                variant="link"
+                onClick={handleOpenModal}
+                className="text-purple"
+              >
+                &#x002B; Add
+              </Button>
+              <Modal
+                title="Add course and corresponding teacher"
+                visible={isModalOpen}
+                onCancel={handleCloseModal}
+                okText="Submit"
+                cancelText="Cancel"
+              >
+                <Form form={form} layout="vertical">
+                  <Form.Item
+                    rules={[
+                      { required: true, message: "Please input Field 1!" },
+                    ]}
+                  >
+                    <div>
+                      <label>Course</label>
+                      <Input placeholder="Course" />
+                      <label>Teacher</label>
+                      <Select placeholder="teacher" />
+                    </div>
+                  </Form.Item>
+                </Form>
+              </Modal>
+            </div>
+          </label>
+          <SectionAddTable />
+          <br></br>
+          <Form.Item
+            label="Electives and Common time courses"
+          >
+            <Select placeholder="Electives" className="font-normal w-96" />
+          </Form.Item>
+          <Form.Item
+            label="Lab courses applicable for the section"
+          >
+            <Select placeholder="Labs" className="font-normal w-96" />
+          </Form.Item>
+          <Form.Item
+            label="Select default Room"
+          >
+            <Select placeholder="Room" className="font-normal w-96" />
+          </Form.Item>
+          <Form.Item
+            label="Department from which room will be selected if default room is not available"
+          >
+            <Select placeholder="Department" className="font-normal w-96" />
           </Form.Item>
           <label className="flex items-center">
-            <span>Schedule</span>
+            <span>Block</span>
             <Tooltip title="Click on the timeslots where to the teacher is busy to set them to busy">
               <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
             </Tooltip>
@@ -169,4 +235,4 @@ const EditRoomPage: React.FC = () => {
   );
 };
 
-export default EditRoomPage;
+export default AddSectionPage;

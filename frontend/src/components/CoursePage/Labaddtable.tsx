@@ -1,18 +1,19 @@
 import React from 'react';
-import { Table, Tag } from 'antd';
+import { Button, Table, Tag, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
+import { MdDelete, MdEdit } from 'react-icons/md';
 
 interface DataType {
   key: string;
-  subject: string;
+  Course: string;
   teachers: string[];
   rooms: string[];
 }
 
 const columns: TableProps<DataType>['columns'] = [
   {
-    title: 'Subject',
-    dataIndex: 'subject',
+    title: 'Course',
+    dataIndex: 'Course',
   },
   {
     title: 'Teachers',
@@ -45,19 +46,50 @@ const columns: TableProps<DataType>['columns'] = [
           })}
         </>
       )
+  },
+  {
+    title: "",
+    render: (record) => {
+      return (
+        <Tooltip title="Edit">
+          <Button
+            type="primary"
+           // onClick={() => handleEditClick(record.name, record.department)}
+            shape="circle"
+            icon={<MdEdit />}
+          />
+        </Tooltip>
+      );
+    },
+  },
+  {
+    title: "",
+    render: () => {
+      return (
+        <Tooltip title="Delete">
+          <Button
+            className="bg-red-400"
+            type="primary"
+            shape="circle"
+            //onClick={() => handleDeleteClick(record)}
+            icon={<MdDelete />}
+          />
+        </Tooltip>
+      );
+    },
   }
 ];
 
 const data: DataType[] = [
   {
     key: '1',
-    subject: 'ADLD/OS/ADLD',
+    Course: 'ADLD/OS/ADLD',
     teachers: ['Raj','Jai','Rahul'],
     rooms:['Lab 1','Lab 2','Lab 3']
   },
   {
     key: '2',
-    subject: 'OS/ADLD/OS',
+    Course: 'OS/ADLD/OS',
     teachers: ['Jack','John','Will'],
     rooms:['Lab 3','Lab 7','Lab 6']
   },

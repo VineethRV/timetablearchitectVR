@@ -7,7 +7,7 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 //import { statusCodes } from "@/app/types/statusCodes";
 //import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import TimeTable from "../../components/timetable"
+import TimeTable from "../../../components/timetable"
 //import { DEPARTMENTS_OPTIONS } from "@/info";
 
 const formItemLayout = {
