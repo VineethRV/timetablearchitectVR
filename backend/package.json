@@ -19,11 +19,13 @@
   "homepage": "https://github.com/VineethRV/timetablearchitectVR#readme",
   "dependencies": {
     "@prisma/client": "^6.0.1",
+    "@types/nodemailer": "^6.4.17",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.16",
     "prisma": "^6.0.1"
   },
   "devDependencies": {
