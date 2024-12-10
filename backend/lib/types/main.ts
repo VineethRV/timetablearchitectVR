@@ -5,6 +5,7 @@ export type User={
   role:string | null,
   department:string| null
 }
+
 export type OrganisationSchema = {
   name: string;
   designation: string;
@@ -13,7 +14,8 @@ export type OrganisationSchema = {
   teachers: number;
   students: number;
   depts_list: string[];
-};
+}
+
 export type Room={
   name: string,
   organisation: string|null,
@@ -62,3 +64,8 @@ export type Elective={
   rooms: string|null;
   timetable: string|null;
 }
+
+export type OTP_TYPE = {
+  otp: number;
+  email: string;
+};
