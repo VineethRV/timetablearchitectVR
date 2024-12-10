@@ -1,9 +1,10 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import  { JwtPayload } from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
+import * as bcrypt from "bcryptjs";
+import * as nodemailer from "nodemailer";
 import PrismaClientManager from "../pgConnect";
-import bcrypt from "bcryptjs";
 import { statusCodes } from "../types/statusCodes";
 import { OTP_TYPE, User } from "../types/main";
-import nodemailer from "nodemailer";
 
 const secretKey = process.env.JWT_SECRET_KEY || "bob";
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
@@ -88,7 +89,7 @@ export const register = async (
   name: string,
   email: string,
   password: string
-): Promise<{ status: number; token: string }> => {
+): Promise<{ status: number; token: any }> => {
   try {
     const hashedPass = await bcrypt.hash(password, 10);
 
@@ -136,7 +137,7 @@ export const register = async (
   } catch (e) {
     return {
       status: statusCodes.INTERNAL_SERVER_ERROR,
-      token: "",
+      token: e,
     };
   }
 };
