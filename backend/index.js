@@ -51,15 +51,18 @@ app.post('/api/login', async (req, res) => {
 
 //register user
 app.post('/api/register', async (req, res) => {
+  console.log("hello sir")
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
     return res.status(200).json({ status: 400, message: 'Name, email and password are required' });
   }
-
+  console.log("2nd phase")
   try {
     const token = await auth.register(name, email, password);
+    console.log("3nd phase")
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
+    console.log(error)
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
