@@ -58,7 +58,7 @@ const TeachersTable = ({
 
   const handleEditClick = (name: string, department: string) => {
     navigate(
-      `/dashboard/teacher/edit/${encodeURIComponent(name)}/${encodeURIComponent(
+      `/dashboard/teachers/edit/${encodeURIComponent(name)}/${encodeURIComponent(
         department
       )}`
     );

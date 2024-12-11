@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Form,
@@ -12,12 +12,18 @@ import {
 import TimeTable from "../../../components/timetable"
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
-import {useNavigate } from "react-router-dom";
+import {useNavigate, useParams } from "react-router-dom";
 import { IoIosInformationCircleOutline } from "react-icons/io";
-//import { DEPARTMENTS_OPTIONS } from "@/info";
-//import { createRoom } from "@/lib/actions/room";
-//import { toast } from "sonner";
-//import { statusCodes } from "@/app/types/statusCodes";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../config";
+import { toast } from "sonner";
+import { statusCodes } from "../../../types/statusCodes";
+import { Room } from "../../../types/main";
+
+
+function convertTableToString(timetable: string[][]): string {
+  return timetable.map(row => row.join(",")).join(";");
+}
 
 const formItemLayout = {
   labelCol: {
@@ -51,6 +57,8 @@ const EditRoomPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
+  const { oldname,olddepartment } = useParams();
+
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
@@ -62,34 +70,112 @@ const EditRoomPage: React.FC = () => {
     setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
   }
 
-//   function addClassRoom() {
-//     const className = form.getFieldValue('className');
-//     const lab = form.getFieldValue('lab')
-//     const dept = form.getFieldValue('department')
-//     // lab -> 1 is Yes 2 is No
 
-   /* const res = createRoom(localStorage.getItem('token') || "", className, lab == 1, buttonStatus, dept).then((res) => {
-      const statusCode = res.status;
+  useEffect(() => {
+    if (oldname && olddepartment) {
+      fetchRoomDetails(oldname,olddepartment);
+    }
+  }, [oldname, olddepartment]);
 
-      switch (statusCode) {
-        case statusCodes.CREATED:
-          toast.success("Added room successfully !!");
-          clearFields();
-          break;
-        case statusCodes.BAD_REQUEST:
-          toast.error("You are not authorized");
-          clearFields();
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Server error");
-          break;
+  const rewriteUrl = (newName:string,newDepartment:string) => {
+    navigate(`/dashboard/rooms/edit/${encodeURIComponent(newName)}/${encodeURIComponent(newDepartment)}`);
+  };
+
+  //fetching the details of the Room
+  const fetchRoomDetails = async (
+    name: string,
+    department: string | null
+  ) => {
+    const promise = axios.post(
+          BACKEND_URL + "/rooms/peek",
+          {
+            name: name,
+            department: department,
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        toast.promise(promise, {
+              loading: "Fetching room details...",
+              success: (res) => {
+                const statusCode = res.status;
+                console.log(res.data.message.timetable);
+                if (res.status === statusCodes.OK && res.data) {
+                  const timetableString = res.data.message.timetable
+                  ? res.data.message.timetable.split(";").map((row: string) => row.split(","))
+                  : Array(6).fill(Array(6).fill("Free"));
+                   setButtonStatus(timetableString);
+            
+                  form.setFieldsValue({
+                    className: res.data.message.name,
+                    lab: res.data.message.lab?1:2,
+                    department: res.data.message.department,
+                  });
+                  
+                switch (statusCode) {
+                  case statusCodes.OK:
+                    return "Room details fetched successfully!";
+                  default:
+                    return "Failed to fetch room details!";
+                }
+              }
+            }
+            });
+  };
+
+
+  const handleSubmit = async () => {
+    const name = form.getFieldValue("className");
+    const lab = form.getFieldValue("lab")===1?true:false;;
+    const department = form.getFieldValue("department");
+    const RoomData: Room = {
+        name,
+        organisation: null,
+        department,
+        lab,
+        timetable: convertTableToString(buttonStatus),
+      };
+
+    const promise = axios.put(
+          BACKEND_URL + "/rooms",
+          {
+            originalName: oldname,
+            originalDepartment : olddepartment,
+            room: RoomData
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        toast.promise(promise, {
+          loading: "Updating room...",
+          success: (res) => {
+            const statusCode = res.status;
+            switch(statusCode){
+            case statusCodes.OK:
+              rewriteUrl(name,department)
+              return "Room Updated successfully!" ;
+            case statusCodes.BAD_REQUEST:
+              return "Room Not Found!" ;
+              case statusCodes.FORBIDDEN:
+                return "Cannot Update Room!";
+            case statusCodes.INTERNAL_SERVER_ERROR:
+              return "Internal server error!";
+          }
+          }
+          ,
+          error: (error) => {
+            console.error("Error:", error.response?.data || error.message);
+            return "Failed to update Room. Please try again!";
+          },
+        });
       }
-    })
 
-    toast.promise(res, {
-      loading: "Adding room ...."
-    })
-  }*/
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
@@ -138,7 +224,7 @@ const EditRoomPage: React.FC = () => {
           </Form.Item>
           <label className="flex items-center">
             <span>Schedule</span>
-            <Tooltip title="Click on the timeslots where to the teacher is busy to set them to busy">
+            <Tooltip title="Click on the timeslots where to the Room is busy to set them to busy">
               <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
             </Tooltip>
           </label>
@@ -156,7 +242,7 @@ const EditRoomPage: React.FC = () => {
             </Form.Item>
             <Form.Item>
               <Button
-                //onClick={addClassRoom}
+                onClick={handleSubmit}
                 className="bg-[#636AE8FF] text-[#FFFFFF] w-[75px] h-[32px]"
               >
                 Submit

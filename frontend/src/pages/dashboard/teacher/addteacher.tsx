@@ -55,65 +55,56 @@ const AddTeacherpage = () => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
 
-  async function teacherAdd() {
+  function teacherAdd() {
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
     const department = form.getFieldValue("department");
-  
-    try {
-      // Display loading toast while the request is being made
-      const promise = axios.post(
-        BACKEND_URL + "/teachers",
-        {
-          name: name,
-          initials: initials,
-          email: email,
-          department: department,
-          alternateDepartments: "",
-          timetable: buttonStatus,
-          labtable: null,
+
+    const promise = axios.post(
+      BACKEND_URL + "/teachers",
+      {
+        name: name,
+        initials: initials,
+        email: email,
+        department: department,
+        alternateDepartments: "",
+        timetable: buttonStatus,
+        labtable: null,
+      },
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
         },
-        {
-          headers: {
-            authorization: localStorage.getItem("token"),
-          },
+      }
+    );
+
+    // Use toast.promise to show the loading, success, and error states
+    toast.promise(promise, {
+      loading: "Creating teacher...",
+      success: (res) => {
+        const statusCode = res.status;
+        console.log(statusCode);
+        switch (statusCode) {
+          case statusCodes.OK:
+            clearFields();
+            return "Teacher added successfully!";
+          case statusCodes.BAD_REQUEST:
+            return "Teacher already exists!";
+          case statusCodes.UNAUTHORIZED:
+            return "You are not authorized!";
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            return "Internal server error";
+          default:
+            return "Unexpected status code";
         }
-      );
-  
-      // Use toast.promise to show the loading, success, and error states
-      toast.promise(promise, {
-        loading: "Creating teacher...",
-        success: (res) => {
-          const statusCode = res.status;
-          console.log(statusCode)
-          switch (statusCode) {
-            case statusCodes.OK:
-              clearFields();
-              return "Teacher added successfully!";
-            case statusCodes.BAD_REQUEST:
-              return "Teacher already exists!";
-            case statusCodes.UNAUTHORIZED:
-              return "You are not authorized!";
-            case statusCodes.INTERNAL_SERVER_ERROR:
-              return "Internal server error";
-            default:
-              return "Unexpected status code";
-          }
-        },
-        error: (error) => {
-          console.error("Error:", error.response?.data || error.message);
-          return "Failed to create teacher. Please try again!";
-        },
-      });
-  
-    } catch (error) {
-      // Handle any unexpected errors that might happen outside the API call
-      console.error("Error:", error.response?.data || error.message);
-      toast.error("An unexpected error occurred. Please try again.");
-    }
+      },
+      error: (error) => {
+        console.error("Error:", error.response?.data || error.message);
+        return "Failed to create teacher. Please try again!";
+      },
+    });
   }
-  
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 w-full h-screen overflow-y-scroll">

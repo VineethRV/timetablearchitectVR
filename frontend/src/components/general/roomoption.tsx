@@ -1,7 +1,10 @@
 import React from 'react';
 import { Cascader } from 'antd';
 
-const RoomOptions: React.FC<{multiple: boolean}> = ({multiple=true}) => {
+const RoomOptions: React.FC<{multiple: boolean
+  value: string[] | undefined; 
+  onChange: (value: string[] | undefined) => void; 
+}> = ({multiple=true,value,onChange}) => {
   const options = [
     {
       label: 'CSE',
@@ -49,6 +52,8 @@ const RoomOptions: React.FC<{multiple: boolean}> = ({multiple=true}) => {
       <Cascader
         options={options}
         multiple={multiple}
+        onChange={onChange}
+        value={value}
         maxTagCount={multiple ? 'responsive' : undefined} // Enable responsive tag count only for multiple
         tagRender={multiple ? tagRender : undefined}
         showCheckedStrategy={Cascader.SHOW_CHILD}
