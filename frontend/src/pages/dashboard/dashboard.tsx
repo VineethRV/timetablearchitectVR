@@ -1,10 +1,10 @@
 import { Outlet, useNavigate } from "react-router-dom"; // For rendering nested routes
-import DashboardSidebar from "../components/Navbar/SideNavbars/DashboardSidebar"; // Sidebar component
+import DashboardSidebar from "../../components/Navbar/SideNavbars/DashboardSidebar.tsx"; // Sidebar component
 import axios from "axios";
-import { BACKEND_URL } from "../../config";
+import { BACKEND_URL } from "../../../config.ts";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import Loading from '../components/Loading/Loading.tsx'
+import Loading from '../../components/Loading/Loading.tsx'
 
 const DashboardWithSidebar = () => {
   const navigate = useNavigate();

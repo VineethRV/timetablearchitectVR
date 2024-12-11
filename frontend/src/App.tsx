@@ -1,25 +1,26 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Homepage";
-import Signin from "./pages/Signin";
+import Signin from "./pages/SignIn";
 import Signup from "./pages/Signup";
-import Dashboard from "./dashboard/dashboard";
-import Teacher from "./dashboard/teacher/teacher";
-import Room from "./dashboard/room/room";
-import AdminPanel from "./dashboard/adminpanel";
-import AddTeacherpage from "./dashboard/teacher/addteacher";
-import Course from "./dashboard/courses/course";
-import AddRoomPage from "./dashboard/room/addroom";
-import Corecourse from "./dashboard/courses/corecoursedisplay";
-import AddCoursepage from "./dashboard/courses/corecourseadd";
-import Section from "./dashboard/section/section";
-import TeacherPage from "./dashboard/teacher/teacherdisplay";
-import EditTeacherpage from "./dashboard/teacher/editteacher";
-import RoomPage from "./dashboard/room/roomdisplay";
-import EditRoomPage from "./dashboard/room/editroom";
-import Labcourse from "./dashboard/courses/labdisplay";
-import AddLabpage from "./dashboard/courses/labadd";
+import Dashboard from "./pages/dashboard/dashboard";
+import Teacher from "./pages/dashboard/teacher/teacher";
+import Room from "./pages/dashboard/room/room";
+import AdminPanel from "./pages/dashboard/adminpanel";
+import AddTeacherpage from "./pages/dashboard/teacher/addteacher";
+import Course from "./pages/dashboard/courses/course";
+import AddRoomPage from "./pages/dashboard/room/addroom";
+import Corecourse from "./pages/dashboard/courses/corecourse/corecoursedisplay";
+import AddCoursepage from "./pages/dashboard/courses/corecourse/corecourseadd";
+import Section from "./pages/dashboard/section/section";
+import TeacherPage from "./pages/dashboard/teacher/teacherdisplay";
+import EditTeacherpage from "./pages/dashboard/teacher/editteacher";
+import RoomPage from "./pages/dashboard/room/roomdisplay";
+import EditRoomPage from "./pages/dashboard/room/editroom";
+import Labcourse from "./pages/dashboard/courses/lab/labdisplay";
+import AddLabpage from "./pages/dashboard/courses/lab/labadd";
 import { Toaster } from "sonner";
+import AddSectionPage from "./pages/dashboard/section/addsection";
 function App() {
   return (
     <BrowserRouter>
@@ -46,7 +47,7 @@ function App() {
             <Route path="/dashboard/courses/labs/add" element={<AddLabpage />} />
           </Route>
           <Route path="/dashboard/section" element={<Section />} >
-            <Route path="/dashboard/section" element={<AddRoomPage />} />
+            <Route path="/dashboard/section/add" element={<AddSectionPage />} />
           </Route>
         </Route>
       </Routes>

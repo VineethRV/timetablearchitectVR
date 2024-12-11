@@ -14,7 +14,7 @@ const formatter: NonNullable<SliderSingleProps["tooltip"]>["formatter"] = (
 const ClassSidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const handleClick = (label: string, url: string) => {
+  const handleClick = (url: string) => {
     navigate(`/dashboard/section${url}`);
   };
 
@@ -35,7 +35,7 @@ const ClassSidebar = () => {
         style={{ fontFamily: "Inter" }}
       >
         <div
-          onClick={() => handleClick("Add a Section", "/add")}
+          onClick={() => handleClick( "/add")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
             pathname == "/dashboard/section/add"
               ? "text-[#636AE8FF] font-bold"
@@ -50,7 +50,7 @@ const ClassSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick("Modify Section", "/")}
+          onClick={() => handleClick("")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
             pathname == "/dashboard/section"
               ? "text-[#636AE8FF] font-bold"
@@ -65,7 +65,7 @@ const ClassSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick("Deallocate Section", "/deallocate")}
+          onClick={() => handleClick( "/deallocate")}
           className={`flex cursor-pointer relative space-x-2 p-2 ${
             pathname == "/dashboard/section/deallocate"
               ? "text-[#636AE8FF] font-bold"

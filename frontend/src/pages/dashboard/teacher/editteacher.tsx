@@ -7,7 +7,7 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 //import { statusCodes } from "@/app/types/statusCodes";
 //import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import TimeTable from "../../components/timetable"
+import TimeTable from "../../../components/timetable"
 //import { DEPARTMENTS_OPTIONS } from "@/info";
 
 const formItemLayout = {
@@ -38,7 +38,7 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const AddTeacherpage=() => {
+const EditTeacherpage=() => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -179,4 +179,4 @@ const AddTeacherpage=() => {
   );
 };
 
-export default AddTeacherpage;
+export default EditTeacherpage;
