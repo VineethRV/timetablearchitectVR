@@ -40,7 +40,7 @@ function TeacherPage() {
         },
         error: (error) => {
           console.error("Error:", error.response?.data || error.message);
-          return "Failed to create teacher. Please try again!";
+          return "Failed to fetch teachers. Please try again!";
         },
       });
   

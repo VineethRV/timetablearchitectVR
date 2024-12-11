@@ -18,10 +18,6 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
-//import { DEPARTMENTS_OPTIONS } from "@/info";
-//import { createRoom } from "@/lib/actions/room";
-//import { toast } from "sonner";
-//import { statusCodes } from "@/app/types/statusCodes";
 
 const formItemLayout = {
   labelCol: {
@@ -106,7 +102,7 @@ const AddRoomPage: React.FC = () => {
       },
       error: (error) => {
         console.error("Error:", error.response?.data || error.message);
-        return "Failed to create teacher. Please try again!";
+        return "Failed to create room. Please try again!";
       },
     });
   }

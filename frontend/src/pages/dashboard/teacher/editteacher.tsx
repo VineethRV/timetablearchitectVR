@@ -48,7 +48,6 @@ const EditTeacherpage=() => {
   const navigate = useNavigate();
   
   const { oldname,olddepartment } = useParams();
-  console.log(oldname,olddepartment)
   const clearFields = () => {
     form.setFieldValue("name", "");
     form.setFieldValue("initials", "");
@@ -172,58 +171,7 @@ const EditTeacherpage=() => {
         });
       }
 
-  // function teacherEdit(){
-  //   const name = form.getFieldValue("name");
-  //   const initials = form.getFieldValue("initials");
-  //   const email = form.getFieldValue("email");
-  //   const department = form.getFieldValue("department");
-
-  //   const promise = axios.post(
-  //     BACKEND_URL + "/teachers",
-  //     {
-  //       name: name,
-  //       initials: initials,
-  //       email: email,
-  //       department: department,
-  //       alternateDepartments: "",
-  //       timetable: buttonStatus,
-  //       labtable: null,
-  //     },
-  //     {
-  //       headers: {
-  //         authorization: localStorage.getItem("token"),
-  //       },
-  //     }
-  //   );
-
-  //   // Use toast.promise to show the loading, success, and error states
-  //   toast.promise(promise, {
-  //     loading: "Creating teacher...",
-  //     success: (res) => {
-  //       const statusCode = res.status;
-  //       console.log(statusCode);
-  //       switch (statusCode) {
-  //         case statusCodes.OK:
-  //           clearFields();
-  //           return "Teacher added successfully!";
-  //         case statusCodes.BAD_REQUEST:
-  //           return "Teacher already exists!";
-  //         case statusCodes.UNAUTHORIZED:
-  //           return "You are not authorized!";
-  //         case statusCodes.INTERNAL_SERVER_ERROR:
-  //           return "Internal server error";
-  //         default:
-  //           return "Unexpected status code";
-  //       }
-  //     },
-  //     error: (error) => {
-  //       console.error("Error:", error.response?.data || error.message);
-  //       return "Failed to create teacher. Please try again!";
-  //     },
-  //   });
-  // }
-
-  return (
+      return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 w-full h-screen overflow-y-scroll">
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] font-inter text-xl text-bold">
         <div

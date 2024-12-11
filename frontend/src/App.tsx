@@ -40,7 +40,7 @@ function App() {
           <Route path="/dashboard/rooms" element={<Room />} >
             <  Route index element={<RoomPage />} />
             <Route path="/dashboard/rooms/add" element={<AddRoomPage />} />
-            <Route path="/dashboard/rooms/edit" element={<EditRoomPage />} />
+            <Route path="/dashboard/rooms/edit/:oldname/:olddepartment" element={<EditRoomPage />} />
           </Route>
           <Route path="/dashboard/courses" element={<Course />} >
             <Route path="/dashboard/courses/core-courses" element={<Corecourse />} />
