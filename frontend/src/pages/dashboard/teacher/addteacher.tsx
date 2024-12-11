@@ -3,12 +3,13 @@ import { Button, Form, Input, Select, Tooltip, Upload } from "antd";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
-//import { createTeachers } from "@/lib/actions/teacher";
-//import { statusCodes } from "@/app/types/statusCodes";
-//import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import TimeTable from "../../../components/timetable"
-//import { DEPARTMENTS_OPTIONS } from "@/info";
+import TimeTable from "../../../components/timetable";
+import { DEPARTMENTS_OPTIONS } from "../../../../info";
+import axios from "axios";
+import { statusCodes } from "../../../types/statusCodes";
+import { toast } from "sonner";
+import { BACKEND_URL } from "../../../../config";
 
 const formItemLayout = {
   labelCol: {
@@ -17,7 +18,7 @@ const formItemLayout = {
   },
   wrapperCol: {
     xs: { span: 24 },
-    sm: { span: 24},
+    sm: { span: 24 },
   },
 };
 
@@ -38,7 +39,7 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const AddTeacherpage=() => {
+const AddTeacherpage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
 
@@ -54,45 +55,65 @@ const AddTeacherpage=() => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
 
- /* function teacherAdd() {
+  async function teacherAdd() {
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
     const department = form.getFieldValue("department");
-    const res = createTeachers(
-      localStorage.getItem("token") || "",
-      name,
-      initials,
-      email,
-      department,
-      "",
-      buttonStatus,
-      null
-    ).then((res) => {
-      const statusCode = res.status;
-
-      switch (statusCode) {
-        case statusCodes.CREATED:
-          clearFields();
-          toast.success("Teacher added successfully !!");
-          break;
-        case statusCodes.BAD_REQUEST:
-          clearFields();
-          toast.error("Teacher already exists !!");
-          break;
-        case statusCodes.UNAUTHORIZED:
-          clearFields();
-          toast.error("You are not authorized !!");
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Internal server error");
-      }
-    });
-
-    toast.promise(res, {
-      loading: "Creating teacher !!",
-    });
-  }*/
+  
+    try {
+      // Display loading toast while the request is being made
+      const promise = axios.post(
+        BACKEND_URL + "/teachers",
+        {
+          name: name,
+          initials: initials,
+          email: email,
+          department: department,
+          alternateDepartments: "",
+          timetable: buttonStatus,
+          labtable: null,
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+  
+      // Use toast.promise to show the loading, success, and error states
+      toast.promise(promise, {
+        loading: "Creating teacher...",
+        success: (res) => {
+          const statusCode = res.status;
+          console.log(statusCode)
+          switch (statusCode) {
+            case statusCodes.OK:
+              clearFields();
+              return "Teacher added successfully!";
+            case statusCodes.BAD_REQUEST:
+              return "Teacher already exists!";
+            case statusCodes.UNAUTHORIZED:
+              return "You are not authorized!";
+            case statusCodes.INTERNAL_SERVER_ERROR:
+              return "Internal server error";
+            default:
+              return "Unexpected status code";
+          }
+        },
+        error: (error) => {
+          console.error("Error:", error.response?.data || error.message);
+          return "Failed to create teacher. Please try again!";
+        },
+      });
+  
+    } catch (error) {
+      // Handle any unexpected errors that might happen outside the API call
+      console.error("Error:", error.response?.data || error.message);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  }
+  
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 w-full h-screen overflow-y-scroll">
@@ -122,9 +143,15 @@ const AddTeacherpage=() => {
           duration: 0.5,
           ease: "easeInOut",
         }}
-       className="flex mt-12 items-center pl-4 w-full "
+        className="flex mt-12 items-center pl-4 w-full "
       >
-        <Form {...formItemLayout} form={form} layout="vertical" requiredMark className="w-96">
+        <Form
+          {...formItemLayout}
+          form={form}
+          layout="vertical"
+          requiredMark
+          className="w-96"
+        >
           <Form.Item name="name" label="Teacher Name" required>
             <Input placeholder="Name" className="font-inter font-normal " />
           </Form.Item>
@@ -139,7 +166,7 @@ const AddTeacherpage=() => {
               showSearch
               placeholder="Select a department"
               optionFilterProp="label"
-             // options={DEPARTMENTS_OPTIONS}
+              options={DEPARTMENTS_OPTIONS}
               className="font-normal w-96"
             />
           </Form.Item>
@@ -152,7 +179,10 @@ const AddTeacherpage=() => {
               </Tooltip>
             </div>
           </label>
-         <TimeTable buttonStatus={buttonStatus} setButtonStatus={setButtonStatus}/>
+          <TimeTable
+            buttonStatus={buttonStatus}
+            setButtonStatus={setButtonStatus}
+          />
           <div className="flex justify-end">
             <div className="flex space-x-4">
               <Form.Item>
@@ -165,7 +195,7 @@ const AddTeacherpage=() => {
               </Form.Item>
               <Form.Item>
                 <Button
-                  //onClick={teacherAdd}
+                  onClick={teacherAdd}
                   className="bg-primary text-[#FFFFFF]"
                 >
                   Submit
