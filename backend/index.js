@@ -138,8 +138,6 @@ app.get('/api/teachers', async (req, res) => {
   }
   try {
     const result = await teacher.getTeachers(token);
-    
-  console.log(result)
     res.status(200).json({ status: result.status, message: result.teachers });
   } catch (error) {
     res.status(200).json({ status: 500, message: 'Server error' });

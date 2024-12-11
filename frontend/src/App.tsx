@@ -11,17 +11,17 @@ import AddTeacherpage from "./pages/dashboard/teacher/addteacher";
 import Course from "./pages/dashboard/courses/course";
 import AddRoomPage from "./pages/dashboard/room/addroom";
 import Corecourse from "./pages/dashboard/courses/corecourse/corecoursedisplay";
-import AddCoursepage from "./pages/dashboard/courses/corecourse/corecourseadd";
+import AddCoursepage from "./pages/dashboard/courses/corecourse/addcorecourse";
 import Section from "./pages/dashboard/section/section";
 import TeacherPage from "./pages/dashboard/teacher/teacherdisplay";
 import EditTeacherpage from "./pages/dashboard/teacher/editteacher";
 import RoomPage from "./pages/dashboard/room/roomdisplay";
 import EditRoomPage from "./pages/dashboard/room/editroom";
 import Labcourse from "./pages/dashboard/courses/lab/labdisplay";
-import AddLabpage from "./pages/dashboard/courses/lab/labadd";
+import AddLabpage from "./pages/dashboard/courses/lab/addlab";
 import { Toaster } from "sonner";
 import AddSectionPage from "./pages/dashboard/section/addsection";
-import AddElectivepage from "./pages/dashboard/courses/electives/electivesadd";
+import AddElectivepage from "./pages/dashboard/courses/electives/addelective";
 import Electivecourse from "./pages/dashboard/courses/electives/electivesdisplay";
 function App() {
   return (
