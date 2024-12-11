@@ -1,27 +1,50 @@
 "use client";
 import { Button } from "antd";
-//import RoomsTable from "../../components/RoomsPage/RoomsTable";
 import { CiExport, CiImport } from "react-icons/ci";
-//import { useEffect, useState } from "react";
-//import { Room } from "@/app/types/main";
-//import Loading from "./loading";
-//import { getRooms } from "@/lib/actions/room";
-//import { statusCodes } from "@/app/types/statusCodes";
+import { useEffect, useState } from "react";
+import { Room } from "../../../types/main";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../config";
+import { toast } from "sonner";
+import { statusCodes } from "../../../types/statusCodes";
+import RoomsTable from "../../../components/RoomsPage/RoomsTable";
 
 function RoomPage() {
-  //const [roomsData, setRoomsData] = useState<Room[]>([]);
-  //const [loading, setLoading] = useState(true);
+  const [roomsData, setRoomsData] = useState<Room[]>([]);
 
-  //   useEffect(() => {
-  //     getRooms(localStorage.getItem("token") || "").then((res) => {
-  //       const statusCode = res.status;
-  //       if (statusCode == statusCodes.OK) setRoomsData(res.rooms as Room[]);
-  //       console.log(statusCode);
-  //       setLoading(false);
-  //     });
-  //   }, []);
+  useEffect(() => {
 
-  //   if (loading) return <Loading />;
+
+    const promise = axios.get(
+      BACKEND_URL + "/rooms",
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        }
+      }
+    );
+
+    toast.promise(promise, {
+      loading: "Fetching rooms...",
+      success: (res) => {
+        const statusCode = res.status;
+        if (statusCode==statusCodes.OK)
+        {
+          console.log(res.data.message)
+          setRoomsData(res.data.message as Room[]);
+          return "Fetched successfully!" ;
+        }
+        else
+          return "Unexpected status code";
+      },
+      error: (error) => {
+        console.error("Error:", error.response?.data || error.message);
+        return "Failed to fetch rooms. Please try again!";
+      },
+    });
+
+
+ }, []);
 
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
@@ -36,10 +59,9 @@ function RoomPage() {
           Export
         </Button>
       </div>
-
-      {/* <RoomsTable 
+       <RoomsTable 
       setRoomsData={setRoomsData} roomsData={roomsData} 
-      /> */}
+      /> 
     </div>
   );
 }
