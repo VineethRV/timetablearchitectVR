@@ -18,6 +18,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
+import { DEPARTMENTS_OPTIONS } from "../../../../info";
 
 const formItemLayout = {
   labelCol: {
@@ -150,7 +151,7 @@ const AddRoomPage: React.FC = () => {
             </Radio.Group>
           </Form.Item>
           <Form.Item label="Department" name="department">
-            <Select  className="font-inter font-normal" />
+            <Select options={DEPARTMENTS_OPTIONS}  className="font-inter font-normal" />
           </Form.Item>
           <label className="flex items-center">
             <span>Schedule</span>

@@ -8,43 +8,33 @@ import { BACKEND_URL } from "../../../../config";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import RoomsTable from "../../../components/RoomsPage/RoomsTable";
+import Loading from "../../../components/Loading/Loading";
 
 function RoomPage() {
   const [roomsData, setRoomsData] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
-
-    const promise = axios.get(
-      BACKEND_URL + "/rooms",
-      {
+    axios
+      .get(BACKEND_URL + "/rooms", {
         headers: {
           authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+
+        if (status == statusCodes.OK) {
+          setRoomsData(res.data.message);
+        } else {
+          toast.error("Server error !!");
         }
-      }
-    );
 
-    toast.promise(promise, {
-      loading: "Fetching rooms...",
-      success: (res) => {
-        const statusCode = res.status;
-        if (statusCode==statusCodes.OK)
-        {
-          console.log(res.data.message)
-          setRoomsData(res.data.message as Room[]);
-          return "Fetched successfully!" ;
-        }
-        else
-          return "Unexpected status code";
-      },
-      error: (error) => {
-        console.error("Error:", error.response?.data || error.message);
-        return "Failed to fetch rooms. Please try again!";
-      },
-    });
+        setLoading(false);
+      });
+  }, []);
 
-
- }, []);
+  if (loading) return <Loading />;
 
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
@@ -59,9 +49,7 @@ function RoomPage() {
           Export
         </Button>
       </div>
-       <RoomsTable 
-      setRoomsData={setRoomsData} roomsData={roomsData} 
-      /> 
+      <RoomsTable setRoomsData={setRoomsData} roomsData={roomsData} />
     </div>
   );
 }
