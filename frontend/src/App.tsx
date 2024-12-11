@@ -21,6 +21,8 @@ import Labcourse from "./pages/dashboard/courses/lab/labdisplay";
 import AddLabpage from "./pages/dashboard/courses/lab/labadd";
 import { Toaster } from "sonner";
 import AddSectionPage from "./pages/dashboard/section/addsection";
+import AddElectivepage from "./pages/dashboard/courses/electives/electivesadd";
+import Electivecourse from "./pages/dashboard/courses/electives/electivesdisplay";
 function App() {
   return (
     <BrowserRouter>
@@ -33,7 +35,7 @@ function App() {
           <Route path="/dashboard/teachers" element={<Teacher />} >
             <Route index element={<TeacherPage />} />
             <Route path="/dashboard/teachers/add" element={<AddTeacherpage />} />
-            <Route path="/dashboard/teachers/edit" element={<EditTeacherpage />} />
+            <Route path="/dashboard/teachers/edit/:oldname/:olddepartment" element={<EditTeacherpage />} />
           </Route>
           <Route path="/dashboard/rooms" element={<Room />} >
             <  Route index element={<RoomPage />} />
@@ -45,6 +47,8 @@ function App() {
             <Route path="/dashboard/courses/core-courses/add" element={<AddCoursepage />} />
             <Route path="/dashboard/courses/labs" element={<Labcourse />} />
             <Route path="/dashboard/courses/labs/add" element={<AddLabpage />} />
+            <Route path="/dashboard/courses/electives" element={<Electivecourse />} />
+            <Route path="/dashboard/courses/electives/add" element={<AddElectivepage />} />
           </Route>
           <Route path="/dashboard/section" element={<Section />} >
             <Route path="/dashboard/section/add" element={<AddSectionPage />} />

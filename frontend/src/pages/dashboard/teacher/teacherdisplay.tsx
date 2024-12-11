@@ -1,47 +1,51 @@
 "use client";
 import { Button } from "antd";
-//import TeachersTable from "../../components/TeachersPage/TeachersTable";
 import { CiExport, CiImport } from "react-icons/ci";
-import Loading from "../../../components/Loading/Loading";
 import { useEffect, useState } from "react";
 import { Teacher } from "../../../types/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { statusCodes } from "../../../types/statusCodes";
-//import { getTeachers } from "@/lib/actions/teacher";
-
-//import Loading from "./loading";
-//import { Teacher } from "@/app/types/main";
-//import { statusCodes } from "@/app/types/statusCodes";
+import TeachersTable from "../../../components/TeachersPage/TeachersTable";
+import { toast } from "sonner";
 
 function TeacherPage() {
-  const [loading, setLoading] = useState(true);
   const [teachersData, setTeachersData] = useState<Teacher[]>([]);
 
     useEffect(() => {
-      axios
-      .post(
-              BACKEND_URL + "/getTeachers",
-              {},
-              {
-                headers: {
-                  authorization: localStorage.getItem("token"),
-                },
-              }
-            )
-        .then((res) => {
-        const status = res.data.status;
-        console.log(status)
 
 
-         setTeachersData(res.data.teachers as Teacher[]);
-         if (res.status == statusCodes.OK) setLoading(false);
-      })
+      const promise = axios.get(
+        BACKEND_URL + "/teachers",
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          }
+        }
+      );
+  
+      // Use toast.promise to show the loading, success, and error states
+      toast.promise(promise, {
+        loading: "Fetching teachers...",
+        success: (res) => {
+          const statusCode = res.status;
+          if (statusCode==statusCodes.OK)
+          {
+            console.log(res.data.message)
+            setTeachersData(res.data.message as Teacher[]);
+            return "Fetched successfully!" ;
+          }
+          else
+            return "Unexpected status code";
+        },
+        error: (error) => {
+          console.error("Error:", error.response?.data || error.message);
+          return "Failed to create teacher. Please try again!";
+        },
+      });
+  
+
    }, []);
-
-     if (loading) {
-       return <Loading />;
-     }
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">Teachers</h1>
@@ -55,10 +59,10 @@ function TeacherPage() {
           Export
         </Button>
       </div>
-      {/* <TeachersTable
-      //  setTeachersData={setTeachersData}
-        //teachersData={teachersData}
-      /> */}
+       <TeachersTable
+        setTeachersData={setTeachersData}
+        teachersData={teachersData}
+      /> 
     </div>
   );
 }

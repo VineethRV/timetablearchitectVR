@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, Form, Input, Select, Tooltip, Upload } from "antd";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
-//import { createTeachers } from "@/lib/actions/teacher";
-//import { statusCodes } from "@/app/types/statusCodes";
-//import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import TimeTable from "../../../components/timetable"
-//import { DEPARTMENTS_OPTIONS } from "@/info";
+import { BACKEND_URL } from "../../../../config";
+import axios from "axios";
+import { toast } from "sonner";
+import { statusCodes } from "../../../types/statusCodes";
+import { DEPARTMENTS_OPTIONS } from "../../../../info";
+import { Teacher } from "../../../types/main";
+function convertTableToString(timetable: string[][]): string {
+  return timetable.map(row => row.join(",")).join(";");
+}
 
 const formItemLayout = {
   labelCol: {
@@ -41,7 +46,9 @@ const timeslots = [
 const EditTeacherpage=() => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+  
+  const { oldname,olddepartment } = useParams();
+  console.log(oldname,olddepartment)
   const clearFields = () => {
     form.setFieldValue("name", "");
     form.setFieldValue("initials", "");
@@ -54,45 +61,167 @@ const EditTeacherpage=() => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
 
- /* function teacherAdd() {
+  useEffect(() => {
+    if (oldname && olddepartment) {
+      fetchTeacherDetails(oldname,olddepartment);
+    }
+  }, [oldname, olddepartment]);
+
+  const rewriteUrl = (newName:string,newDepartment:string) => {
+    navigate(`/dashboard/teachers/edit/${encodeURIComponent(newName)}/${encodeURIComponent(newDepartment)}`);
+  };
+
+  //fetching the details of the teacher
+  const fetchTeacherDetails = async (
+    name: string,
+    department: string | null
+  ) => {
+    const promise = axios.post(
+          BACKEND_URL + "/teachers/peek",
+          {
+            name: name,
+            department: department,
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        toast.promise(promise, {
+              loading: "Fetching teacher details...",
+              success: (res) => {
+                const statusCode = res.status;
+                console.log(res.data.message.timetable);
+                if (res.status === statusCodes.OK && res.data) {
+                  const timetableString = res.data.message.timetable
+                  ? res.data.message.timetable.split(";").map((row: string) => row.split(","))
+                  : Array(6).fill(Array(6).fill("Free"));
+                   setButtonStatus(timetableString);
+            
+                  form.setFieldsValue({
+                    name: res.data.message.name,
+                    initials: res.data.message.initials,
+                    email: res.data.message.email,
+                    department: res.data.message.department,
+                  });
+                  
+                switch (statusCode) {
+                  case statusCodes.OK:
+                    return "Teacher details fetched successfully!";
+                  default:
+                    return "Failed to fetch teacher details!";
+                }
+              }
+            }
+            });
+  };
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token") || "";
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
     const department = form.getFieldValue("department");
-    const res = createTeachers(
-      localStorage.getItem("token") || "",
+    const teacherData: Teacher = {
       name,
       initials,
       email,
       department,
-      "",
-      buttonStatus,
-      null
-    ).then((res) => {
-      const statusCode = res.status;
+      alternateDepartments: null,
+      timetable: convertTableToString(buttonStatus),
+      labtable: null,
+      organisation: null,
+    };
 
-      switch (statusCode) {
-        case statusCodes.CREATED:
-          clearFields();
-          toast.success("Teacher added successfully !!");
-          break;
-        case statusCodes.BAD_REQUEST:
-          clearFields();
-          toast.error("Teacher already exists !!");
-          break;
-        case statusCodes.UNAUTHORIZED:
-          clearFields();
-          toast.error("You are not authorized !!");
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Internal server error");
+    const promise = axios.put(
+          BACKEND_URL + "/teachers",
+          {
+            originalName: oldname,
+            originalDepartment : olddepartment,
+            teacher: teacherData
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        console.log(oldname,olddepartment,teacherData)
+        toast.promise(promise, {
+          loading: "Updating teacher...",
+          success: (res) => {
+            const statusCode = res.status;
+            switch(statusCode){
+            case statusCodes.OK:
+              rewriteUrl(name,department)
+              return "Teacher Updated successfully!" ;
+            case statusCodes.BAD_REQUEST:
+              return "Teacher Not Found!" ;
+              case statusCodes.FORBIDDEN:
+                return "Cannot update Teacher!";
+            case statusCodes.INTERNAL_SERVER_ERROR:
+              return "Internal server error!";
+          }
+          }
+          ,
+          error: (error) => {
+            console.error("Error:", error.response?.data || error.message);
+            return "Failed to update teacher. Please try again!";
+          },
+        });
       }
-    });
 
-    toast.promise(res, {
-      loading: "Creating teacher !!",
-    });
-  }*/
+  // function teacherEdit(){
+  //   const name = form.getFieldValue("name");
+  //   const initials = form.getFieldValue("initials");
+  //   const email = form.getFieldValue("email");
+  //   const department = form.getFieldValue("department");
+
+  //   const promise = axios.post(
+  //     BACKEND_URL + "/teachers",
+  //     {
+  //       name: name,
+  //       initials: initials,
+  //       email: email,
+  //       department: department,
+  //       alternateDepartments: "",
+  //       timetable: buttonStatus,
+  //       labtable: null,
+  //     },
+  //     {
+  //       headers: {
+  //         authorization: localStorage.getItem("token"),
+  //       },
+  //     }
+  //   );
+
+  //   // Use toast.promise to show the loading, success, and error states
+  //   toast.promise(promise, {
+  //     loading: "Creating teacher...",
+  //     success: (res) => {
+  //       const statusCode = res.status;
+  //       console.log(statusCode);
+  //       switch (statusCode) {
+  //         case statusCodes.OK:
+  //           clearFields();
+  //           return "Teacher added successfully!";
+  //         case statusCodes.BAD_REQUEST:
+  //           return "Teacher already exists!";
+  //         case statusCodes.UNAUTHORIZED:
+  //           return "You are not authorized!";
+  //         case statusCodes.INTERNAL_SERVER_ERROR:
+  //           return "Internal server error";
+  //         default:
+  //           return "Unexpected status code";
+  //       }
+  //     },
+  //     error: (error) => {
+  //       console.error("Error:", error.response?.data || error.message);
+  //       return "Failed to create teacher. Please try again!";
+  //     },
+  //   });
+  // }
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 w-full h-screen overflow-y-scroll">
@@ -139,7 +268,7 @@ const EditTeacherpage=() => {
               showSearch
               placeholder="Select a department"
               optionFilterProp="label"
-             // options={DEPARTMENTS_OPTIONS}
+              options={DEPARTMENTS_OPTIONS}
               className="font-normal w-96"
             />
           </Form.Item>
@@ -165,7 +294,7 @@ const EditTeacherpage=() => {
               </Form.Item>
               <Form.Item>
                 <Button
-                  //onClick={teacherAdd}
+                  onClick={handleSubmit}
                   className="bg-primary text-[#FFFFFF]"
                 >
                   Submit

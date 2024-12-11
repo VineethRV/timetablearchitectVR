@@ -136,9 +136,10 @@ app.get('/api/teachers', async (req, res) => {
   if (!token) {
     return res.status(200).json({ status: 400, message: 'Token is required' });
   }
-
   try {
     const result = await teacher.getTeachers(token);
+    
+  console.log(result)
     res.status(200).json({ status: result.status, message: result.teachers });
   } catch (error) {
     res.status(200).json({ status: 500, message: 'Server error' });

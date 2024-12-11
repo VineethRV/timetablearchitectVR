@@ -14,6 +14,10 @@ import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import {useNavigate } from "react-router-dom";
 import { IoIosInformationCircleOutline } from "react-icons/io";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../config";
+import { toast } from "sonner";
+import { statusCodes } from "../../../types/statusCodes";
 //import { DEPARTMENTS_OPTIONS } from "@/info";
 //import { createRoom } from "@/lib/actions/room";
 //import { toast } from "sonner";
@@ -62,34 +66,50 @@ const AddRoomPage: React.FC = () => {
     setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
   }
 
-//   function addClassRoom() {
-//     const className = form.getFieldValue('className');
-//     const lab = form.getFieldValue('lab')
-//     const dept = form.getFieldValue('department')
-//     // lab -> 1 is Yes 2 is No
-
-   /* const res = createRoom(localStorage.getItem('token') || "", className, lab == 1, buttonStatus, dept).then((res) => {
-      const statusCode = res.status;
-
-      switch (statusCode) {
-        case statusCodes.CREATED:
-          toast.success("Added room successfully !!");
-          clearFields();
-          break;
-        case statusCodes.BAD_REQUEST:
-          toast.error("You are not authorized");
-          clearFields();
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Server error");
-          break;
+  function addClassRoom() {
+    const className = form.getFieldValue('className');
+    const lab = form.getFieldValue('lab')
+    const dept = form.getFieldValue('department')
+    const promise = axios.post(
+      BACKEND_URL + "/rooms",
+      {
+        name: className,
+        lab: lab==1,
+        timetable: buttonStatus,
+        department: dept,
+      },
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
       }
-    })
+    );
 
-    toast.promise(res, {
-      loading: "Adding room ...."
-    })
-  }*/
+    toast.promise(promise, {
+      loading: "Creating Room...",
+      success: (res) => {
+        const statusCode = res.status;
+        console.log(statusCode);
+        switch (statusCode) {
+          case statusCodes.OK:
+            clearFields();
+            return "Room added successfully!";
+          case statusCodes.BAD_REQUEST:
+            return "Room already exists!";
+          case statusCodes.UNAUTHORIZED:
+            return "You are not authorized!";
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            return "Internal server error";
+          default:
+            return "Unexpected status code";
+        }
+      },
+      error: (error) => {
+        console.error("Error:", error.response?.data || error.message);
+        return "Failed to create teacher. Please try again!";
+      },
+    });
+  }
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
@@ -156,7 +176,7 @@ const AddRoomPage: React.FC = () => {
             </Form.Item>
             <Form.Item>
               <Button
-                //onClick={addClassRoom}
+                onClick={addClassRoom}
                 className="bg-[#636AE8FF] text-[#FFFFFF] w-[75px] h-[32px]"
               >
                 Submit

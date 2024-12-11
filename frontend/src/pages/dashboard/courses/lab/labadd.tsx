@@ -13,9 +13,9 @@ import {
   Modal,
 } from "antd";
 import { motion } from "framer-motion";
-import LabAddTable from "../../../../components/CoursePage/Labaddtable";
 import Timetable from "../../../../components/timetable";
 import { useNavigate } from "react-router-dom";
+import LabAddTable from "../../../../components/CoursePage/Labaddtable";
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
