@@ -14,6 +14,7 @@ export type OrganisationSchema = {
   teachers: number;
   students: number;
   depts_list: string[];
+  
 }
 
 export type Room={

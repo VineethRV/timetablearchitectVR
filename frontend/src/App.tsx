@@ -23,6 +23,7 @@ import { Toaster } from "sonner";
 import AddSectionPage from "./pages/dashboard/section/addsection";
 import AddElectivepage from "./pages/dashboard/courses/electives/addelective";
 import Electivecourse from "./pages/dashboard/courses/electives/electivesdisplay";
+import OnboardingPage from "./pages/Onboarding";
 function App() {
   return (
     <BrowserRouter>
@@ -30,6 +31,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/signin" element={<Signin />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<AdminPanel />} />
           <Route path="/dashboard/teachers" element={<Teacher />} >
