@@ -81,6 +81,22 @@ CREATE TABLE "Elective" (
     CONSTRAINT "Elective_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Organisation" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "organisationCode" TEXT,
+    "designation" TEXT NOT NULL,
+    "dept" TEXT NOT NULL,
+    "sections" INTEGER NOT NULL,
+    "teachers" INTEGER NOT NULL,
+    "students" INTEGER NOT NULL,
+    "deptsList" TEXT NOT NULL,
+    "hasAccess" BOOLEAN NOT NULL,
+
+    CONSTRAINT "Organisation_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
