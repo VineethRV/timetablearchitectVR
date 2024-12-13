@@ -19,6 +19,7 @@ import { BACKEND_URL } from "../../../../config";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import { DEPARTMENTS_OPTIONS } from "../../../../info";
+import { timeslots, weekdays } from "../../../utils/main";
 
 const formItemLayout = {
   labelCol: {
@@ -30,23 +31,6 @@ const formItemLayout = {
     sm: { span: 24 },
   },
 };
-
-const weekdays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-const timeslots = [
-  "9:00-10:00",
-  "10:00-11:00",
-  "11:30-12:30",
-  "12:30-1:30",
-  "2:30-3:30",
-  "3:30-4:30",
-];
 
 const AddRoomPage: React.FC = () => {
   const [form] = Form.useForm();

@@ -10,6 +10,7 @@ import axios from "axios";
 import { statusCodes } from "../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../config";
+import { timeslots, weekdays } from "../../../utils/main";
 
 const formItemLayout = {
   labelCol: {
@@ -21,23 +22,6 @@ const formItemLayout = {
     sm: { span: 24 },
   },
 };
-
-const weekdays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-const timeslots = [
-  "9:00-10:00",
-  "10:00-11:00",
-  "11:30-12:30",
-  "12:30-1:30",
-  "2:30-3:30",
-  "3:30-4:30",
-];
 
 const AddTeacherpage = () => {
   const [form] = Form.useForm();
@@ -111,7 +95,7 @@ const AddTeacherpage = () => {
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] font-inter text-xl text-bold">
         <div
           onClick={() => {
-            navigate("dashboard/teacher");
+            navigate("/dashboard/teachers");
           }}
           className="flex text-base w-fit cursor-pointer space-x-2"
         >

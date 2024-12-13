@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  react:
+    image: node:20
+    container_name: react_server
+    working_dir: /frontend
+    volumes:
+      - ./frontend:/frontend
+    ports:
+      - "5173:5173"
+    command: >
+      sh -c "npm install & npm run dev"
+    depends_on:
+      - postgres
+      - express
+
+  express:
+    image: node:20
+    container_name: backend_server
+    working_dir: /backend
+    volumes:
+      - ./backend:/backend
+    command: >
+      sh -c "npm run doc"
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/mydb"
+      JWT_SECRET_KEY: "bob"
+      EMAIL_ACCESS_TOKEN: "iddm htzu mvjz pibb"
+      ARCHITECT_EMAIL: "timetablearchitect@gmail.com"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_server_tta
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

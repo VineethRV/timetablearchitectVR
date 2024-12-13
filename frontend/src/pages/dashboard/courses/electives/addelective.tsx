@@ -8,7 +8,6 @@ import {
   Select,
   Tooltip,
   Upload,
-  InputNumber,
   Modal,
 } from "antd";
 import { motion } from "framer-motion";
@@ -16,8 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import ElectiveAddTable from "../../../../components/CoursePage/electiveAddtable";
 import Timetable from "../../../../components/timetable";
-//import { semesterOptions } from "@/app/components/semester/semester";
-//import RoomOptions from "@/app/components/general/roomoption";
+
+
 const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
