@@ -79,6 +79,7 @@ app.post('/api/getPosition', async (req, res) => {
     res.status(200).json({ status: 500, message: 'Server error' });
   }
 });
+<<<<<<< HEAD
 //onboarding
 app.post('/api/onboard', async (req, res) => {
   const { name, designation, dept,sections,teachers,students,depts_list } = req.body;
@@ -90,6 +91,95 @@ app.post('/api/onboard', async (req, res) => {
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
     console.log(error)
+=======
+
+// Send verification email
+app.post("/api/sendVerificationEmail", async (req, res) => {
+  const { username, email } = req.body;
+  if (!username || !email) {
+    return res.status(200).json({ status: 400, message: "Username and email are required" });
+  }
+
+  try {
+    const result = await auth.sendVerificationEmail(username, email);
+    res.status(200).json({ status: result ? 200 : 500, message: result ? "Email sent" : "Failed to send email" });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Check if user exists
+app.post("/api/checkUserExists", async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(200).json({ status: 400, message: "Email is required" });
+  }
+
+  try {
+    const exists = await auth.checkUserExists(email);
+    res.status(200).json({ status: 200, message: exists ? "User exists" : "User does not exist" });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Change password
+app.post("/api/changePassword", async (req, res) => {
+  const { verificationToken, email, newPassword } = req.body;
+  if (!verificationToken || !email || !newPassword) {
+    return res.status(200).json({ status: 400, message: "Verification token, email, and new password are required" });
+  }
+
+  try {
+    const result = await auth.changePassword(verificationToken, email, newPassword);
+    res.status(200).json({ status: result.status, message: result.status === 200 ? "Password changed" : "Failed to change password" });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Verify OTP
+app.post("/api/verifyOTP", async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return res.status(200).json({ status: 400, message: "Email and OTP are required" });
+  }
+
+  try {
+    const result = await auth.verifyOTP(email, otp);
+    res.status(200).json({ status: result.status, message: result.token });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Forget OTP
+app.post("/api/forgetOTP", async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(200).json({ status: 400, message: "Email is required" });
+  }
+
+  try {
+    const result = await auth.forgetOTP(email);
+    res.status(200).json({ status: result.status, message: result.status === 200 ? "OTP sent" : "Failed to send OTP" });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Verify email
+app.post("/api/verifyEmail", async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await auth.verifyEmail(token);
+    res.status(200).json({ status: result ? 200 : 500, message: result ? "Email verified" : "Failed to verify email" });
+  } catch (error) {
+>>>>>>> 7ccd57930b1b2aa56601024c873f9fe680550201
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
