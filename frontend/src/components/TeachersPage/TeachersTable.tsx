@@ -289,11 +289,6 @@ const TeachersTable = ({
         >
           <div className="flex space-x-3">
             <Select
-              defaultValue="Sort By"
-              style={{ width: 120 }}
-              options={[]}
-            />
-            <Select
               className="w-[300px]"
               defaultValue="All Departments"
               value={departmentFilter}

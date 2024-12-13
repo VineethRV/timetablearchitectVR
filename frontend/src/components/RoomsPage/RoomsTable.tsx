@@ -43,7 +43,7 @@ const RoomsTable = ({
   setRoomsData: React.Dispatch<React.SetStateAction<Room[]>>;
 }) => {
   const navigate = useNavigate();
-
+  const [isLab, setIsLab] = useState("Labs");
   const handleEditClick = (name: string, department: string) => {
     navigate(
       `/dashboard/rooms/edit/${encodeURIComponent(name)}/${encodeURIComponent(
@@ -96,6 +96,7 @@ const RoomsTable = ({
   // Function to clear all fliters
   function clearFilters() {
     setDepartmentFilter("Select a department");
+    setIsLab("Labs");
   }
 
   const rowSelection: TableProps<Room>["rowSelection"] = {
@@ -224,13 +225,19 @@ const RoomsTable = ({
   });
 
   const filteredRoomsData = useMemo(() => {
-    if (departmentFilter == "Select a department") {
+    if (departmentFilter == "Select a department" && isLab == "Labs") {
       return roomsData;
     }
 
-    const new_Rooms = roomsData.filter((t) => t.department == departmentFilter);
+    const new_Rooms = roomsData.filter((t) =>
+      departmentFilter != "Select a department"
+        ? t.department == departmentFilter
+        : 1 && isLab != "Labs"
+        ? isLab == "Yes"
+        : 1
+    );
     return new_Rooms;
-  }, [departmentFilter, roomsData]);
+  }, [departmentFilter, roomsData, isLab]);
 
   const dataWithKeys = filteredRoomsData.map((room) => ({
     ...room,
@@ -258,11 +265,6 @@ const RoomsTable = ({
         >
           <div className="flex space-x-3">
             <Select
-              defaultValue="Sort By"
-              style={{ width: 120 }}
-              options={[]}
-            />
-            <Select
               className="w-[250px]"
               defaultValue="All Departments"
               value={departmentFilter}
@@ -270,11 +272,12 @@ const RoomsTable = ({
               onChange={(e) => setDepartmentFilter(e)}
             />
             <Select
-              className="w-[70px]"
-              defaultValue="Labs"
+              className="w-[100px]"
+              value={isLab}
+              onChange={(e) => setIsLab(e)}
               options={[
-                { label: "Yes", value: 1 },
-                { label: "No", value: 2 },
+                { label: "Yes", value: "Yes" },
+                { label: "No", value: "No" },
               ]}
             />
           </div>
