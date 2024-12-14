@@ -19,25 +19,26 @@ model User {
   email String  @unique
   name  String?
   hashedPass String
-  organisation String? 
+  organisation Organisation? @relation(fields: [orgId], references: [id])
+  orgId Int?
   role String?
   hasAccess Boolean
   department String?
+  access_list AccessRequest[]
 }
 
-model Room{
+model Room {
   id Int @id @default(autoincrement())
   name String
-  organisation String?
   department String?
   lab Boolean?
   timetable String?
-  
-  @@unique([name, department, organisation])
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId Int
 }
 
 
-model Teacher{
+model Teacher {
   id Int @id @default(autoincrement())
   name String
   initials String?
@@ -46,34 +47,34 @@ model Teacher{
   alternateDepartments String?
   timetable String?
   labtable String?
-  organisation String?
-
-  @@unique([name, department, organisation])
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId Int
 }
 
-model Course{
+model Course {
   id Int @id @default(autoincrement())
   name String
   code String
   department String?
-  organisation String?
   semester Int?
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId Int
 }
 
-model Lab{
+model Lab {
   id Int @id @default(autoincrement())
   name String
   department String?
-  organisation String?
   semester Int?
   batches String?
   teachers String?
   rooms String?
   timetable String?
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId Int
 }
 
-
-model Elective{
+model Elective {
   id Int @id @default(autoincrement())
   name String
   department String?
@@ -81,19 +82,35 @@ model Elective{
   teachers String?
   rooms String?
   semester Int?
-  organisation String?
   timetable String?
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId Int
 }
 
-model Organisation{
+model Organisation {
   id Int @id @default(autoincrement())
   name String
-  organisationCode String?
   designation String
-  dept String
-  sections Int
-  teachers Int
-  students Int
-  deptsList String
-  hasAccess Boolean
+  no_of_sections Int
+  no_of_teachers Int
+  no_of_students Int
+  depts_list String
+  approved Boolean
+  electives Elective[]
+  labs Lab[]
+  courses Course[]
+  teachers Teacher[]
+  rooms Room[]
+  users User[]
+  access_request_list AccessRequest[]
+  invite_code String
+}
+
+model AccessRequest {
+  id Int @id @default(autoincrement())
+  user User @relation(fields: [userId], references: [id])
+  userId Int
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId Int
+  level String
 }
