@@ -90,155 +90,45 @@ app.post("/api/getPosition", async (req, res) => {
   }
 });
 
-// Send verification email
-app.post("/api/sendVerificationEmail", async (req, res) => {
-  const { username, email } = req.body;
-  if (!username || !email) {
-    return res
-      .status(200)
-      .json({ status: 400, message: "Username and email are required" });
-  }
 
-  try {
-    const result = await auth.sendVerificationEmail(username, email);
-    res.status(200).json({
-      status: result ? 200 : 500,
-      message: result ? "Email sent" : "Failed to send email",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Check if user exists
-app.post("/api/checkUserExists", async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(200).json({ status: 400, message: "Email is required" });
-  }
-
-  try {
-    const exists = await auth.checkUserExists(email);
-    res.status(200).json({
-      status: 200,
-      message: exists ? "User exists" : "User does not exist",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Change password
-app.post("/api/changePassword", async (req, res) => {
-  const { verificationToken, email, newPassword } = req.body;
-  if (!verificationToken || !email || !newPassword) {
-    return res.status(200).json({
-      status: 400,
-      message: "Verification token, email, and new password are required",
-    });
-  }
-
-  try {
-    const result = await auth.changePassword(
-      verificationToken,
-      email,
-      newPassword
-    );
-    res.status(200).json({
-      status: result.status,
-      message:
-        result.status === 200
-          ? "Password changed"
-          : "Failed to change password",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Verify OTP
-app.post("/api/verifyOTP", async (req, res) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) {
-    return res
-      .status(200)
-      .json({ status: 400, message: "Email and OTP are required" });
-  }
-
-  try {
-    const result = await auth.verifyOTP(email, otp);
-    res.status(200).json({ status: result.status, message: result.token });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Forget OTP
-app.post("/api/forgetOTP", async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(200).json({ status: 400, message: "Email is required" });
-  }
-
-  try {
-    const result = await auth.forgetOTP(email);
-    res.status(200).json({
-      status: result.status,
-      message: result.status === 200 ? "OTP sent" : "Failed to send OTP",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Verify email
-app.post("/api/verifyEmail", async (req, res) => {
-  const { token } = req.body;
-  if (!token) {
-    return res.status(200).json({ status: 400, message: "Token is required" });
-  }
-
-  try {
-    const result = await auth.verifyEmail(token);
-    res.status(200).json({
-      status: result ? 200 : 500,
-      message: result ? "Email verified" : "Failed to verify email",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
+//onboarding
 app.post("/api/onboard", async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(200).json({ status: 400, message: "token is required" });
-  }
-  console.log(req.body)
-  const { name,dept,sections,teachers,students,depts_list } = req.body;
+  const { name, sections, teachers, students, depts_list } = req.body;
 
-  if (!name || !dept||!sections || !teachers || !students || !depts_list) {
+  // Validate request body
+  if (!name || !sections || !teachers || !students || !depts_list) {
     return res.json({
       status: 400,
       message:
         "Name, number of sections, number of teachers, number of students, and department list are required",
     });
-    
   }
 
-  try {    
-    const tokens = await onboard.Onboard(
-      token,
+  try {
+    // Call the onboarding function
+    const result = await onboard.onboarding(
       name,
-      dept,
       sections,
       teachers,
       students,
       depts_list
     );
-    return res.status(200).json({ status: tokens.status, message: tokens.token });
+
+    // Handle the response based on the result
+    if (result.status === statusCodes.CREATED) {
+      res.json({
+        status: result.status,
+        message: "Organization onboarded successfully",
+      });
+    } else {
+      res.json({
+        status: result.status,
+        message: "Internal server error",
+      });
+    }
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ status: 500, message: "Server error" });
+    console.error(error);
+    res.json({ status: 500, message: "Server error" });
   }
 });
 
