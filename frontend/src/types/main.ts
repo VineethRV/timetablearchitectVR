@@ -7,7 +7,6 @@ export type User={
 }
 export type OrganisationSchema = {
   name: string;
-  designation: string;
   dept: string;
   sections: number;
   teachers: number;
