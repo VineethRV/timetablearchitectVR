@@ -93,8 +93,11 @@ app.post("/api/getPosition", async (req, res) => {
 
 //onboarding
 app.post("/api/onboard", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
   const { name, sections, teachers, students, depts_list } = req.body;
-
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "token is required" });
+  }
   // Validate request body
   if (!name || !sections || !teachers || !students || !depts_list) {
     return res.json({
@@ -106,7 +109,7 @@ app.post("/api/onboard", async (req, res) => {
 
   try {
     // Call the onboarding function
-    const result = await onboard.onboarding(
+    const result = await onboard.Onboard(
       name,
       sections,
       teachers,
