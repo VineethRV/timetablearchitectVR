@@ -65,6 +65,49 @@ export async function Onboard( token:string,name: string,designation:string,dept
     }
   }
 
+  // export async function RequestAccess(
+  //   token: string,
+  //   role: string,
+  //   organisation: string,
+  //   department: string,
+  // ): Promise<{ status: number }> {
+  //   try {
+  //     const user = await getPosition(token); 
+  //     if(approver.user?.role!="Admin" && user.user?.organisation!=approver.user?.organisation)
+  //       {
+  //         return {
+  //           status: statusCodes.NOT_FOUND, 
+  //         };
+  //       }
+  //     if (!user) {
+  //       return {
+  //         status: statusCodes.NOT_FOUND, 
+  //       };
+  //     }
+  
+  //     await prisma.user.update({
+  //       where: {
+  //         id: user.user?.id 
+  //       },
+  //       data: {
+  //         role: position, // Setting the role to the passed position
+  //         hasAccess: true, // Setting hasAccess to true
+  //       },
+  //     });
+  
+  //     return {
+  //       status: statusCodes.CREATED, // Successfully updated
+  //     };
+  //   } catch (error) {
+  //     console.error("Error updating user access:", error); 
+  //     return {
+  //       status: statusCodes.INTERNAL_SERVER_ERROR, 
+  //     };
+  //   }
+  // }
+ 
+
+
 
   export async function ApproveAccess(
     token: string,
