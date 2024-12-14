@@ -4,7 +4,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../config.ts";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import Loading from '../../components/Loading/Loading.tsx'
+import Loading from "../../components/Loading/Loading.tsx";
 import AdminPanel from "./adminpanel.tsx";
 import Teacher from "./teacher/teacher.tsx";
 import TeacherPage from "./teacher/teacherdisplay.tsx";
@@ -84,12 +84,18 @@ export default function Dashboard() {
         <Route path="teachers" element={<Teacher />}>
           <Route index element={<TeacherPage />} />
           <Route path="add" element={<AddTeacherpage />} />
-          <Route path="edit/:oldname/:olddepartment" element={<EditTeacherpage />} />
+          <Route
+            path="edit/:oldname/:olddepartment"
+            element={<EditTeacherpage />}
+          />
         </Route>
         <Route path="rooms" element={<Room />}>
           <Route index element={<RoomPage />} />
           <Route path="add" element={<AddRoomPage />} />
-          <Route path="edit/:oldname/:olddepartment" element={<EditRoomPage />} />
+          <Route
+            path="edit/:oldname/:olddepartment"
+            element={<EditRoomPage />}
+          />
         </Route>
         <Route path="courses" element={<Course />}>
           <Route path="core-courses" element={<Corecourse />} />
@@ -105,4 +111,4 @@ export default function Dashboard() {
       </Route>
     </Routes>
   );
-};
+}
