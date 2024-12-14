@@ -100,8 +100,9 @@ app.post("/api/onboard", async (req, res) => {
     return res.json({
       status: 400,
       message:
-        "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
+        "Name, number of sections, number of teachers, number of students, and department list are required",
     });
+    
   }
 
   try {
@@ -116,6 +117,7 @@ app.post("/api/onboard", async (req, res) => {
     return res.status(200).json({ status: tokens.status, message: tokens.token });
   } catch (error) {
     console.log(error);
+    console.log(3)
     return res.status(500).json({ status: 500, message: "Server error" });
   }
 });
