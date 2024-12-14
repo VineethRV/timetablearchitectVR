@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
@@ -15,101 +15,103 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  hashedPass String
-  organisation Organisation? @relation(fields: [orgId], references: [id])
-  orgId Int?
-  role String?
-  hasAccess Boolean
-  department String?
-  access_list AccessRequest[]
+  id           Int             @id @default(autoincrement())
+  email        String          @unique
+  name         String?
+  hashedPass   String
+  organisation Organisation?   @relation("OrganisationUsers", fields: [orgId], references: [id])
+  orgId        Int?
+  role         String?
+  hasAccess    Boolean
+  department   String?
+  access_list  AccessRequest[]
+  ownedOrg     Organisation?   @relation("OrganisationOwner")
 }
 
 model Room {
-  id Int @id @default(autoincrement())
-  name String
-  department String?
-  lab Boolean?
-  timetable String?
+  id           Int          @id @default(autoincrement())
+  name         String
+  department   String?
+  lab          Boolean?
+  timetable    String?
   organisation Organisation @relation(fields: [orgId], references: [id])
-  orgId Int
+  orgId        Int
 }
 
-
 model Teacher {
-  id Int @id @default(autoincrement())
-  name String
-  initials String?
-  email String?
-  department String?
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  initials             String?
+  email                String?
+  department           String?
   alternateDepartments String?
-  timetable String?
-  labtable String?
-  organisation Organisation @relation(fields: [orgId], references: [id])
-  orgId Int
+  timetable            String?
+  labtable             String?
+  organisation         Organisation @relation(fields: [orgId], references: [id])
+  orgId                Int
 }
 
 model Course {
-  id Int @id @default(autoincrement())
-  name String
-  code String
-  department String?
-  semester Int?
+  id           Int          @id @default(autoincrement())
+  name         String
+  code         String
+  department   String?
+  semester     Int?
   organisation Organisation @relation(fields: [orgId], references: [id])
-  orgId Int
+  orgId        Int
 }
 
 model Lab {
-  id Int @id @default(autoincrement())
-  name String
-  department String?
-  semester Int?
-  batches String?
-  teachers String?
-  rooms String?
-  timetable String?
+  id           Int          @id @default(autoincrement())
+  name         String
+  department   String?
+  semester     Int?
+  batches      String?
+  teachers     String?
+  rooms        String?
+  timetable    String?
   organisation Organisation @relation(fields: [orgId], references: [id])
-  orgId Int
+  orgId        Int
 }
 
 model Elective {
-  id Int @id @default(autoincrement())
-  name String
-  department String?
-  courses String?
-  teachers String?
-  rooms String?
-  semester Int?
-  timetable String?
+  id           Int          @id @default(autoincrement())
+  name         String
+  department   String?
+  courses      String?
+  teachers     String?
+  rooms        String?
+  semester     Int?
+  timetable    String?
   organisation Organisation @relation(fields: [orgId], references: [id])
-  orgId Int
+  orgId        Int
 }
 
 model Organisation {
-  id Int @id @default(autoincrement())
-  name String
-  no_of_sections Int
-  no_of_teachers Int
-  no_of_students Int
-  depts_list String
-  approved Boolean
-  electives Elective[]
-  labs Lab[]
-  courses Course[]
-  teachers Teacher[]
-  rooms Room[]
-  users User[]
+  id                  Int             @id @default(autoincrement())
+  name                String
+  no_of_sections      Int
+  no_of_teachers      Int
+  no_of_students      Int
+  depts_list          String
+  approved            Boolean
+  electives           Elective[]
+  labs                Lab[]
+  courses             Course[]
+  teachers            Teacher[]
+  rooms               Room[]
+  users               User[]          @relation("OrganisationUsers")
   access_request_list AccessRequest[]
-  invite_code String?
+  invite_code         String?
+  owner               User?           @relation("OrganisationOwner", fields: [ownerId], references: [id])
+  ownerId             Int?            @unique
 }
 
 model AccessRequest {
-  id Int @id @default(autoincrement())
-  user User @relation(fields: [userId], references: [id])
-  userId Int
+  id           Int          @id @default(autoincrement())
+  user         User         @relation(fields: [userId], references: [id])
+  userId       Int
   organisation Organisation @relation(fields: [orgId], references: [id])
-  orgId Int
-  level String
+  orgId        Int
+  level        String
 }
