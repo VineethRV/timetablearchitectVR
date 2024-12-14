@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('./lib/actions/auth.js');
+const onboard = require('./lib/actions/onboarding.js');
 const teacher = require('./lib/actions/teacher.js');
 const room = require('./lib/actions/room.js');
 const lab = require('./lib/actions/lab.js');
@@ -64,6 +65,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+
 //get user position
 app.post('/api/getPosition', async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
@@ -78,6 +80,19 @@ app.post('/api/getPosition', async (req, res) => {
     res.status(200).json({ status: 500, message: 'Server error' });
   }
 });
+<<<<<<< HEAD
+//onboarding
+app.post('/api/onboard', async (req, res) => {
+  const { name, designation, dept,sections,teachers,students,depts_list } = req.body;
+  if (!name || !designation || !dept ||!sections || !teachers || !students || !depts_list) {
+    return res.status(200).json({ status: 400, message: 'Name, designation, department, number of sections, number of teachers, number of students and department list are required' });
+  }
+  try {
+    const token = await onboard.Onboard(name, designation, dept,sections,teachers,students,depts_list);
+    res.status(200).json({ status: token.status, message: token.token });
+  } catch (error) {
+    console.log(error)
+=======
 
 // Send verification email
 app.post("/api/sendVerificationEmail", async (req, res) => {
@@ -165,6 +180,21 @@ app.post("/api/verifyEmail", async (req, res) => {
     const result = await auth.verifyEmail(token);
     res.status(200).json({ status: result ? 200 : 500, message: result ? "Email verified" : "Failed to verify email" });
   } catch (error) {
+>>>>>>> 7ccd57930b1b2aa56601024c873f9fe680550201
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+//onboarding
+app.post('/api/onboard', async (req, res) => {
+  const { name, designation, dept,sections,teachers,students,depts_list } = req.body;
+  if (!name || !designation || !dept ||!sections || !teachers || !students || !depts_list) {
+    return res.status(200).json({ status: 400, message: 'Name, designation, department, number of sections, number of teachers, number of students and department list are required' });
+  }
+  try {
+    const token = await onboard.Onboard(name, designation, dept,sections,teachers,students,depts_list);
+    res.status(200).json({ status: token.status, message: token.token });
+  } catch (error) {
+    console.log(error)
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
@@ -567,6 +597,8 @@ app.delete('/api/labs', async (req, res) => {
     res.status(200).json({ status: 500, message: 'Server error' });
   }
 });
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

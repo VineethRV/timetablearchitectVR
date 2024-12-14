@@ -84,3 +84,16 @@ model Elective{
   organisation String?
   timetable String?
 }
+
+model Organisation{
+  id Int @id @default(autoincrement())
+  name String
+  organisationCode String?
+  designation String
+  dept String
+  sections Int
+  teachers Int
+  students Int
+  deptsList String
+  hasAccess Boolean
+}
