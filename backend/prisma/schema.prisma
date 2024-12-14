@@ -90,7 +90,6 @@ model Elective {
 model Organisation {
   id Int @id @default(autoincrement())
   name String
-  designation String
   no_of_sections Int
   no_of_teachers Int
   no_of_students Int
@@ -103,7 +102,7 @@ model Organisation {
   rooms Room[]
   users User[]
   access_request_list AccessRequest[]
-  invite_code String
+  invite_code String?
 }
 
 model AccessRequest {
