@@ -5,15 +5,19 @@ import { MdDelete, MdEdit } from 'react-icons/md';
 
 interface DataType {
   key: string;
-  Course: string;
+  course: string;
+  courseCode: string;
   teachers: string[];
-  rooms: string[];
 }
 
 const columns: TableProps<DataType>['columns'] = [
   {
     title: 'Course',
-    dataIndex: 'Course',
+    dataIndex: 'course',
+  },
+  {
+    title: 'Course Code',
+    dataIndex: 'courseCode',
   },
   {
     title: 'Teachers',
@@ -32,24 +36,8 @@ const columns: TableProps<DataType>['columns'] = [
       )
   },
   {
-    title: 'Rooms',
-    dataIndex: 'rooms',
-    render: (_, { rooms }) => (
-        <>
-          {rooms.map((tag) => {
-            const color = 'purple'
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
-        </>
-      )
-  },
-  {
     title: "",
-    render: (record) => {
+    render: () => {
       return (
         <Tooltip title="Edit">
           <Button
@@ -83,23 +71,23 @@ const columns: TableProps<DataType>['columns'] = [
 const data: DataType[] = [
   {
     key: '1',
-    Course: 'ADLD/OS/ADLD',
+    course: 'BioSafety',
+    courseCode: 'B223AT',
     teachers: ['Raj','Jai','Rahul'],
-    rooms:['Lab 1','Lab 2','Lab 3']
   },
   {
     key: '2',
-    Course: 'OS/ADLD/OS',
-    teachers: ['Jack','John','Will'],
-    rooms:['Lab 3','Lab 7','Lab 6']
+    course: 'Civil',
+    courseCode: 'C223AT',
+    teachers: ['Raj','Rohan','John'],
   },
 ];
 
-const LabAddTable: React.FC = () => {
+const ElectiveAddTable: React.FC = () => {
 return(
 <div>
 <Table<DataType> columns={columns} dataSource={data} pagination={false}/>
 </div>
 );};
 
-export default LabAddTable;
+export default ElectiveAddTable;

@@ -13,7 +13,7 @@ import { FaChevronRight } from "react-icons/fa";
 
 const totalPageNumbers = 3;
 
-const Page = () => {
+const OnboardingPage = () => {
   const [pageNumber, setPageNumber] = useState(0);
   const progressPercentage = Math.round((pageNumber / totalPageNumbers) * 100);
   const [organisationDetails, setOrganisationDetails] =
@@ -120,4 +120,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default OnboardingPage;

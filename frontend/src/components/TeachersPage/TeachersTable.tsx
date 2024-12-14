@@ -12,14 +12,14 @@ import {
 import type { TableColumnsType, TableProps } from "antd";
 import { MdDelete, MdEdit } from "react-icons/md";
 import { Teacher } from "../../types/main";
-// import { deleteTeachers } from "@/lib/actions/teacher";
 import { statusCodes } from "../../types/statusCodes";
 import { toast } from "sonner";
 import { TbTrash } from "react-icons/tb";
 import { DEPARTMENTS_OPTIONS } from "../../../info";
 import { CiSearch } from "react-icons/ci";
-// import { useRouter } from "next/navigation";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
 
 const getRandomColor = () => {
   const letters = "0123456789ABCDEF";
@@ -58,15 +58,10 @@ const TeachersTable = ({
 
   const handleEditClick = (name: string, department: string) => {
     navigate(
-      `/dashboard/teacher/edit/${encodeURIComponent(name)}/${encodeURIComponent(
-        department
-      )}`
+      `/dashboard/teachers/edit/${encodeURIComponent(
+        name
+      )}/${encodeURIComponent(department)}`
     );
-  };
-
-  const handleDeleteClick = (teacher: Teacher) => {
-    setSelectedTeachers([teacher]);
-    deleteTeachersHandler();
   };
 
   const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
@@ -81,7 +76,7 @@ const TeachersTable = ({
 
   // Row Selection logic by ant design
   const rowSelection: TableProps<Teacher>["rowSelection"] = {
-    onChange: (selectedRowKeys: React.Key[], selectedRows: Teacher[]) => {
+    onChange: (_: React.Key[], selectedRows: Teacher[]) => {
       setSelectedTeachers(selectedRows);
     },
     getCheckboxProps: (record: Teacher) => ({
@@ -89,6 +84,40 @@ const TeachersTable = ({
       name: record.name,
     }),
   };
+
+  function deleteSingleTeacher(teacher: Teacher) {
+    const teachers = [teacher];
+    const res = axios
+      .delete(BACKEND_URL + "/teachers", {
+        data: {
+          teachers,
+        },
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+
+        switch (status) {
+          case statusCodes.OK:
+            setTeachersData((prevTeachers) =>
+              prevTeachers.filter((t) => t.email !== teacher.email)
+            );
+            toast.success("Teacher deleted successfully");
+            break;
+          case statusCodes.BAD_REQUEST:
+            toast.error("Invalid request");
+            break;
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            toast.error("Server error");
+        }
+      });
+
+    toast.promise(res, {
+      loading: "Deleting the teacher",
+    });
+  }
 
   const columns: TableColumnsType<Teacher> = [
     {
@@ -164,7 +193,7 @@ const TeachersTable = ({
               className="bg-red-400"
               type="primary"
               shape="circle"
-              onClick={() => handleDeleteClick(record)}
+              onClick={() => deleteSingleTeacher(record)}
               icon={<MdDelete />}
             />
           </Tooltip>
@@ -174,38 +203,42 @@ const TeachersTable = ({
   ];
 
   // function handling deleting the teachers logic
-  function deleteTeachersHandler() {
+  function deleteTeachersHandler(teachers: Teacher[]) {
     if (selectedTeachers.length == 0) {
       toast.info("Select teachers to delete !!");
       return;
     }
-    // const res = deleteTeachers(localStorage.getItem('token') || "", selectedTeachers).then((res) => {
-    //   const statusCode = res.status;
-    //   switch (statusCode) {
-    //     case statusCodes.OK:
-    //       setTeachersData((teachers) => {
-    //         const newTeachers = teachers.filter((t) => {
-    //           for (let i = 0; i < selectedTeachers.length; i++) {
-    //             if (selectedTeachers[i].name == t.name) return false;
-    //           }
-    //           return true;
-    //         })
-    //         return newTeachers
-    //       })
-    //       setSelectedTeachers([])
-    //       toast.success("Teachers deleted successfully");
-    //       break;
-    //     case statusCodes.BAD_REQUEST:
-    //       toast.error("Invalid request");
-    //       break;
-    //     case statusCodes.INTERNAL_SERVER_ERROR:
-    //       toast.error("Server error")
-    //   }
-    // })
+    const res = axios
+      .delete(BACKEND_URL + "/teachers", {
+        data: { teachers },
+        headers: { Authorization: localStorage.getItem("token") },
+      })
+      .then((res) => {
+        const statusCode = res.status;
+        switch (statusCode) {
+          case statusCodes.OK:
+            setTeachersData((prevTeachers) =>
+              prevTeachers.filter(
+                (prevTeacher) =>
+                  !teachers.some(
+                    (teacher) => teacher.email === prevTeacher.email
+                  )
+              )
+            );
+            setSelectedTeachers([]);
+            toast.success("Teachers deleted successfully");
+            break;
+          case statusCodes.BAD_REQUEST:
+            toast.error("Invalid request");
+            break;
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            toast.error("Server error");
+        }
+      });
 
-    // toast.promise(res, {
-    //   loading: "Deleting teachers ..."
-    // })
+    toast.promise(res, {
+      loading: "Deleting teachers ...",
+    });
   }
 
   // Assigning department colors for consistency
@@ -256,11 +289,6 @@ const TeachersTable = ({
         >
           <div className="flex space-x-3">
             <Select
-              defaultValue="Sort By"
-              style={{ width: 120 }}
-              options={[]}
-            />
-            <Select
               className="w-[300px]"
               defaultValue="All Departments"
               value={departmentFilter}
@@ -271,7 +299,7 @@ const TeachersTable = ({
         </ConfigProvider>
         <div className="flex space-x-2">
           <Button
-            onClick={deleteTeachersHandler}
+            onClick={() => deleteTeachersHandler(selectedTeachers)}
             className="bg-red-500 text-white font-bold"
           >
             <TbTrash />

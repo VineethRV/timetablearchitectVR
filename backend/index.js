@@ -1,5 +1,6 @@
 const express = require("express");
 const auth = require("./lib/actions/auth.js");
+const onboard = require("./lib/actions/onboarding.js");
 const teacher = require("./lib/actions/teacher.js");
 const room = require("./lib/actions/room.js");
 const lab = require("./lib/actions/lab.js");
@@ -61,11 +62,11 @@ app.post("/api/register", async (req, res) => {
       .status(200)
       .json({ status: 400, message: "Name, email and password are required" });
   }
-
   try {
     const token = await auth.register(name, email, password);
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
+    console.log(error);
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
@@ -85,16 +86,59 @@ app.post("/api/getPosition", async (req, res) => {
   }
 });
 
+//onboarding
+app.post("/api/onboard", async (req, res) => {
+  const { name, designation, dept, sections, teachers, students, depts_list } =
+    req.body;
+  if (
+    !name ||
+    !designation ||
+    !dept ||
+    !sections ||
+    !teachers ||
+    !students ||
+    !depts_list
+  ) {
+    return res
+      .status(200)
+      .json({
+        status: 400,
+        message:
+          "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
+      });
+  }
+  try {
+    const token = await onboard.Onboard(
+      name,
+      designation,
+      dept,
+      sections,
+      teachers,
+      students,
+      depts_list
+    );
+    res.status(200).json({ status: token.status, message: token.token });
+  } catch (error) {
+    console.log(error);
+  }
+});
 // Send verification email
 app.post("/api/sendVerificationEmail", async (req, res) => {
   const { username, email } = req.body;
   if (!username || !email) {
-    return res.status(200).json({ status: 400, message: "Username and email are required" });
+    return res
+      .status(200)
+      .json({ status: 400, message: "Username and email are required" });
   }
 
   try {
     const result = await auth.sendVerificationEmail(username, email);
-    res.status(200).json({ status: result ? 200 : 500, message: result ? "Email sent" : "Failed to send email" });
+    res
+      .status(200)
+      .json({
+        status: result ? 200 : 500,
+        message: result ? "Email sent" : "Failed to send email",
+      });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -109,7 +153,12 @@ app.post("/api/checkUserExists", async (req, res) => {
 
   try {
     const exists = await auth.checkUserExists(email);
-    res.status(200).json({ status: 200, message: exists ? "User exists" : "User does not exist" });
+    res
+      .status(200)
+      .json({
+        status: 200,
+        message: exists ? "User exists" : "User does not exist",
+      });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -119,12 +168,29 @@ app.post("/api/checkUserExists", async (req, res) => {
 app.post("/api/changePassword", async (req, res) => {
   const { verificationToken, email, newPassword } = req.body;
   if (!verificationToken || !email || !newPassword) {
-    return res.status(200).json({ status: 400, message: "Verification token, email, and new password are required" });
+    return res
+      .status(200)
+      .json({
+        status: 400,
+        message: "Verification token, email, and new password are required",
+      });
   }
 
   try {
-    const result = await auth.changePassword(verificationToken, email, newPassword);
-    res.status(200).json({ status: result.status, message: result.status === 200 ? "Password changed" : "Failed to change password" });
+    const result = await auth.changePassword(
+      verificationToken,
+      email,
+      newPassword
+    );
+    res
+      .status(200)
+      .json({
+        status: result.status,
+        message:
+          result.status === 200
+            ? "Password changed"
+            : "Failed to change password",
+      });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -134,7 +200,9 @@ app.post("/api/changePassword", async (req, res) => {
 app.post("/api/verifyOTP", async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) {
-    return res.status(200).json({ status: 400, message: "Email and OTP are required" });
+    return res
+      .status(200)
+      .json({ status: 400, message: "Email and OTP are required" });
   }
 
   try {
@@ -154,7 +222,12 @@ app.post("/api/forgetOTP", async (req, res) => {
 
   try {
     const result = await auth.forgetOTP(email);
-    res.status(200).json({ status: result.status, message: result.status === 200 ? "OTP sent" : "Failed to send OTP" });
+    res
+      .status(200)
+      .json({
+        status: result.status,
+        message: result.status === 200 ? "OTP sent" : "Failed to send OTP",
+      });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -169,8 +242,51 @@ app.post("/api/verifyEmail", async (req, res) => {
 
   try {
     const result = await auth.verifyEmail(token);
-    res.status(200).json({ status: result ? 200 : 500, message: result ? "Email verified" : "Failed to verify email" });
+    res
+      .status(200)
+      .json({
+        status: result ? 200 : 500,
+        message: result ? "Email verified" : "Failed to verify email",
+      });
   } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+//onboarding
+app.post("/api/onboard", async (req, res) => {
+  const { name, designation, dept, sections, teachers, students, depts_list } =
+    req.body;
+  if (
+    !name ||
+    !designation ||
+    !dept ||
+    !sections ||
+    !teachers ||
+    !students ||
+    !depts_list
+  ) {
+    return res
+      .status(200)
+      .json({
+        status: 400,
+        message:
+          "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
+      });
+  }
+  try {
+    const token = await onboard.Onboard(
+      name,
+      designation,
+      dept,
+      sections,
+      teachers,
+      students,
+      depts_list
+    );
+    res.status(200).json({ status: token.status, message: token.token });
+  } catch (error) {
+    console.log(error);
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
@@ -187,13 +303,16 @@ app.post("/api/teachers", async (req, res) => {
     timetable,
     labtable,
   } = req.body;
+
+  // Check if token or name is missing
   if (!token || !name) {
     return res
-      .status(200)
+      .status(400)
       .json({ status: 400, message: "Token and name are required" });
   }
 
   try {
+    // Assuming teacher.createTeachers is a function that handles the teacher creation
     const result = await teacher.createTeachers(
       token,
       name,
@@ -206,7 +325,10 @@ app.post("/api/teachers", async (req, res) => {
     );
     res.status(200).json({ status: result.status, message: result.teacher });
   } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
+    console.error("Error creating teacher:", error); // Log the error for debugging
+    res
+      .status(500)
+      .json({ status: 500, message: error.message || "Internal server error" });
   }
 });
 
@@ -266,7 +388,6 @@ app.get("/api/teachers", async (req, res) => {
   if (!token) {
     return res.status(200).json({ status: 400, message: "Token is required" });
   }
-
   try {
     const result = await teacher.getTeachers(token);
     res.status(200).json({ status: result.status, message: result.teachers });

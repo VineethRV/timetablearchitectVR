@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -83,4 +83,17 @@ model Elective{
   semester Int?
   organisation String?
   timetable String?
+}
+
+model Organisation{
+  id Int @id @default(autoincrement())
+  name String
+  organisationCode String?
+  designation String
+  dept String
+  sections Int
+  teachers Int
+  students Int
+  deptsList String
+  hasAccess Boolean
 }
