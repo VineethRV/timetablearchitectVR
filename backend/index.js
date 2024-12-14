@@ -208,49 +208,44 @@ app.post("/api/verifyEmail", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
-
-//onboarding
-
 app.post("/api/onboard", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { name, sections, teachers, students, depts_list } = req.body;
+  console.log(token)
   if (!token) {
     return res.status(200).json({ status: 400, message: "token is required" });
   }
-  // Validate request body
-  if (!name || !sections || !teachers || !students || !depts_list) {
-    return res.json({
+  const { name, designation, dept, sections, teachers, students, depts_list } =
+    req.body;
+
+  if (
+    !name ||
+    !designation ||
+    !dept ||
+    !sections ||
+    !teachers ||
+    !students ||
+    !depts_list
+  ) {
+    return res.status(200).json({
       status: 400,
       message:
-        "Name, number of sections, number of teachers, number of students, and department list are required",
+        "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
     });
   }
 
   try {
-    // Call the onboarding function
-    const result = await onboard.Onboard(
+    const tokens = await onboard.Onboard(
+      token,
       name,
       sections,
       teachers,
       students,
       depts_list
     );
-
-    // Handle the response based on the result
-    if (result.status === statusCodes.CREATED) {
-      res.json({
-        status: result.status,
-        message: "Organization onboarded successfully",
-      });
-    } else {
-      res.json({
-        status: result.status,
-        message: "Internal server error",
-      });
-    }
+    return res.status(200).json({ status: tokens.status, message: tokens.token });
   } catch (error) {
-    console.error(error);
-    res.json({ status: 500, message: "Server error" });
+    console.log(error);
+    return res.status(500).json({ status: 500, message: "Server error" });
   }
 });
 

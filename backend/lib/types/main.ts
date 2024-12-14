@@ -6,7 +6,7 @@ export type User = {
   department: string | null;
 };
 
-export type OrganisationSchema = {
+export interface OrganisationSchema {
   name: string;
   designation: string;
   dept: string;

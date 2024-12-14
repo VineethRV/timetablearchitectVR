@@ -4,9 +4,6 @@ import Topbar from "../components/SignupPage/Topbar";
 import SignupForm from "../components/SignupPage/SignupForm";
 import Footer from "../components/SignupPage/Footer";
 import QuoteSection from "../components/SignupPage/QuoteSection";
-// import { useRouter } from 'next/navigation';
-// import { checkAuthentication } from '@/lib/actions/auth';
-// import { toast } from 'sonner';
 import Loading from "../components/Loading/Loading";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../config";
@@ -31,9 +28,8 @@ const Signup = () => {
       )
       .then((res) => {
         const status = res.data.status;
-
         if (status == 200) {
-          navigate("/dashboard");
+          navigate("/onboard");
           toast.success("User is already logged in!!");
         }
 

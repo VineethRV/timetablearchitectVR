@@ -4,38 +4,62 @@ import { Dispatch, SetStateAction, useState } from "react";
 import SuccessTick from "../../LottieComponents/SuccessTick";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { OrganisationSchema } from "../../../types/main";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../config";
 
 const { Title, Paragraph } = Typography;
 
 const ConfirmPage = ({
   setBackBtnDisable,
+  organisationDetails,
 }: {
+  organisationDetails: OrganisationSchema;
   setBackBtnDisable: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setLoading(true);
+    
+    try {
+      const response = await axios.post(
+        BACKEND_URL+'/onboard',
+        organisationDetails,
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      console.log(response)
+      // Mock delay for UI feedback
+      setTimeout(() => {
+        setLoading(false);
+        setSubmitted(true);
+        setBackBtnDisable(true);
 
-    // Timeout simulating an api call to backend to register organisation
-    setTimeout(() => {
+        // Redirect after submission success
+        const promise = () =>
+          new Promise((resolve) =>
+            setTimeout(() => {
+              navigate("/");
+              resolve("");
+            }, 5000)
+          );
+
+        toast.promise(promise, {
+          loading: "Redirecting...",
+          success: "Registration successful! Redirecting...",
+        });
+      }, 2000);
+
+    } catch (error) {
       setLoading(false);
-      setSubmitted(true);
-      setBackBtnDisable(true);
-      const promise = () =>
-        new Promise((resolve) =>
-          setTimeout(() => {
-            navigate("/");
-            resolve("");
-          }, 5000)
-        );
-
-      toast.promise(promise, {
-        loading: "Redirecting...",
-      });
-    }, 4000);
+      toast.error("Failed to submit registration. Please try again.");
+      console.error("Error during submission:", error);
+    }
   };
 
   return (
