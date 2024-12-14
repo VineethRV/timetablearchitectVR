@@ -3,10 +3,9 @@ import { statusCodes } from "../types/statusCodes";
 import { checkAuthentication, getPosition } from "./auth";
 
 const prisma = new PrismaClient();
-export async function Onboard(
+export default async function Onboard(
   token: string,
   name: string,
-  designation: string,
   dept: string,
   sections: number,
   teachers: number,
@@ -46,32 +45,23 @@ export async function Onboard(
         status: statusCodes.CONFLICT,
       };
     }
-
     // Create the organization
-    await prisma.organisation.create({
+    const organisation=await prisma.organisation.create({
       data: {
         name,
-        designation,
-        dept,
-        sections,
-        teachers,
-        students,
-        deptsList: depts_list.join(','),
-        hasAccess: false,
+        no_of_sections:sections,
+        no_of_teachers:teachers,
+        no_of_students:students,
+        depts_list: depts_list.join(","),
       },
     });
 
     // Update the user’s organization and role
     if (user.user) {
-      user.user.organisation = name;
-      user.user.role = "Admin";
-      user.user.department = dept;
-
       // Ensure the user is updated in the database if necessary
       await prisma.user.update({
         where: { id: user.user.id },
         data: {
-          organisation: name,
           role: "Admin",
           department: dept,
         },
