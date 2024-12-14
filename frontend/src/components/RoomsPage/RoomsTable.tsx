@@ -229,13 +229,17 @@ const RoomsTable = ({
       return roomsData;
     }
 
-    const new_Rooms = roomsData.filter((t) =>
-      departmentFilter != "Select a department"
-        ? t.department == departmentFilter
-        : 1 && isLab != "Labs"
-        ? isLab == "Yes"
-        : 1
-    );
+    const new_Rooms = roomsData.filter((t) => {
+      return (
+        (departmentFilter != "Select a department"
+          ? t.department == departmentFilter
+          : 1) &&
+        (isLab != "Labs"
+          ? (t.lab == true && isLab == "Yes") ||
+            (t.lab == false && isLab == "No")
+          : 1)
+      );
+    });
     return new_Rooms;
   }, [departmentFilter, roomsData, isLab]);
 

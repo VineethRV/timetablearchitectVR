@@ -23,13 +23,21 @@ export async function createRoom(
 ): Promise<{ status: number; room: Room | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        room: null,
+      };
+    }
+
     //if status is ok
     if (status == statusCodes.OK) {
       //check if role can make stuff
       if (user && user.role != "viewer") {
         const room: Room = {
           name: name,
-          organisation: user.organisation,
+          orgId: user.orgId,
           department: user.department,
           lab: lab,
           timetable:
@@ -44,7 +52,7 @@ export async function createRoom(
         //first check if any duplicates there, org dep and name same
         const duplicates = await prisma.room.findFirst({
           where: {
-            organisation: room.organisation,
+            orgId: room.orgId,
             department: room.department,
             name: name,
           },
@@ -95,16 +103,23 @@ export async function createManyRoom(
 ): Promise<{ status: number; rooms: Room[] | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        rooms: null,
+      };
+    }
+
     if (status == statusCodes.OK) {
       if (user && user.role != "viewer") {
-
         const rooms: Room[] = [];
 
-        for(let i=0;i<name.length;i++){
+        for (let i = 0; i < name.length; i++) {
           rooms.push({
             name: name[i],
-            organisation: user.organisation,
-            department: department?department:user.department,
+            orgId: user.orgId,
+            department: department ? department : user.department,
             lab: lab[i],
             timetable:
               "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
@@ -114,7 +129,7 @@ export async function createManyRoom(
           rooms.map((room) =>
             prisma.room.findFirst({
               where: {
-                organisation: room.organisation,
+                orgId: room.orgId,
                 department: room.department,
                 name: room.name,
               },
@@ -122,14 +137,13 @@ export async function createManyRoom(
           )
         );
 
-
         if (duplicateChecks.some((duplicate) => duplicate)) {
           return {
-              status: statusCodes.BAD_REQUEST,
-              rooms: rooms.filter((room, index) => duplicateChecks[index]),
+            status: statusCodes.BAD_REQUEST,
+            rooms: rooms.filter((room, index) => duplicateChecks[index]),
           };
-      }
-        
+        }
+
         //if no duplicates, create rooms
         await prisma.room.createMany({
           data: rooms,
@@ -157,18 +171,28 @@ export async function createManyRoom(
   }
 }
 
-
-
-export async function updateRoom(JWTtoken: string, originalName: string, originalDepartment: string|null=null, room: Room): Promise<{ status: number }> {
+export async function updateRoom(
+  JWTtoken: string,
+  originalName: string,
+  originalDepartment: string | null = null,
+  room: Room
+): Promise<{ status: number }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+      };
+    }
 
     if (status == statusCodes.OK && user) {
       if (user.role != "viewer") {
         const existingRoom = await prisma.room.findFirst({
           where: {
-            organisation: user.organisation,
-            department: user.role=='admin'?originalDepartment:user.department,
+            orgId: user.orgId,
+            department:
+              user.role == "admin" ? originalDepartment : user.department,
             name: originalName,
           },
         });
@@ -185,7 +209,10 @@ export async function updateRoom(JWTtoken: string, originalName: string, origina
           },
           data: {
             name: room.name,
-            department: user.role=='admin' && room.department? room.department: user.department,
+            department:
+              user.role == "admin" && room.department
+                ? room.department
+                : user.department,
             lab: room.lab,
             timetable: room.timetable,
           },
@@ -201,11 +228,10 @@ export async function updateRoom(JWTtoken: string, originalName: string, origina
     return {
       status: status,
     };
-  }
-  catch {
+  } catch {
     return {
-      status: statusCodes.INTERNAL_SERVER_ERROR
-    }
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+    };
   }
 }
 
@@ -215,26 +241,34 @@ export async function getRooms(
   try {
     //get position of user
     const { status, user } = await auth.getPosition(token);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        rooms: null,
+      };
+    }
+
     if (status == statusCodes.OK && user) {
       //find all the clasrooms in his lab
-      let rooms:Room[];
+      let rooms: Room[];
       if (user.role != "admin") {
         rooms = await prisma.room
           .findMany({
             where: {
-              organisation: user.organisation,
+              orgId: user.orgId,
               department: user.department,
             },
             select: {
               name: true,
               department: true,
               lab: true,
+              orgId: true,
             },
           })
           .then((results) =>
             results.map((room) => ({
               ...room,
-              organisation: user.organisation || null,
               timetable: null, // Default value, since it's not queried
             }))
           );
@@ -242,18 +276,18 @@ export async function getRooms(
         rooms = await prisma.room
           .findMany({
             where: {
-              organisation: user.organisation,
+              orgId: user.orgId,
             },
             select: {
               name: true,
               department: true,
               lab: true,
+              orgId: true,
             },
           })
           .then((results) =>
             results.map((room) => ({
               ...room,
-              organisation: user.organisation || null,
               timetable: null, // Default value, since it's not queried
             }))
           );
@@ -280,19 +314,32 @@ export async function getRooms(
 export async function peekRoom(
   token: string,
   name: string,
-  department: string|null=null
+  department: string | null = null
 ): Promise<{ status: number; room: Room | null }> {
   try {
     //get position of user
     const { status, user } = await auth.getPosition(token);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        room: null,
+      };
+    }
+
     if (status == statusCodes.OK && user) {
       //find all the clasrooms in his lab
       const room = await prisma.room.findFirst({
         where: {
           name: name,
-          department: user.role=='admin'?department?department:user.department:user.department,//if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
-          organisation: user.organisation,
-        }
+          department:
+            user.role == "admin"
+              ? department
+                ? department
+                : user.department
+              : user.department, //if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
+          orgId: user.orgId,
+        },
       });
       return {
         status: statusCodes.OK,
@@ -313,23 +360,30 @@ export async function peekRoom(
   }
 }
 
-
 export async function deleteRooms(
   JWTtoken: string,
-  rooms: Room[],
+  rooms: Room[]
 ): Promise<{ status: number }> {
   const { status, user } = await auth.getPosition(JWTtoken);
+
+  if (user?.orgId == null) {
+    return {
+      status: statusCodes.BAD_REQUEST,
+    };
+  }
+
   try {
     if (status == statusCodes.OK && user) {
       if (user.role != "viewer") {
         await prisma.room.deleteMany({
           where: {
-            OR: rooms.map(room => ({
+            OR: rooms.map((room) => ({
               name: room.name,
-              organisation: user.organisation,
-              department: user.role=='admin'?room.department:user.department
-            }))
-          }
+              orgId: user.orgId as number,
+              department:
+                user.role == "admin" ? room.department : user.department,
+            })),
+          },
         });
         return {
           status: statusCodes.OK,

@@ -1,10 +1,10 @@
-export type User={
-  id:number,
-  name:string|null,
-  organisation:string | null,
-  role:string | null,
-  department:string| null
-}
+export type User = {
+  id: number;
+  name: string | null;
+  orgId: number | null;
+  role: string | null;
+  department: string | null;
+};
 
 export type OrganisationSchema = {
   name: string;
@@ -14,57 +14,56 @@ export type OrganisationSchema = {
   teachers: number;
   students: number;
   depts_list: string[];
-  
-}
+};
 
-export type Room={
-  name: string,
-  organisation: string|null,
-  department:string|null,
-  lab:boolean|null,
-  timetable:string|null
-}
+export type Room = {
+  name: string;
+  orgId: number;
+  department: string | null;
+  lab: boolean | null;
+  timetable: string | null;
+};
 
-export type Teacher={
-  name: string
-  initials: string|null
-  email: string|null
-  department:string|null
-  alternateDepartments:string|null
-  timetable: string|null
-  labtable: string|null
-  organisation: string|null
-}
+export type Teacher = {
+  name: string;
+  initials: string | null;
+  email: string | null;
+  department: string | null;
+  alternateDepartments: string | null;
+  timetable: string | null;
+  labtable: string | null;
+  orgId: number;
+};
 
-export type Course= {
+export type Course = {
   name: string;
   code: string;
-  department: string|null;
-  organisation: string|null;
-  semester: number|null;
-}
+  department: string | null;
+  orgId: number;
+  semester: number | null;
+};
 
-export type Lab= {
+export type Lab = {
   name: string;
   department: string | null;
-  organisation: string | null;
+  orgId: number;
   semester: number | null;
   batches: string | null;
   teachers: string | null;
   rooms: string | null;
   timetable: string | null;
-}
+};
 
-export type Elective={
+export type Elective = {
   name: string;
-  department: string|null;
-  organisation: string|null;
-  semester: number|null;
-  teachers: string|null;
-  courses: string|null;
-  rooms: string|null;
-  timetable: string|null;
-}
+  department: string | null;
+  orgId: number;
+  semester: number | null;
+  teachers: string | null;
+  courses: string | null;
+  rooms: string | null;
+  timetable: string | null;
+};
 
 export type OTP_TYPE = {
   otp: number;

@@ -7,8 +7,13 @@ const lab = require("./lib/actions/lab.js");
 const elective = require("./lib/actions/electives.js");
 const course = require("./lib/actions/course.js");
 const cors = require("cors");
+const { default: PrismaClientManager } = require("./lib/pgConnect.js");
+const { statusCodes } = require("./lib/types/statusCodes.js");
 const app = express();
 const port = 3000;
+const jwt = require("jsonwebtoken");
+
+const prisma = PrismaClientManager.getInstance().getPrismaClient();
 
 app.use(express.json());
 app.use(
@@ -85,42 +90,6 @@ app.post("/api/getPosition", async (req, res) => {
   }
 });
 
-//onboarding
-app.post("/api/onboard", async (req, res) => {
-  const { name, designation, dept, sections, teachers, students, depts_list } =
-    req.body;
-  if (
-    !name ||
-    !designation ||
-    !dept ||
-    !sections ||
-    !teachers ||
-    !students ||
-    !depts_list
-  ) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message:
-          "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
-      });
-  }
-  try {
-    const token = await onboard.Onboard(
-      name,
-      designation,
-      dept,
-      sections,
-      teachers,
-      students,
-      depts_list
-    );
-    res.status(200).json({ status: token.status, message: token.token });
-  } catch (error) {
-    console.log(error);
-  }
-});
 // Send verification email
 app.post("/api/sendVerificationEmail", async (req, res) => {
   const { username, email } = req.body;
@@ -132,12 +101,10 @@ app.post("/api/sendVerificationEmail", async (req, res) => {
 
   try {
     const result = await auth.sendVerificationEmail(username, email);
-    res
-      .status(200)
-      .json({
-        status: result ? 200 : 500,
-        message: result ? "Email sent" : "Failed to send email",
-      });
+    res.status(200).json({
+      status: result ? 200 : 500,
+      message: result ? "Email sent" : "Failed to send email",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -152,12 +119,10 @@ app.post("/api/checkUserExists", async (req, res) => {
 
   try {
     const exists = await auth.checkUserExists(email);
-    res
-      .status(200)
-      .json({
-        status: 200,
-        message: exists ? "User exists" : "User does not exist",
-      });
+    res.status(200).json({
+      status: 200,
+      message: exists ? "User exists" : "User does not exist",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -167,12 +132,10 @@ app.post("/api/checkUserExists", async (req, res) => {
 app.post("/api/changePassword", async (req, res) => {
   const { verificationToken, email, newPassword } = req.body;
   if (!verificationToken || !email || !newPassword) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message: "Verification token, email, and new password are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message: "Verification token, email, and new password are required",
+    });
   }
 
   try {
@@ -181,15 +144,13 @@ app.post("/api/changePassword", async (req, res) => {
       email,
       newPassword
     );
-    res
-      .status(200)
-      .json({
-        status: result.status,
-        message:
-          result.status === 200
-            ? "Password changed"
-            : "Failed to change password",
-      });
+    res.status(200).json({
+      status: result.status,
+      message:
+        result.status === 200
+          ? "Password changed"
+          : "Failed to change password",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -221,12 +182,10 @@ app.post("/api/forgetOTP", async (req, res) => {
 
   try {
     const result = await auth.forgetOTP(email);
-    res
-      .status(200)
-      .json({
-        status: result.status,
-        message: result.status === 200 ? "OTP sent" : "Failed to send OTP",
-      });
+    res.status(200).json({
+      status: result.status,
+      message: result.status === 200 ? "OTP sent" : "Failed to send OTP",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -241,52 +200,54 @@ app.post("/api/verifyEmail", async (req, res) => {
 
   try {
     const result = await auth.verifyEmail(token);
-    res
-      .status(200)
-      .json({
-        status: result ? 200 : 500,
-        message: result ? "Email verified" : "Failed to verify email",
-      });
+    res.status(200).json({
+      status: result ? 200 : 500,
+      message: result ? "Email verified" : "Failed to verify email",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
 
 //onboarding
+
 app.post("/api/onboard", async (req, res) => {
-  const { name, designation, dept, sections, teachers, students, depts_list } =
-    req.body;
-  if (
-    !name ||
-    !designation ||
-    !dept ||
-    !sections ||
-    !teachers ||
-    !students ||
-    !depts_list
-  ) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message:
-          "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
-      });
+  const { name, sections, teachers, students, depts_list } = req.body;
+
+  // Validate request body
+  if (!name || !sections || !teachers || !students || !depts_list) {
+    return res.json({
+      status: 400,
+      message:
+        "Name, number of sections, number of teachers, number of students, and department list are required",
+    });
   }
+
   try {
-    const token = await onboard.Onboard(
+    // Call the onboarding function
+    const result = await onboard.onboarding(
       name,
-      designation,
-      dept,
       sections,
       teachers,
       students,
       depts_list
     );
-    res.status(200).json({ status: token.status, message: token.token });
+
+    // Handle the response based on the result
+    if (result.status === statusCodes.CREATED) {
+      res.json({
+        status: result.status,
+        message: "Organization onboarded successfully",
+      });
+    } else {
+      res.json({
+        status: result.status,
+        message: "Internal server error",
+      });
+    }
   } catch (error) {
-    console.log(error);
-    res.status(200).json({ status: 500, message: "Server error" });
+    console.error(error);
+    res.json({ status: 500, message: "Server error" });
   }
 });
 
@@ -336,12 +297,10 @@ app.put("/api/teachers", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { originalName, originalDepartment, teacher: teacherData } = req.body;
   if (!token || !originalName || !teacherData) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message: "Token, original name, and teacher data are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message: "Token, original name, and teacher data are required",
+    });
   }
 
   try {
@@ -425,12 +384,10 @@ app.delete("/api/teachers", async (req, res) => {
 
   try {
     const result = await teacher.deleteTeachers(token, teachersToDelete);
-    res
-      .status(200)
-      .json({
-        status: result.status,
-        message: "Teachers deleted successfully",
-      });
+    res.status(200).json({
+      status: result.status,
+      message: "Teachers deleted successfully",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -482,12 +439,10 @@ app.put("/api/rooms", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { originalName, originalDepartment, room: roomData } = req.body;
   if (!token || !originalName || !roomData) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message: "Token, original name, and room data are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message: "Token, original name, and room data are required",
+    });
   }
 
   try {
@@ -584,12 +539,10 @@ app.delete("/api/courses", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { courseCode, semester, department } = req.body;
   if (!token || !courseCode || semester === undefined) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message: "Token, course code, and semester are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message: "Token, course code, and semester are required",
+    });
   }
 
   try {
@@ -622,13 +575,11 @@ app.put("/api/courses", async (req, res) => {
     originalSemester === undefined ||
     !courseData
   ) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message:
-          "Token, original name, original semester, and course data are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message:
+        "Token, original name, original semester, and course data are required",
+    });
   }
 
   try {
@@ -680,12 +631,10 @@ app.put("/api/electives", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { originalName, originalDepartment, updatedElective } = req.body;
   if (!token || !originalName || !updatedElective) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message: "Token, original name, and updated elective data are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message: "Token, original name, and updated elective data are required",
+    });
   }
 
   try {
@@ -763,12 +712,10 @@ app.delete("/api/electives", async (req, res) => {
       semester,
       department
     );
-    res
-      .status(200)
-      .json({
-        status: result.status,
-        message: "Elective deleted successfully",
-      });
+    res.status(200).json({
+      status: result.status,
+      message: "Elective deleted successfully",
+    });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -812,13 +759,11 @@ app.put("/api/labs", async (req, res) => {
     originalDepartment,
   } = req.body;
   if (!token || !originalName || originalSemester === undefined || !labData) {
-    return res
-      .status(200)
-      .json({
-        status: 400,
-        message:
-          "Token, original name, original semester, and lab data are required",
-      });
+    return res.status(200).json({
+      status: 400,
+      message:
+        "Token, original name, original semester, and lab data are required",
+    });
   }
 
   try {
@@ -891,6 +836,53 @@ app.delete("/api/labs", async (req, res) => {
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
+});
+
+app.post("/request_access", async (req, res) => {
+  const { invite_code, level } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
+
+  try {
+    const organisation = await prisma.organisation.findFirst({
+      where: {
+        invite_code,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const { userId } = jwt.decode(token);
+
+    const _ = prisma.accessRequest.findFirst({
+      where: {
+        userId,
+        orgId: organisation.id,
+      },
+    });
+
+    if (_) return { status: statusCodes.BAD_REQUEST };
+
+    await prisma.accessRequest.create({
+      data: {
+        userId,
+        orgId: organisation.id,
+        level,
+      },
+    });
+
+    return res.json({
+      status: statusCodes.OK,
+    });
+  } catch (e) {
+    return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
+  }
+});
+
+app.get("/health", (_, res) => {
+  return res.json({
+    msg: "Server is healthy !!",
+  });
 });
 
 app.listen(port, () => {

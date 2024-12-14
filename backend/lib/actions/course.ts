@@ -5,8 +5,7 @@ import { Course } from "../types/main";
 
 const prisma = new PrismaClient();
 
-
-//for creating Courses by editors, and admins
+// For creating Courses by editors and admins
 export async function createCourse(
   JWTtoken: string,
   name: string,
@@ -16,36 +15,41 @@ export async function createCourse(
 ): Promise<{ status: number; Course: Course | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
-    //if status is ok
+    if (user?.orgId == null)
+      return {
+        status: statusCodes.BAD_REQUEST,
+        Course: null,
+      };
+    // If status is OK
     if (status == statusCodes.OK) {
-      //check if role can make stuff
+      // Check if role can make changes
       if (user && user.role != "viewer") {
         const Course: Course = {
           name: name,
           code: code,
-          organisation: user.organisation,
+          orgId: user.orgId,
           department: user.department,
           semester: semester,
         };
         if (user.role == "admin" && department) {
           Course.department = department;
         }
-        //first check if any duplicates there, org dep and name same
+        // First check if any duplicates exist (orgId, department, and name same)
         const duplicates = await prisma.course.findFirst({
           where: {
-            organisation: Course.organisation,
+            orgId: Course.orgId,
             department: Course.department,
             name: name,
           },
         });
         if (duplicates) {
-          //bad request
+          // Bad request
           return {
             status: statusCodes.BAD_REQUEST,
             Course: null,
           };
         }
-        //if check successfull
+        // If check is successful
         const newCourse = await prisma.course.create({
           data: Course,
         });
@@ -54,13 +58,13 @@ export async function createCourse(
           Course: newCourse,
         };
       }
-      //if role is viewer
+      // If role is viewer
       return {
         status: statusCodes.FORBIDDEN,
         Course: null,
       };
     }
-    //if status is not ok
+    // If status is not OK
     return {
       status: status,
       Course: null,
@@ -74,20 +78,33 @@ export async function createCourse(
   }
 }
 
-export async function deleteCourse(JWTtoken: string, courseCode: string, semester: number, department: string|null=null): Promise<{ status: number; message: string }> {
+export async function deleteCourse(
+  JWTtoken: string,
+  courseCode: string,
+  semester: number,
+  department: string | null = null
+): Promise<{ status: number; message: string }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
-    // if status is ok
+    if (user?.orgId == null)
+      return {
+        status: statusCodes.BAD_REQUEST,
+        message: "organisation missing",
+      };
+    // If status is OK
     if (status == statusCodes.OK) {
-      // check if role can delete stuff
+      // Check if role can delete items
       if (user && user.role != "viewer") {
-        // check if the course exists
+        // Check if the course exists
         const course = await prisma.course.findFirst({
           where: {
             code: courseCode,
             semester: semester,
-            organisation: user.organisation,
-            department: user.role === "admin" && department ? department : user.department,
+            orgId: user.orgId,
+            department:
+              user.role === "admin" && department
+                ? department
+                : user.department,
           },
         });
         if (!course) {
@@ -96,7 +113,7 @@ export async function deleteCourse(JWTtoken: string, courseCode: string, semeste
             message: "Course not found",
           };
         }
-        // delete the course
+        // Delete the course
         await prisma.course.delete({
           where: { id: course.id },
         });
@@ -105,13 +122,13 @@ export async function deleteCourse(JWTtoken: string, courseCode: string, semeste
           message: "Course deleted successfully",
         };
       }
-      // if role is viewer
+      // If role is viewer
       return {
         status: statusCodes.FORBIDDEN,
         message: "You do not have permission to delete courses",
       };
     }
-    // if status is not ok
+    // If status is not OK
     return {
       status: status,
       message: "Authentication failed",
@@ -124,49 +141,67 @@ export async function deleteCourse(JWTtoken: string, courseCode: string, semeste
     };
   }
 }
+
 export async function updateCourse(
   JWTtoken: string,
   originalName: string,
-  originalDepartment: string|null=null,
+  originalDepartment: string | null = null,
   originalSemester: number,
   course: Course
 ): Promise<{ status: number }> {
-  const { user, status } = await auth.getPosition(JWTtoken);
-  if (status == statusCodes.OK) {
-    if (user && user.role != "viewer") {
-      const existingCourse = await prisma.course.findFirst({
-        where: {
-          organisation: user.organisation,
-          department: user.role == "admin" &&originalDepartment ? originalDepartment : user.department,
-          name: originalName,
-          semester: originalSemester,
-        },
-      });
-      if (!existingCourse) {
+  try {
+    const { user, status } = await auth.getPosition(JWTtoken);
+    if (user?.orgId == null)
+      return {
+        status: statusCodes.BAD_REQUEST,
+      };
+    if (status == statusCodes.OK) {
+      if (user && user.role != "viewer") {
+        const existingCourse = await prisma.course.findFirst({
+          where: {
+            orgId: user.orgId,
+            department:
+              user.role == "admin" && originalDepartment
+                ? originalDepartment
+                : user.department,
+            name: originalName,
+            semester: originalSemester,
+          },
+        });
+        if (!existingCourse) {
+          return {
+            status: statusCodes.NOT_FOUND,
+          };
+        }
+        await prisma.course.update({
+          where: {
+            id: existingCourse.id,
+          },
+          data: {
+            name: course.name,
+            code: course.code,
+            semester: course.semester,
+            department:
+              user.role == "admin" && course.department
+                ? course.department
+                : user.department,
+          },
+        });
         return {
-          status: statusCodes.NOT_FOUND,
+          status: statusCodes.OK,
         };
       }
-      await prisma.course.update({
-        where: {
-          id: existingCourse.id,
-        },
-        data: {
-          name: course.name,
-          code: course.code,
-          semester: course.semester,
-          department: user.role == "admin" && course.department? course.department : user.department,
-        },
-      });
       return {
-        status: statusCodes.OK,
+        status: statusCodes.FORBIDDEN,
       };
     }
     return {
-      status: statusCodes.FORBIDDEN,
+      status: status,
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
     };
   }
-  return {
-    status: status,
-  };
 }

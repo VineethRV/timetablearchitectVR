@@ -1,0 +1,1 @@
+{"root":["./lib/pgconnect.ts","./lib/actions/auth.ts","./lib/actions/course.ts","./lib/actions/electives.ts","./lib/actions/lab.ts","./lib/actions/onboarding.ts","./lib/actions/room.ts","./lib/actions/teacher.ts","./lib/functions/common.ts","./lib/functions/lab.ts","./lib/types/main.ts","./lib/types/statuscodes.ts"],"version":"5.6.3"}
