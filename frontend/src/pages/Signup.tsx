@@ -27,22 +27,8 @@ const Signup = () => {
       .then((res) => {
         const status = res.data.status;
         if (status == 200) {
-          axios
-            .get(BACKEND_URL + "/user/check_org", {
-              headers: {
-                Authorization: localStorage.getItem("token"),
-              },
-            })
-            .then(({ data }) => {
-              if (!data.result) {
-                navigate("/onboard");
-                toast.info("Please complete onboarding process");
-              } else {
-                navigate("/dashboard");
-                toast.success("User is already logged in!!");
-              }
-              setLoading(false);
-            });
+          navigate("/onboard");
+          toast.success("User is already logged in!!");
         }
         else {
           setLoading(false);

@@ -3,67 +3,91 @@ import { statusCodes } from "../types/statusCodes";
 import { checkAuthentication, getPosition } from "./auth";
 
 const prisma = new PrismaClient();
-export async function Onboard( token:string,name: string,designation:string,dept: string,sections:number,teachers:number,students:number,depts_list: string[]): Promise<{ status: number }> {
-     try {
-      if(!token)
-        {
-          return {
-            status: statusCodes.UNAUTHORIZED,
-          };
-        }
-      const access=await checkAuthentication(token)
-      if(!access)
-      {
-        return {
-          status: statusCodes.UNAUTHORIZED,
-        };
-      }
-      const user=await getPosition(token)
-      if(!user.user)
-      {
-        return {
-          status: statusCodes.UNAUTHORIZED,
-        };
-      }
-      const duplicateOrg = await prisma.organisation.findFirst({
-        where: {
-          name,
-        },
-      });
-
-      if (duplicateOrg) {
-        return {
-          status: statusCodes.CONFLICT,
-        };
-      }
-       const organisation=await prisma.organisation.create({
-        data: {
-          name,
-          designation,
-          dept,
-          sections,
-          teachers,
-          students,
-          deptsList: depts_list.join(','),
-          hasAccess:false,
-        },
-      });
-      if(user.user)
-      {
-        user.user.department=dept,
-        user.user.role="Admin",
-        user.user.orgId=organisation.id
-      }
+export async function Onboard(
+  token: string,
+  name: string,
+  designation: string,
+  dept: string,
+  sections: number,
+  teachers: number,
+  students: number,
+  depts_list: string[]
+): Promise<{ status: number }> {
+  try {
+    if (!token) {
       return {
-        status: statusCodes.CREATED,
+        status: statusCodes.UNAUTHORIZED,
       };
     }
-    catch {
+
+    const access = await checkAuthentication(token);
+    if (!access) {
       return {
-        status: statusCodes.INTERNAL_SERVER_ERROR,
-      }
+        status: statusCodes.UNAUTHORIZED,
+      };
     }
+
+    // Get user information
+    const user = await getPosition(token);
+    if (!user || !user.user) {
+      console.log("No user found or user object is missing.");
+      return { status: statusCodes.NOT_FOUND };
+    }
+
+    // Check for duplicate organization
+    const duplicateOrg = await prisma.organisation.findFirst({
+      where: {
+        name,
+      },
+    });
+
+    if (duplicateOrg) {
+      return {
+        status: statusCodes.CONFLICT,
+      };
+    }
+
+    // Create the organization
+    await prisma.organisation.create({
+      data: {
+        name,
+        designation,
+        dept,
+        sections,
+        teachers,
+        students,
+        deptsList: depts_list.join(','),
+        hasAccess: false,
+      },
+    });
+
+    // Update the user’s organization and role
+    if (user.user) {
+      user.user.organisation = name;
+      user.user.role = "Admin";
+      user.user.department = dept;
+
+      // Ensure the user is updated in the database if necessary
+      await prisma.user.update({
+        where: { id: user.user.id },
+        data: {
+          organisation: name,
+          role: "Admin",
+          department: dept,
+        },
+      });
+    }
+
+    return {
+      status: statusCodes.CREATED,
+    };
+  } catch (error) {
+    console.error("Error during onboarding:", error);
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+    };
   }
+}
 
   // export async function RequestAccess(
   //   token: string,

@@ -7,13 +7,18 @@ import { useNavigate } from "react-router-dom";
 import { OrganisationSchema } from "../../../types/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
+import { OrganisationSchema } from "../../../types/main";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../config";
 
 const { Title, Paragraph } = Typography;
 
 const ConfirmPage = ({
   setBackBtnDisable,
   organisationDetails,
+  organisationDetails,
 }: {
+  organisationDetails: OrganisationSchema;
   organisationDetails: OrganisationSchema;
   setBackBtnDisable: Dispatch<SetStateAction<boolean>>;
 }) => {
@@ -21,10 +26,10 @@ const ConfirmPage = ({
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
   const handleSubmit = async () => {
+  const handleSubmit = async () => {
     setLoading(true);
     
     try {
-      console.log(organisationDetails)
       const response = await axios.post(
         BACKEND_URL+'/onboard',
         organisationDetails,
@@ -50,6 +55,17 @@ const ConfirmPage = ({
             }, 5000)
           );
 
+        toast.promise(promise, {
+          loading: "Redirecting...",
+          success: "Registration successful! Redirecting...",
+        });
+      }, 2000);
+
+    } catch (error) {
+      setLoading(false);
+      toast.error("Failed to submit registration. Please try again.");
+      console.error("Error during submission:", error);
+    }
         toast.promise(promise, {
           loading: "Redirecting...",
           success: "Registration successful! Redirecting...",
