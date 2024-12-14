@@ -94,7 +94,7 @@ model Organisation {
   no_of_teachers      Int
   no_of_students      Int
   depts_list          String
-  approved            Boolean
+  approved            Boolean  @default(false) 
   electives           Elective[]
   labs                Lab[]
   courses             Course[]
