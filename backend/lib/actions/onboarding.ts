@@ -1,10 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 import { statusCodes } from "../types/statusCodes";
 import { getPosition } from "./auth";
-import { TokenExpiredError } from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-export async function Onboard( token:string,name: string,designation:string,dept: string,sections:number,teachers:number,students:number,depts_list: string[]): Promise<{ status: number }> {
+export async function Onboard( token:string, name: string,designation:string,dept: string,sections:number,teachers:number,students:number,depts_list: string[]): Promise<{ status: number }> {
      try {
       const duplicateOrg = await prisma.organisation.findFirst({
         where: {
