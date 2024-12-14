@@ -1,13 +1,12 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Homepage";
-import Signin from "./pages/Signin";
+import Signin from "./pages/SignIn";
 import Signup from "./pages/Signup";
 import  Dashboard  from "./pages/dashboard/dashboard";
 import { Toaster } from "sonner";
 import OnboardingPage from "./pages/Onboarding";
 import Onboard from "./pages/register";
-import Access from "./pages/dashboard/admin/access";
 function App() {
   return (
     <BrowserRouter>
@@ -17,7 +16,6 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/onboard" element={<Onboard />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
-
         <Route path="/dashboard/*" element={<Dashboard />}>
         </Route>
       </Routes>
