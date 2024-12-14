@@ -4,6 +4,7 @@ import Home from "./pages/Homepage";
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import  Dashboard  from "./pages/dashboard/dashboard";
+import  Dashboard  from "./pages/dashboard/dashboard";
 import { Toaster } from "sonner";
 import OnboardingPage from "./pages/Onboarding";
 import Onboard from "./pages/register";
