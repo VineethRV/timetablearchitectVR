@@ -907,6 +907,12 @@ app.post("/request_access", async (req, res) => {
   }
 });
 
+app.get("/health", (_, res) => {
+  return res.json({
+    msg: "Server is healthy !!",
+  });
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
