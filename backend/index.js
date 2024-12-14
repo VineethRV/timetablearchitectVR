@@ -6,6 +6,7 @@ const lab = require("./lib/actions/lab.js");
 const elective = require("./lib/actions/electives.js");
 const course = require("./lib/actions/course.js");
 const cors = require("cors");
+
 const app = express();
 const port = 3000;
 
