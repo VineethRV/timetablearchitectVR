@@ -210,31 +210,21 @@ app.post("/api/verifyEmail", async (req, res) => {
 });
 app.post("/api/onboard", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  console.log(token)
   if (!token) {
     return res.status(200).json({ status: 400, message: "token is required" });
   }
-  const { name, designation, dept, sections, teachers, students, depts_list } =
-    req.body;
+  const { name, sections, teachers, students, depts_list } = req.body;
 
-  if (
-    !name ||
-    !designation ||
-    !dept ||
-    !sections ||
-    !teachers ||
-    !students ||
-    !depts_list
-  ) {
-    return res.status(200).json({
+  if (!name || !sections || !teachers || !students || !depts_list) {
+    return res.json({
       status: 400,
       message:
-        "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
+        "Name, number of sections, number of teachers, number of students, and department list are required",
     });
     
   }
 
-  try {
+  try {    
     const tokens = await onboard.Onboard(
       token,
       name,
@@ -248,6 +238,7 @@ app.post("/api/onboard", async (req, res) => {
     return res.status(200).json({ status: tokens.status, message: tokens.token });
   } catch (error) {
     console.log(error);
+    console.log(3)
     return res.status(500).json({ status: 500, message: "Server error" });
   }
 });
