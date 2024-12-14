@@ -21,8 +21,8 @@ const SignupForm = () => {
     const response = axios
       .post(BACKEND_URL + "/register", { name, email, password })
       .then((res) => {
+        console.log(res)
         const statusCode = res.data.status;
-
         switch (statusCode) {
           case statusCodes.INTERNAL_SERVER_ERROR:
             toast.error("Server error");
@@ -32,9 +32,11 @@ const SignupForm = () => {
             break;
           case statusCodes.CREATED:
             toast.success("User registered successfully");
-            toast.error("Please verify your email to login !!");
-            navigate("/signin");
+            localStorage.setItem("token", "Bearer " + res.data.message);
+            navigate("/onboard");
             break;
+          default:     
+            toast.error("Please verify your email to login !!");
         }
       });
 

@@ -28,7 +28,6 @@ const Signup = () => {
       )
       .then((res) => {
         const status = res.data.status;
-
         if (status == 200) {
           axios
             .get(BACKEND_URL + "/user/check_org", {

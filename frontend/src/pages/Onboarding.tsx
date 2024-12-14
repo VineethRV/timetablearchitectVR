@@ -10,7 +10,6 @@ import ConfirmPage from "../components/OnBoardingProcess/Forms/ConfirmPage";
 import { OrganisationSchema } from "../types/main";
 import { IoIosArrowBack } from "react-icons/io";
 import { FaChevronRight } from "react-icons/fa";
-
 const totalPageNumbers = 3;
 
 const OnboardingPage = () => {
@@ -90,7 +89,7 @@ const OnboardingPage = () => {
                   />
                 );
               default:
-                return <ConfirmPage setBackBtnDisable={setBackBtnDisable} />;
+                return <ConfirmPage setBackBtnDisable={setBackBtnDisable}  organisationDetails={organisationDetails} />;
             }
           })()}
         </div>
