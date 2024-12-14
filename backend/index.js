@@ -100,7 +100,7 @@ app.post("/api/onboard", async (req, res) => {
     return res.json({
       status: 400,
       message:
-        "Name, number of sections, number of teachers, number of students, and department list are required",
+        "Name, designation, department, number of sections, number of teachers, number of students and department list are required",
     });
   }
 
@@ -113,22 +113,10 @@ app.post("/api/onboard", async (req, res) => {
       students,
       depts_list
     );
-
-    // Handle the response based on the result
-    if (result.status === statusCodes.CREATED) {
-      res.json({
-        status: result.status,
-        message: "Organization onboarded successfully",
-      });
-    } else {
-      res.json({
-        status: result.status,
-        message: "Internal server error",
-      });
-    }
+    return res.status(200).json({ status: tokens.status, message: tokens.token });
   } catch (error) {
-    console.error(error);
-    res.json({ status: 500, message: "Server error" });
+    console.log(error);
+    return res.status(500).json({ status: 500, message: "Server error" });
   }
 });
 
