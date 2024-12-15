@@ -10,6 +10,7 @@ export async function createCourse(
   JWTtoken: string,
   name: string,
   code: string,
+  credits: number|null,
   semester: number | null = null,
   department: string | null = null
 ): Promise<{ status: number; Course: Course | null }> {
@@ -28,6 +29,7 @@ export async function createCourse(
           name: name,
           code: code,
           orgId: user.orgId,
+          credits: credits,
           department: user.department,
           semester: semester,
         };
@@ -147,6 +149,7 @@ export async function updateCourse(
   originalName: string,
   originalDepartment: string | null = null,
   originalSemester: number,
+  credits:number|null,
   course: Course
 ): Promise<{ status: number }> {
   try {
@@ -181,6 +184,7 @@ export async function updateCourse(
             name: course.name,
             code: course.code,
             semester: course.semester,
+            credits:credits?credits:course.credits,
             department:
               user.role == "admin" && course.department
                 ? course.department
@@ -202,6 +206,102 @@ export async function updateCourse(
     console.error(e);
     return {
       status: statusCodes.INTERNAL_SERVER_ERROR,
+    };
+  }
+}
+export async function getCourses(
+  JWTtoken: string,
+  semester: number
+): Promise<{ status: number; courses: Course[] | null }> {
+  try {
+    const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        courses: null,
+      };
+    }
+
+    if (status == statusCodes.OK && user) {
+      let courses: Course[];
+
+      if (user.role != "admin") {
+        courses = await prisma.course.findMany({
+          where: {
+            orgId: user.orgId,
+            department: user.department,
+            semester: semester,
+          },
+        });
+      } else {
+        courses = await prisma.course.findMany({
+          where: {
+            orgId: user.orgId,
+            semester: semester,
+          },
+        });
+      }
+
+      return {
+        status: statusCodes.OK,
+        courses: courses,
+      };
+    } else {
+      return {
+        status: status,
+        courses: null,
+      };
+    }
+  } catch {
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      courses: null,
+    };
+  }
+}
+
+export async function peekCourse(
+  JWTtoken: string,
+  name: string,
+  department: string | null = null,
+  semester: number
+): Promise<{ status: number; course: Course | null }> {
+  try {
+    const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        course: null,
+      };
+    }
+
+    if (status == statusCodes.OK && user) {
+      const course = await prisma.course.findFirst({
+        where: {
+          name: name,
+          department:
+            user.role == "admin" && department
+              ? department
+              : user.department,
+          orgId: user.orgId,
+          semester: semester,
+        },
+      });
+      return {
+        status: statusCodes.OK,
+        course: course,
+      };
+    }
+    return {
+      status: status,
+      course: null,
+    };
+  } catch {
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      course: null,
     };
   }
 }

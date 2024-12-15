@@ -57,6 +57,7 @@ model Course {
   code         String
   department   String?
   semester     Int?
+  credits      Int?
   organisation Organisation @relation(fields: [orgId], references: [id])
   orgId        Int
 }
