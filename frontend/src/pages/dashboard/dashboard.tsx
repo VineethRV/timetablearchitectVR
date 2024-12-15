@@ -26,7 +26,7 @@ const DashboardWithSidebar = () => {
 
         if (status != 200) {
           navigate("/signin");
-          toast.success("User not authenticated !!");
+          toast.error("User not authenticated !!");
         }
 
         setLoading(false);

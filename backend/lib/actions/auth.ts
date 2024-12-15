@@ -159,7 +159,7 @@ export async function getPosition(
           const retVal = {
             id: user.id,
             name: user.name,
-            organisation: user.organisation,
+            orgId: user.orgId,
             role: user.role,
             department: user.department,
           };

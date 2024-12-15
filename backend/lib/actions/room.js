@@ -1,5 +1,4 @@
 "use strict";
-"use server";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -16,23 +15,13 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -64,13 +53,19 @@ function createRoom(JWTtoken_1, name_1, lab_1) {
     return __awaiter(this, arguments, void 0, function* (JWTtoken, name, lab, timetable = null, department = null) {
         try {
             const { status, user } = yield auth.getPosition(JWTtoken);
+            if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                return {
+                    status: statusCodes_1.statusCodes.BAD_REQUEST,
+                    room: null,
+                };
+            }
             //if status is ok
             if (status == statusCodes_1.statusCodes.OK) {
                 //check if role can make stuff
                 if (user && user.role != "viewer") {
                     const room = {
                         name: name,
-                        organisation: user.organisation,
+                        orgId: user.orgId,
                         department: user.department,
                         lab: lab,
                         timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
@@ -84,7 +79,7 @@ function createRoom(JWTtoken_1, name_1, lab_1) {
                     //first check if any duplicates there, org dep and name same
                     const duplicates = yield prisma.room.findFirst({
                         where: {
-                            organisation: room.organisation,
+                            orgId: room.orgId,
                             department: room.department,
                             name: name,
                         },
@@ -131,13 +126,19 @@ function createManyRoom(JWTtoken_1, name_1, lab_1) {
     return __awaiter(this, arguments, void 0, function* (JWTtoken, name, lab, department = null) {
         try {
             const { status, user } = yield auth.getPosition(JWTtoken);
+            if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                return {
+                    status: statusCodes_1.statusCodes.BAD_REQUEST,
+                    rooms: null,
+                };
+            }
             if (status == statusCodes_1.statusCodes.OK) {
                 if (user && user.role != "viewer") {
                     const rooms = [];
                     for (let i = 0; i < name.length; i++) {
                         rooms.push({
                             name: name[i],
-                            organisation: user.organisation,
+                            orgId: user.orgId,
                             department: department ? department : user.department,
                             lab: lab[i],
                             timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
@@ -145,7 +146,7 @@ function createManyRoom(JWTtoken_1, name_1, lab_1) {
                     }
                     const duplicateChecks = yield Promise.all(rooms.map((room) => prisma.room.findFirst({
                         where: {
-                            organisation: room.organisation,
+                            orgId: room.orgId,
                             department: room.department,
                             name: room.name,
                         },
@@ -187,12 +188,17 @@ function updateRoom(JWTtoken_1, originalName_1) {
     return __awaiter(this, arguments, void 0, function* (JWTtoken, originalName, originalDepartment = null, room) {
         try {
             const { status, user } = yield auth.getPosition(JWTtoken);
+            if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                return {
+                    status: statusCodes_1.statusCodes.BAD_REQUEST,
+                };
+            }
             if (status == statusCodes_1.statusCodes.OK && user) {
                 if (user.role != "viewer") {
                     const existingRoom = yield prisma.room.findFirst({
                         where: {
-                            organisation: user.organisation,
-                            department: user.role == 'admin' ? originalDepartment : user.department,
+                            orgId: user.orgId,
+                            department: user.role == "admin" ? originalDepartment : user.department,
                             name: originalName,
                         },
                     });
@@ -207,7 +213,9 @@ function updateRoom(JWTtoken_1, originalName_1) {
                         },
                         data: {
                             name: room.name,
-                            department: user.role == 'admin' && room.department ? room.department : user.department,
+                            department: user.role == "admin" && room.department
+                                ? room.department
+                                : user.department,
                             lab: room.lab,
                             timetable: room.timetable,
                         },
@@ -226,7 +234,7 @@ function updateRoom(JWTtoken_1, originalName_1) {
         }
         catch (_a) {
             return {
-                status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR
+                status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
             };
         }
     });
@@ -236,6 +244,12 @@ function getRooms(token) {
         try {
             //get position of user
             const { status, user } = yield auth.getPosition(token);
+            if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                return {
+                    status: statusCodes_1.statusCodes.BAD_REQUEST,
+                    rooms: null,
+                };
+            }
             if (status == statusCodes_1.statusCodes.OK && user) {
                 //find all the clasrooms in his lab
                 let rooms;
@@ -243,30 +257,32 @@ function getRooms(token) {
                     rooms = yield prisma.room
                         .findMany({
                         where: {
-                            organisation: user.organisation,
+                            orgId: user.orgId,
                             department: user.department,
                         },
                         select: {
                             name: true,
                             department: true,
                             lab: true,
+                            orgId: true,
                         },
                     })
-                        .then((results) => results.map((room) => (Object.assign(Object.assign({}, room), { organisation: user.organisation || null, timetable: null }))));
+                        .then((results) => results.map((room) => (Object.assign(Object.assign({}, room), { timetable: null }))));
                 }
                 else {
                     rooms = yield prisma.room
                         .findMany({
                         where: {
-                            organisation: user.organisation,
+                            orgId: user.orgId,
                         },
                         select: {
                             name: true,
                             department: true,
                             lab: true,
+                            orgId: true,
                         },
                     })
-                        .then((results) => results.map((room) => (Object.assign(Object.assign({}, room), { organisation: user.organisation || null, timetable: null }))));
+                        .then((results) => results.map((room) => (Object.assign(Object.assign({}, room), { timetable: null }))));
                 }
                 return {
                     status: statusCodes_1.statusCodes.OK,
@@ -294,14 +310,24 @@ function peekRoom(token_1, name_1) {
         try {
             //get position of user
             const { status, user } = yield auth.getPosition(token);
+            if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                return {
+                    status: statusCodes_1.statusCodes.BAD_REQUEST,
+                    room: null,
+                };
+            }
             if (status == statusCodes_1.statusCodes.OK && user) {
                 //find all the clasrooms in his lab
                 const room = yield prisma.room.findFirst({
                     where: {
                         name: name,
-                        department: user.role == 'admin' ? department ? department : user.department : user.department, //if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
-                        organisation: user.organisation,
-                    }
+                        department: user.role == "admin"
+                            ? department
+                                ? department
+                                : user.department
+                            : user.department, //if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
+                        orgId: user.orgId,
+                    },
                 });
                 return {
                     status: statusCodes_1.statusCodes.OK,
@@ -327,17 +353,22 @@ function peekRoom(token_1, name_1) {
 function deleteRooms(JWTtoken, rooms) {
     return __awaiter(this, void 0, void 0, function* () {
         const { status, user } = yield auth.getPosition(JWTtoken);
+        if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+            return {
+                status: statusCodes_1.statusCodes.BAD_REQUEST,
+            };
+        }
         try {
             if (status == statusCodes_1.statusCodes.OK && user) {
                 if (user.role != "viewer") {
                     yield prisma.room.deleteMany({
                         where: {
-                            OR: rooms.map(room => ({
+                            OR: rooms.map((room) => ({
                                 name: room.name,
-                                organisation: user.organisation,
-                                department: user.role == 'admin' ? room.department : user.department
-                            }))
-                        }
+                                orgId: user.orgId,
+                                department: user.role == "admin" ? room.department : user.department,
+                            })),
+                        },
                     });
                     return {
                         status: statusCodes_1.statusCodes.OK,

@@ -19,8 +19,7 @@ const OnboardingPage = () => {
   const [organisationDetails, setOrganisationDetails] =
     useState<OrganisationSchema>({
       name: "",
-      designation: "",
-      dept: "",
+      dept: "Select a department",
       sections: 0,
       teachers: 0,
       students: 0,
@@ -44,8 +43,7 @@ const OnboardingPage = () => {
     () =>
       pageNumber == 0 &&
       (organisationDetails.name == "" ||
-        organisationDetails.dept == "" ||
-        organisationDetails.designation == ""),
+        organisationDetails.dept == "Select a department"),
     // Form 2 Condition
     () =>
       pageNumber == 1 &&
