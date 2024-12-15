@@ -213,9 +213,9 @@ app.post("/api/onboard", async (req, res) => {
   if (!token) {
     return res.status(200).json({ status: 400, message: "token is required" });
   }
-  const { name, sections, teachers, students, depts_list } = req.body;
+  const { name, department,sections, teachers, students, depts_list } = req.body;
 
-  if (!name || !sections || !teachers || !students || !depts_list) {
+  if (!name || !department||!sections || !teachers || !students || !depts_list) {
     return res.json({
       status: 400,
       message:
