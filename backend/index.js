@@ -109,6 +109,7 @@ app.post("/api/onboard", async (req, res) => {
     // Call the onboarding function
     const result = await onboard.onboarding(
       name,
+      department,
       sections,
       teachers,
       students,
