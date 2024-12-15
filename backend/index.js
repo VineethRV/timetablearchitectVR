@@ -915,6 +915,23 @@ app.post("/request_access", async (req, res) => {
   }
 });
 
+app.post("/api/getLabRecommendation", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { courses, teachers, rooms } = req.body;
+  if (!token || !courses || !teachers || !rooms) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token, courses, teachers, and rooms are required",
+    });
+  }
+  try {
+    const result = await lab.getRecommendations(token, { courses, teachers, rooms });
+    res.status(200).json({ status: result.status, timetable: result.timetable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
 app.get("/health", (_, res) => {
   return res.json({
     msg: "Server is healthy !!",
