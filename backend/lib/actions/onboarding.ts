@@ -3,7 +3,7 @@ import { statusCodes } from "../types/statusCodes";
 import { checkAuthentication, getPosition } from "./auth";
 
 const prisma = new PrismaClient();
-export default async function Onboard(
+export async function Onboard(
   token: string,
   name: string,
   dept: string,
@@ -45,7 +45,7 @@ export default async function Onboard(
         status: statusCodes.CONFLICT,
       };
     }
-    // Create the organization
+    // Create the organizatio
     const organisation=await prisma.organisation.create({
       data: {
         name,
@@ -55,7 +55,6 @@ export default async function Onboard(
         depts_list: depts_list.join(","),
       },
     });
-
     // Update the user’s organization and role
     if (user.user) {
       // Ensure the user is updated in the database if necessary
@@ -64,6 +63,9 @@ export default async function Onboard(
         data: {
           role: "Admin",
           department: dept,
+          organisation: {
+            connect: { id: organisation.id }, // Connect the organisation using its ID
+          },
         },
       });
     }
