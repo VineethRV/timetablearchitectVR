@@ -3,6 +3,7 @@ import AccessTable from "../../../components/AccessPage/AccessTable"
 
 // name,email,department,level_of_access,grant/revoke
 
+
 const Access = () => {
   return (
     <main>

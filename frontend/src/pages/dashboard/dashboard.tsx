@@ -4,7 +4,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../config.ts";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import Loading from '../../components/Loading/Loading.tsx'
+import Loading from "../../components/Loading/Loading.tsx";
 
 const DashboardWithSidebar = () => {
   const navigate = useNavigate();
@@ -23,18 +23,31 @@ const DashboardWithSidebar = () => {
       )
       .then((res) => {
         const status = res.data.status;
-
+        
         if (status != 200) {
           navigate("/signin");
           toast.error("User not authenticated !!");
-        }
+        } else {
+          axios
+            .get(BACKEND_URL + "/user/check_org", {
+              headers: {
+                Authorization: localStorage.getItem("token"),
+              },
+            })
+            .then(({ data }) => {
+              
+              if (!data.result) {
+                navigate("/onboard");
+                toast.info("Please complete onboarding process");
+              }
 
-        setLoading(false);
-      })
+              setLoading(false);
+            });
+        }
+      });
   }, []);
 
-
-  if (loading) <Loading />
+  if (loading) <Loading />;
 
   return (
     <div className="flex h-screen">
