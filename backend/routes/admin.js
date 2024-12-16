@@ -48,8 +48,8 @@ adminRouter.get("/get_access_requests", adminMiddleware, async (req, res) => {
         user: {
           select: {
             name: true,
-            email: true
-          }
+            email: true,
+          },
         },
       },
     });
@@ -87,6 +87,7 @@ adminRouter.post("/change_access", adminMiddleware, async (req, res) => {
         data: {
           orgId: access_request.organisation.id,
           department: access_request.department,
+          role: access_request.level,
         },
       });
     }
@@ -100,8 +101,8 @@ adminRouter.post("/change_access", adminMiddleware, async (req, res) => {
     return res.json({
       status: statusCodes.OK,
     });
-  } catch(e) {
-    return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR })
+  } catch (e) {
+    return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
   }
 });
 

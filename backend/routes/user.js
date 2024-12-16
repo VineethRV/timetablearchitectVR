@@ -34,6 +34,8 @@ userRouter.post("/request_access", checkAuth, async (req, res) => {
       },
     });
 
+    if (!organisation) return res.json({ status: statusCodes.BAD_REQUEST });
+
     const access_req = await prisma.accessRequest.findFirst({
       where: {
         userId: req.headers.id,
@@ -42,7 +44,7 @@ userRouter.post("/request_access", checkAuth, async (req, res) => {
     });
 
     if (access_req) return res.json({ status: statusCodes.BAD_REQUEST });
-    
+
     await prisma.accessRequest.create({
       data: {
         userId: req.headers.id,

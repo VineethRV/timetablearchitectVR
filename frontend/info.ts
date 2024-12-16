@@ -50,4 +50,17 @@ export const DEPARTMENTS_OPTIONS = [
       value: "Computer Science and Data Science",
       label: "Computer Science and Data Science",
     },
-  ];
+];
+
+export const colorCombos: Record<string, string>[] = [
+  { textColor: "#FFFFFF", backgroundColor: "#000000" },
+  { textColor: "#333333", backgroundColor: "#FFFBCC" },
+  { textColor: "#1D3557", backgroundColor: "#A8DADC" },
+  { textColor: "#F2F2F2", backgroundColor: "#00796B" },
+  { textColor: "#FFFFFF", backgroundColor: "#283593" },
+  { textColor: "#FFFFFF", backgroundColor: "#2C3E50" },
+  { textColor: "#000000", backgroundColor: "#F2F2F2" },
+  { textColor: "#F2F2F2", backgroundColor: "#424242" },
+  { textColor: "#000000", backgroundColor: "#F4E04D" },
+  { textColor: "#2F4858", backgroundColor: "#F8B400" },
+];
