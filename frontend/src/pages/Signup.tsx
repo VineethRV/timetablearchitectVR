@@ -4,9 +4,6 @@ import Topbar from "../components/SignupPage/Topbar";
 import SignupForm from "../components/SignupPage/SignupForm";
 import Footer from "../components/SignupPage/Footer";
 import QuoteSection from "../components/SignupPage/QuoteSection";
-// import { useRouter } from 'next/navigation';
-// import { checkAuthentication } from '@/lib/actions/auth';
-// import { toast } from 'sonner';
 import Loading from "../components/Loading/Loading";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../config";
@@ -33,12 +30,24 @@ const Signup = () => {
         const status = res.data.status;
 
         if (status == 200) {
-          navigate("/dashboard");
-          toast.success("User is already logged in!!");
+          axios
+            .get(BACKEND_URL + "/user/check_org", {
+              headers: {
+                Authorization: localStorage.getItem("token"),
+              },
+            })
+            .then(({ data }) => {
+              if (!data.result) {
+                navigate("/onboard");
+                toast.info("Please complete onboarding process");
+              } else {
+                navigate("/dashboard");
+                toast.success("User is already logged in!!");
+              }
+              setLoading(false);
+            });
         }
-
-        setLoading(false);
-      })
+      });
   }, []);
 
   if (loading) return <Loading />;

@@ -21,6 +21,23 @@ function checkAuth(req, res, next) {
   next();
 }
 
+userRouter.get("/check_org", checkAuth, async (req, res) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      id: req.headers.id,
+    },
+    select: {
+      orgId: true,
+    },
+  });
+
+  if (!user || !user.orgId) {
+    return res.json({ result: false });
+  }
+
+  return res.json({ result: true });
+});
+
 userRouter.post("/request_access", checkAuth, async (req, res) => {
   const { invite_code, level, department } = req.body;
 
