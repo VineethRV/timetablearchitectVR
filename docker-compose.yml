@@ -27,9 +27,6 @@ services:
       - "3000:3000"
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@postgres:5432/mydb"
-      JWT_SECRET_KEY: "bob"
-      EMAIL_ACCESS_TOKEN: "iddm htzu mvjz pibb"
-      ARCHITECT_EMAIL: "timetablearchitect@gmail.com"
     depends_on:
       - postgres
 
