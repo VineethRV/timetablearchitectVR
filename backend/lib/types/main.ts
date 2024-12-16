@@ -41,6 +41,7 @@ export type Course = {
   department: string | null;
   orgId: number;
   semester: number | null;
+  credits: number|null;
 };
 
 export type Lab = {

@@ -838,6 +838,42 @@ app.delete("/api/labs", async (req, res) => {
   }
 });
 
+// Get list of courses
+app.get("/api/courses", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { semester, department } = req.query;
+  if (!token || semester === undefined) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token and semester are required" });
+  }
+
+  try {
+    const result = await course.getCourses(token, parseInt(semester), department);
+    res.status(200).json({ status: result.status, message: result.courses });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Peek a specific course
+app.post("/api/courses/peek", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { name, semester, department } = req.body;
+  if (!token || !name || semester === undefined) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token, name, and semester are required" });
+  }
+
+  try {
+    const result = await course.peekCourse(token, name, semester, department);
+    res.status(200).json({ status: result.status, message: result.course });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
 app.post("/request_access", async (req, res) => {
   const { invite_code, level } = req.body;
   const token = req.headers.authorization?.split(" ")[1];
@@ -876,6 +912,23 @@ app.post("/request_access", async (req, res) => {
     });
   } catch (e) {
     return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
+  }
+});
+
+app.post("/api/getLabRecommendation", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { courses, teachers, rooms } = req.body;
+  if (!token || !courses || !teachers || !rooms) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token, courses, teachers, and rooms are required",
+    });
+  }
+  try {
+    const result = await lab.getRecommendations(token, { courses, teachers, rooms });
+    res.status(200).json({ status: result.status, timetable: result.timetable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
   }
 });
 
