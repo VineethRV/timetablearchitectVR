@@ -47,6 +47,9 @@ const Signup = () => {
               setLoading(false);
             });
         }
+        else {
+          setLoading(false);
+        }
       });
   }, []);
 
