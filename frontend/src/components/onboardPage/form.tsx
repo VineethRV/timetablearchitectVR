@@ -1,30 +1,23 @@
 "use client";
 import { Button, Card, Input, Select } from "antd";
+import { Button, Card, Input, Select } from "antd";
 import { useState } from "react";
+import { FaBuilding, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import SuccessTick from "../LottieComponents/SuccessTick";
 import { DEPARTMENTS_OPTIONS } from "../../../info";
-import { BACKEND_URL } from "../../../config";
-import axios from "axios";
-import { statusCodes } from "../../types/statusCodes";
-
-const ROLE_OPTIONS = [
-  { label: "Admin", value: "admin" },
-  { label: "Viewer", value: "viewer" },
-  { label: "Editor", value: "editor" },
-];
 
 const Form = () => {
-  const [department, setDepartment] = useState("");
+  const [dept, setDept] = useState("");
   const [role, setRole] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [Code, setCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const reqAccessHandler = async () => {
-    if (!department || !role || !inviteCode) {
+  const SignUpHandler = () => {
+    if (!dept || !role || !Code) {
       toast.error("Please fill all the fields.");
       return;
     }
@@ -54,33 +47,29 @@ const Form = () => {
               }, 5000)
             );
 
-          toast.promise(promise, {
-            loading: "Redirecting !!!",
-          });
-        } else if(res.data.status == statusCodes.UNAUTHORIZED){
-          toast.error("Not authorized !!")
-        } 
-        else if (res.data.status == statusCodes.BAD_REQUEST) {
-          toast.error("Invalid request");
-        } else {
-          toast.error("Server error");
-        }
-        setLoading(false);
+      toast.promise(promise, {
+        loading: "Redirecting...",
       });
+    }, 4000);
   };
+  const roleOptions = [
+    { label: "Admin", value: "Admin" },
+    { label: "Editor", value: "Editor" },
+    { label: "Viewer", value: "Viewer" },
+  ];
 
   return submitted ? (
     <div className="flex justify-center">
-      <Card className="w-60 text-center rounded-lg shadow-md">
-        <SuccessTick />
-        <h1 className="font-bold text-xl mt-4">
-          You will receive an email once your request is accepted
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Thank you for your patience. We will notify you via email once your
-          request has been reviewed and accepted.
-        </p>
-      </Card>
+    <Card className="w-60 text-center rounded-lg shadow-md">
+      <SuccessTick />
+      <h1 className="font-bold text-xl mt-4">
+        You will receive an role once your request is accepted
+      </h1>
+      <p className="text-gray-600 mt-2">
+        Thank you for your patience. We will notify you via role once your
+        request has been reviewed and accepted.
+      </p>
+    </Card>
     </div>
   ) : (
     <div className="flex flex-col space-y-4 px-12">
@@ -90,29 +79,29 @@ const Form = () => {
       <div className="space-y-2">
         <h1 className="font-semibold text-sm">Department</h1>
         <Select
-          className="w-full"
-          value={department}
-          onChange={(value) => setDepartment(value)}
-          placeholder="Select Department"
+          size="large"
           options={DEPARTMENTS_OPTIONS}
+          onChange={(e) => setDept(e.target.value)}
+          placeholder="Select a department"
+          prefix={<FaBuilding className="h-5 w-5" />}
         />
       </div>
       <div className="space-y-2">
         <h1 className="font-semibold text-sm">Role</h1>
         <Select
-          className="w-full"
-          value={role}
-          onChange={(value) => setRole(value)}
-          placeholder="Select Role"
-          options={ROLE_OPTIONS}
+          size="large"
+          options={roleOptions}
+          onChange={(e) => setRole(e.target.value)}
+          placeholder="Editor"
+          prefix={<FaUser className="h-5 w-5" />}
         />
       </div>
       <div className="space-y-2">
-        <h1 className="font-semibold text-sm">Invite Code</h1>
+        <h1 className="font-semibold text-sm">Organisation Code</h1>
         <Input
-          value={inviteCode}
-          onChange={(e) => setInviteCode(e.target.value)}
-          placeholder="Enter Invite Code"
+          size="large"
+          value={Code}
+          onChange={(e) => setCode(e.target.value)}
         />
       </div>
       <Button
