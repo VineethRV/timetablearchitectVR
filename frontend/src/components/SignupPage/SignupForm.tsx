@@ -33,7 +33,7 @@ const SignupForm = () => {
           case statusCodes.CREATED:
             toast.success("User registered successfully");
             toast.error("Please verify your email to login !!");
-            navigate("/onboard");
+            navigate("/signin");
             break;
         }
       });

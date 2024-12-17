@@ -44,7 +44,7 @@ const Form = () => {
         }
       )
       .then((res) => {
-        if (res.status == statusCodes.OK) {
+        if (res.data.status == statusCodes.OK) {
           setSubmitted(true);
           const promise = () =>
             new Promise((resolve) =>
@@ -57,7 +57,10 @@ const Form = () => {
           toast.promise(promise, {
             loading: "Redirecting !!!",
           });
-        } else if (res.status == statusCodes.BAD_REQUEST) {
+        } else if(res.data.status == statusCodes.UNAUTHORIZED){
+          toast.error("Not authorized !!")
+        } 
+        else if (res.data.status == statusCodes.BAD_REQUEST) {
           toast.error("Invalid request");
         } else {
           toast.error("Server error");

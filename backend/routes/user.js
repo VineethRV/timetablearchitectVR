@@ -50,7 +50,7 @@ userRouter.post("/request_access", checkAuth, async (req, res) => {
         id: true,
       },
     });
-
+    
     if (!organisation) return res.json({ status: statusCodes.BAD_REQUEST });
 
     const access_req = await prisma.accessRequest.findFirst({
@@ -75,7 +75,6 @@ userRouter.post("/request_access", checkAuth, async (req, res) => {
       status: statusCodes.OK,
     });
   } catch (e) {
-    console.log(e);
     return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
   }
 });
