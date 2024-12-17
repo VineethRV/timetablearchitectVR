@@ -13,7 +13,6 @@ const Signup = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
   useEffect(() => {
     axios
       .post(
