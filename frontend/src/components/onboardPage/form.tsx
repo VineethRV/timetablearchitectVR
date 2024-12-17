@@ -1,21 +1,22 @@
 "use client";
-import { Button, Card, Input } from "antd";
+import { Button, Card, Input, Select } from "antd";
 import { useState } from "react";
-import { FaEyeSlash, FaBuilding, FaEye, FaUser } from "react-icons/fa";
+import { FaBuilding, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import SuccessTick from "../LottieComponents/SuccessTick";
+import { DEPARTMENTS_OPTIONS } from "../../../info";
 
 const Form = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [dept, setDept] = useState("");
+  const [role, setRole] = useState("");
+  const [Code, setCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const SignUpHandler = () => {
-    if (!name || !email || !password) {
+    if (!dept || !role || !Code) {
       toast.error("Please fill all the fields.");
       return;
     }
@@ -39,16 +40,21 @@ const Form = () => {
       });
     }, 4000);
   };
+  const roleOptions = [
+    { label: "Admin", value: "Admin" },
+    { label: "Editor", value: "Editor" },
+    { label: "Viewer", value: "Viewer" },
+  ];
 
   return submitted ? (
     <div className="flex justify-center">
     <Card className="w-60 text-center rounded-lg shadow-md">
       <SuccessTick />
       <h1 className="font-bold text-xl mt-4">
-        You will receive an email once your request is accepted
+        You will receive an role once your request is accepted
       </h1>
       <p className="text-gray-600 mt-2">
-        Thank you for your patience. We will notify you via email once your
+        Thank you for your patience. We will notify you via role once your
         request has been reviewed and accepted.
       </p>
     </Card>
@@ -58,31 +64,30 @@ const Form = () => {
       <h1 className="font-bold text-2xl text-center mb-6">Join an Organisation</h1>
       <div className="space-y-2">
         <h1 className="font-semibold text-sm">Department</h1>
-        <Input
+        <Select
           size="large"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Civil Engineering"
+          options={DEPARTMENTS_OPTIONS}
+          onChange={(e) => setDept(e.target.value)}
+          placeholder="Select a department"
           prefix={<FaBuilding className="h-5 w-5" />}
         />
       </div>
       <div className="space-y-2">
         <h1 className="font-semibold text-sm">Role</h1>
-        <Input
+        <Select
           size="large"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          options={roleOptions}
+          onChange={(e) => setRole(e.target.value)}
           placeholder="Editor"
           prefix={<FaUser className="h-5 w-5" />}
         />
       </div>
       <div className="space-y-2">
         <h1 className="font-semibold text-sm">Organisation Code</h1>
-        <Input.Password
+        <Input
           size="large"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          iconRender={(visible) => (visible ? <FaEye /> : <FaEyeSlash />)}
+          value={Code}
+          onChange={(e) => setCode(e.target.value)}
         />
       </div>
       <Button
