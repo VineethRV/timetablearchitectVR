@@ -1,4 +1,3 @@
-"use client";
 import { useState, useEffect } from "react";
 import Topbar from "../components/SignupPage/Topbar";
 import SignupForm from "../components/SignupPage/SignupForm";
@@ -14,53 +13,45 @@ const Signup = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
+
   useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        // Step 1: Check if the user is authenticated
-        const authResponse = await axios.post(
-          BACKEND_URL + "/checkAuthentication",
-          {},
-          {
-            headers: {
-              authorization: localStorage.getItem("token"),
-            },
-          }
-        );
-
-        const authStatus = authResponse.data.status;
-
-        if (authStatus === 200) {
-          // Step 2: Fetch user's position
-          const positionResponse = await axios.post(
-            BACKEND_URL + "/getPosition",
-            {},
-            {
-              headers: {
-                authorization: localStorage.getItem("token"),
-              },
-            }
-          );
-          const userHasAccess = positionResponse.data.status; // Assume backend returns `hasAccess`
-
-          if (userHasAccess==200) {
-            navigate("/dashboard");
-            toast.success("Welcome to the dashboard!");
-          } else {
-            navigate("/onboard");
-            toast.warning("You don't have access yet. Please complete onboarding on wait for your response to get accepted.");
-          }
-        } else {
-          setLoading(false); // Adjust based on your state logic
+    axios
+      .post(
+        BACKEND_URL + "/checkAuthentication",
+        {},
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
         }
-      } catch (error) {
-        console.error("Error during authentication or access check:", error);
-        toast.error("An error occurred. Please try again later.");
-      }
-    };
+      )
+      .then((res) => {
+        const status = res.data.status;
 
-    checkAuthentication();
-  }, [navigate]);
+        if (status == 200) {
+          axios
+            .get(BACKEND_URL + "/user/check_org", {
+              headers: {
+                Authorization: localStorage.getItem("token"),
+              },
+            })
+            .then(({ data }) => {
+              if (!data.result) {
+                navigate("/onboard");
+                toast.info("Please complete onboarding process");
+              } else {
+                navigate("/dashboard");
+                toast.success("User is already logged in!!");
+              }
+              setLoading(false);
+            });
+        }
+        else {
+          setLoading(false);
+        }
+      });
+  }, []);
+
   if (loading) return <Loading />;
 
   return (

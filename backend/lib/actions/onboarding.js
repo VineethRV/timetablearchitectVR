@@ -99,6 +99,9 @@ function Onboard(token, name, dept, sections, teachers, students, depts_list) {
                             data: {
                                 role: "Admin",
                                 department: dept,
+                                organisation: {
+                                    connect: { id: organisation.id }, // Connect the organisation using its ID
+                                },
                             },
                         })];
                 case 5:

@@ -213,9 +213,10 @@ app.post("/api/onboard", async (req, res) => {
   if (!token) {
     return res.status(200).json({ status: 400, message: "token is required" });
   }
-  const { name, department,sections, teachers, students, depts_list } = req.body;
+  console.log(req.body)
+  const { name,dept,sections,teachers,students,depts_list } = req.body;
 
-  if (!name || !department||!sections || !teachers || !students || !depts_list) {
+  if (!name || !dept||!sections || !teachers || !students || !depts_list) {
     return res.json({
       status: 400,
       message:
@@ -228,7 +229,7 @@ app.post("/api/onboard", async (req, res) => {
     const tokens = await onboard.Onboard(
       token,
       name,
-      department,
+      dept,
       sections,
       teachers,
       students,
@@ -237,7 +238,6 @@ app.post("/api/onboard", async (req, res) => {
     return res.status(200).json({ status: tokens.status, message: tokens.token });
   } catch (error) {
     console.log(error);
-    console.log(3)
     return res.status(500).json({ status: 500, message: "Server error" });
   }
 });
