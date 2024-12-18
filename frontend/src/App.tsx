@@ -1,7 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Homepage";
-import Signin from "./pages/Signin";
+import Signin from "./pages/SignIn";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/dashboard/dashboard";
 import Teacher from "./pages/dashboard/teacher/teacher";
@@ -26,6 +26,7 @@ import Electivecourse from "./pages/dashboard/courses/electives/electivesdisplay
 import OnboardingPage from "./pages/Onboarding";
 import Onboard from "./pages/register";
 import Access from "./pages/dashboard/admin/access";
+
 function App() {
   return (
     <BrowserRouter>
@@ -35,6 +36,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/onboard" element={<Onboard />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
+
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<AdminPanel />} />
           <Route path="/dashboard/teachers" element={<Teacher />}>
@@ -82,7 +84,7 @@ function App() {
           <Route path="/dashboard/section" element={<Section />}>
             <Route path="/dashboard/section/add" element={<AddSectionPage />} />
           </Route>
-          <Route path="/dashboard/admin/access" element={<Access/>} />
+          <Route path="/dashboard/admin/access" element={<Access />} />
         </Route>
       </Routes>
       <Toaster />

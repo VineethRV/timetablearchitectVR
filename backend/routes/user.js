@@ -3,23 +3,8 @@ const { statusCodes } = require("../lib/types/statusCodes");
 const userRouter = require("express").Router();
 const secretKey = process.env.JWT_SECRET_KEY;
 const jwt = require("jsonwebtoken");
+const { checkAuth } = require("../middlewares/checkAuth");
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
-
-function checkAuth(req, res, next) {
-  try {
-    const token = req.headers.authorization?.split(" ")[1];
-    jwt.verify(token, secretKey);
-    const { id, email } = jwt.decode(token);
-    req.headers.id = id;
-    req.headers.email = email;
-  } catch {
-    return res.json({
-      status: statusCodes.UNAUTHORIZED,
-    });
-  }
-
-  next();
-}
 
 userRouter.get("/check_org", checkAuth, async (req, res) => {
   const user = await prisma.user.findFirst({
