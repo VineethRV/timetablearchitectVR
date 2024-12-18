@@ -30,6 +30,7 @@ const ConfirmPage = ({
     setLoading(true);
     
     try {
+      console.log(organisationDetails)
       const response = await axios.post(
         BACKEND_URL+'/onboard',
         organisationDetails,
