@@ -103,11 +103,15 @@ app.post("/api/onboard", async (req, res) => {
         "Name, number of sections, number of teachers, number of students, and department list are required",
     });
     
+    
   }
 
-  try {
-    // Call the onboarding function
-    const result = await onboard.onboarding(
+  try {    
+    const tokens = await onboard.Onboard(
+      token,
+  try {    
+    const tokens = await onboard.Onboard(
+      token,
       name,
       department,
       sections,
@@ -115,6 +119,7 @@ app.post("/api/onboard", async (req, res) => {
       students,
       depts_list
     );
+    return res.status(200).json({ status: tokens.status, message: tokens.token });
     return res.status(200).json({ status: tokens.status, message: tokens.token });
   } catch (error) {
     console.log(error);
