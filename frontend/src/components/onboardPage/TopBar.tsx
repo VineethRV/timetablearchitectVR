@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
 import Logo from "/Logo.png";
+import { Button } from "antd";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Topbar = () => {
+  const navigate = useNavigate();
+
+  function logoutHandle() {
+    localStorage.removeItem("token");
+    navigate("/signin");
+    toast.success("Logged out successfully !!");
+  }
+
   return (
     <div className="flex justify-between w-full h-fit">
       <Link to="/">
@@ -10,6 +21,7 @@ const Topbar = () => {
           <h1 className="font-bold text-base">TTA</h1>
         </div>
       </Link>
+      <Button onClick={logoutHandle}>Logout</Button>
     </div>
   );
 };
