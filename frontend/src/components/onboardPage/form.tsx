@@ -1,6 +1,5 @@
 "use client";
 import { Button, Card, Input, Select } from "antd";
-import { Button, Card, Input, Select } from "antd";
 import { useState } from "react";
 import { FaBuilding, FaUser } from "react-icons/fa";
 import { toast } from "sonner";
