@@ -22,19 +22,33 @@ const ConfirmPage = ({
   const navigate = useNavigate();
   const handleSubmit = async () => {
     setLoading(true);
+    
+    try {
+      console.log(organisationDetails)
+      const response = await axios.post(
+        BACKEND_URL+'/onboard',
+        organisationDetails,
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      console.log(response)
+      // Mock delay for UI feedback
+      setTimeout(() => {
+        setLoading(false);
+        setSubmitted(true);
+        setBackBtnDisable(true);
 
-    // Timeout simulating an api call to backend to register organisation
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      setBackBtnDisable(true);
-      const promise = () =>
-        new Promise((resolve) =>
-          setTimeout(() => {
-            navigate("/");
-            resolve("");
-          }, 5000)
-        );
+        // Redirect after submission success
+        const promise = () =>
+          new Promise((resolve) =>
+            setTimeout(() => {
+              navigate("/");
+              resolve("");
+            }, 5000)
+          );
 
         toast.promise(promise, {
           loading: "Redirecting...",

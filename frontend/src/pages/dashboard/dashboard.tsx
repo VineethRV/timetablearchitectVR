@@ -1,5 +1,4 @@
 import { Outlet, Route, Routes, useNavigate } from "react-router-dom"; // For rendering nested routes
-import { Outlet, Route, Routes, useNavigate } from "react-router-dom"; // For rendering nested routes
 import DashboardSidebar from "../../components/Navbar/SideNavbars/DashboardSidebar.tsx"; // Sidebar component
 import axios from "axios";
 import { BACKEND_URL } from "../../../config.ts";
