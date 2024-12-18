@@ -90,7 +90,12 @@ const OnboardingPage = () => {
                   />
                 );
               default:
-                return <ConfirmPage setBackBtnDisable={setBackBtnDisable} />;
+                return (
+                  <ConfirmPage
+                    organisationDetails={organisationDetails}
+                    setBackBtnDisable={setBackBtnDisable}
+                  />
+                );
             }
           })()}
         </div>
