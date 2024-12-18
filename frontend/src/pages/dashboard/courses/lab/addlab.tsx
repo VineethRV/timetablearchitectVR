@@ -16,6 +16,7 @@ import { motion } from "framer-motion";
 import Timetable from "../../../../components/timetable";
 import { useNavigate } from "react-router-dom";
 import LabAddTable from "../../../../components/CoursePage/Labaddtable";
+
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -43,16 +44,41 @@ const timeslots = [
   "2:30-3:30",
   "3:30-4:30",
 ];
+interface BatchField {
+  name: string;
+  course: string;
+  teacher: string;
+  room: string;
+}
 
 const AddLabpage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
+  const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
+  const [formFields, setFormFields] = useState<BatchField[]>([]);
+  const [buttonStatus, setButtonStatus] = useState(
+    weekdays.map(() => timeslots.map(() => "Free"))
+  );
+  const [tableData, setTableData] = useState<BatchField[]>([]);
+
+  const navigate = useNavigate();
+
   const success = () => {
     message.success("Lab Course Added successfully!", 3);
   };
-  const navigate=useNavigate();
 
   const handleOpenModal = () => {
+    const currentBatches = form.getFieldValue("numberOfBatches");
+    setNumberOfBatches(currentBatches || 1);
+    setFormFields(
+      Array.from({ length: currentBatches || 1 }, (_, i) => ({
+        name: `batch${i + 1}`,
+        course: "",
+        teacher: "",
+        room: "",
+      }))
+    );
     setIsModalOpen(true);
   };
 
@@ -61,10 +87,32 @@ const AddLabpage: React.FC = () => {
     form.resetFields(); // Clear form on modal close
   };
 
-  const [buttonStatus, setButtonStatus] = useState(
-    weekdays.map(() => timeslots.map(() => "Free"))
-  );
+  const handleBatchChange = (
+    index: number,
+    field: keyof BatchField,
+    value: string
+  ) => {
+    const updatedFields = [...formFields];
+    updatedFields[index][field] = value;
+    setFormFields(updatedFields);
+  };
 
+
+  const handleModalSubmit = () => {
+    const validBatches = formFields.filter(
+      (field) => field.course && field.teacher && field.room
+    );
+
+    if (validBatches.length !== formFields.length) {
+      messageApi.error("Please fill in all required fields.");
+      return;
+    }
+
+    setTableData(validBatches); // Set data for LabAddTable
+    setIsModalOpen(false);
+    success();
+  };
+  
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] text-xl text-bold">
@@ -95,12 +143,27 @@ const AddLabpage: React.FC = () => {
         }}
         className="flex mt-12 items-center pl-4"
       >
-        <Form {...formItemLayout} form={form} layout="vertical" requiredMark >
+        <Form {...formItemLayout} form={form} layout="vertical" requiredMark>
           <Form.Item label="Batch Set Name" required>
             <Input placeholder="Name" className="font-normal w-96" />
           </Form.Item>
-          <Form.Item label="Number of Batches" required>
-            <InputNumber min={1} className="font-normal w-96" />
+          <Form.Item
+            label="Number of Batches"
+            name="numberOfBatches"
+            initialValue={1}
+            rules={[
+              {
+                required: true,
+                message: "Please specify the number of batches!",
+              },
+            ]}
+          >
+            <InputNumber
+              min={1}
+              className="font-normal w-96"
+              placeholder="Number of Batches"
+              onChange={(value) => setNumberOfBatches(value || 1)}
+            />
           </Form.Item>
           <label>
             <div>
@@ -111,57 +174,53 @@ const AddLabpage: React.FC = () => {
                 </Tooltip>
               </span>
               <Button
-                color="primary"
-                variant="link"
                 onClick={handleOpenModal}
-                className="text-purple"
+                className="ml-4 text-[#636AE8FF] hover:underline"
               >
                 &#x002B; Add
               </Button>
               <Modal
-                title="Enter details for each Batch"
-                visible={isModalOpen}
-                onCancel={handleCloseModal}
-                okText="Submit"
-                cancelText="Cancel"
-              >
-                <Form form={form} layout="vertical">
-                  <Form.Item
-                    name="batch1"
-                    label="Batch 1"
-                    rules={[
-                      { required: true, message: "Please input Field 1!" },
-                    ]}
-                  >
-                    <div>
-                      <label>Course</label>
-                      <Input placeholder="Course" />
-                      <label>Teachers</label>
-                      <Select placeholder="teacher" />
-                      <label>Rooms</label>
-                      <Select placeholder="rooms" />
-                    </div>
+              visible={isModalOpen}
+              title="Enter Batch Details"
+              onCancel={handleCloseModal}
+              onOk={handleModalSubmit}
+            >
+              {formFields.map((_, index) => (
+                <div key={index}>
+                  <Form.Item label="Course">
+                    <Input
+                      placeholder="Enter course"
+                      onChange={(e) => handleBatchChange(index, "course", e.target.value)}
+                    />
                   </Form.Item>
-                  <Form.Item
-                    name="batch2"
-                    label="Batch 2"
-                    rules={[
-                      { required: true, message: "Please input Field 1!" },
-                    ]}
-                  >
-                    <label>Course</label>
-                    <Input placeholder="Course" />
-                    <label>Teachers</label>
-                    <Select placeholder="teacher" />
-                    <label>Rooms</label>
-                    <Select placeholder="rooms" />
+                  <Form.Item label="Teacher">
+                    <Select
+                      mode="tags"
+                      placeholder="Select Teachers"
+                      onChange={(val) => handleBatchChange(index, "teacher", val.join(","))}
+                    />
                   </Form.Item>
-                </Form>
-              </Modal>
+                  <Form.Item label="Room">
+                    <Select
+                      mode="tags"
+                      placeholder="Enter Room Details"
+                      onChange={(val) => handleBatchChange(index, "room", val.join(","))}
+                    />
+                  </Form.Item>
+                </div>
+              ))}
+            </Modal>
             </div>
           </label>
-          <LabAddTable />
-          <br></br>
+          <LabAddTable
+            data={tableData.map((batch, index) => ({
+              key: `${index}`,
+              Course: batch.course,
+              teachers: [batch.teacher],
+              rooms: [batch.room],
+            }))}
+          />
+          <br />
           <Form.Item
             label="Electives and Common time courses"
             className="w-96"
@@ -171,7 +230,7 @@ const AddLabpage: React.FC = () => {
           <label>
             <div className="flex items-center">
               <span>
-                Click on the slots you do not want the lab to be alloted
+                Click on the slots you do not want the lab to be allotted
               </span>
             </div>
           </label>
@@ -187,9 +246,7 @@ const AddLabpage: React.FC = () => {
                 </Button>
               </Form.Item>
               <Form.Item>
-                <Button onClick={success} className="bg-primary text-[#FFFFFF]">
-                  Submit
-                </Button>
+                <Button className="bg-primary text-[#FFFFFF]">Submit</Button>
               </Form.Item>
             </div>
           </div>

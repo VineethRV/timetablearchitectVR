@@ -102,29 +102,33 @@ app.post("/api/onboard", async (req, res) => {
       message:
         "Name, number of sections, number of teachers, number of students, and department list are required",
     });
-    
-    
   }
 
-  try {    
-    const tokens = await onboard.Onboard(
-      token,
-  try {    
-    const tokens = await onboard.Onboard(
-      token,
+  try {
+    // Call the onboarding function
+    const result = await onboard.onboarding(
       name,
-      department,
       sections,
       teachers,
       students,
       depts_list
     );
-    return res.status(200).json({ status: tokens.status, message: tokens.token });
-    return res.status(200).json({ status: tokens.status, message: tokens.token });
+
+    // Handle the response based on the result
+    if (result.status === statusCodes.CREATED) {
+      res.json({
+        status: result.status,
+        message: "Organization onboarded successfully",
+      });
+    } else {
+      res.json({
+        status: result.status,
+        message: "Internal server error",
+      });
+    }
   } catch (error) {
-    console.log(error);
-    console.log(3)
-    return res.status(500).json({ status: 500, message: "Server error" });
+    console.error(error);
+    res.json({ status: 500, message: "Server error" });
   }
 });
 
