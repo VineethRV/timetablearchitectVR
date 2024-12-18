@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { statusCodes } from "../types/statusCodes";
-import { getPosition } from "./auth";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +8,8 @@ export async function onboarding(
   no_of_sections: number,
   no_of_teachers: number,
   no_of_students: number,
-  depts_list: string[]
+  depts_list: string[],
+  user_id: number
 ) {
   try {
     await prisma.organisation.create({
@@ -20,7 +20,8 @@ export async function onboarding(
         no_of_students,
         depts_list: depts_list.join(","),
         approved: false,
-      },    
+        ownerId: user_id,
+      },
     });
 
     return { status: statusCodes.CREATED };
@@ -28,46 +29,3 @@ export async function onboarding(
     return { status: statusCodes.INTERNAL_SERVER_ERROR };
   }
 }
-
-// export async function ApproveAccess(
-//   token: string,
-//   tokenApprover: string,
-//   position: string
-// ): Promise<{ status: number }> {
-//   try {
-//     const user = await getPosition(token);
-//     const approver = await getPosition(tokenApprover);
-//     if (
-//       approver.user?.role != "Admin" &&
-//       user.user?.orgId != approver.user?.orgId
-//     ) {
-//       return {
-//         status: statusCodes.NOT_FOUND,
-//       };
-//     }
-//     if (!user) {
-//       return {
-//         status: statusCodes.NOT_FOUND,
-//       };
-//     }
-
-//     await prisma.user.update({
-//       where: {
-//         id: user.user?.id,
-//       },
-//       data: {
-//         role: position, // Setting the role to the passed position
-//         hasAccess: true, // Setting hasAccess to true
-//       },
-//     });
-
-//     return {
-//       status: statusCodes.CREATED, // Successfully updated
-//     };
-//   } catch (error) {
-//     console.error("Error updating user access:", error);
-//     return {
-//       status: statusCodes.INTERNAL_SERVER_ERROR,
-//     };
-//   }
-// }

@@ -12,6 +12,9 @@ const app = express();
 const port = 3000;
 const { adminRouter } = require("./routes/admin.js");
 const { userRouter } = require("./routes/user.js");
+const { authRouter } = require("./routes/auth.js");
+const { checkAuth } = require("./middlewares/checkAuth.js");
+const { orgRouter } = require("./routes/org.js");
 
 app.use(express.json());
 app.use(
@@ -19,8 +22,10 @@ app.use(
     origin: "*",
   })
 );
-app.use('/api/admin', adminRouter);
-app.use('/api/user', userRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/org", orgRouter);
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
@@ -90,15 +95,14 @@ app.post("/api/getPosition", async (req, res) => {
   }
 });
 
-
 //onboarding
-app.post("/api/onboard", async (req, res) => {
+app.post("/api/onboard", checkAuth, async (req, res) => {
   const { name, sections, teachers, students, depts_list } = req.body;
 
   // Validate request body
   if (!name || !sections || !teachers || !students || !depts_list) {
     return res.json({
-      status: 400,
+      status: statusCodes.BAD_REQUEST,
       message:
         "Name, number of sections, number of teachers, number of students, and department list are required",
     });
@@ -111,7 +115,8 @@ app.post("/api/onboard", async (req, res) => {
       sections,
       teachers,
       students,
-      depts_list
+      depts_list,
+      req.headers.id
     );
 
     // Handle the response based on the result
@@ -759,7 +764,6 @@ app.post("/api/courses/peek", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
-
 
 app.post("/api/getLabRecommendation", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
