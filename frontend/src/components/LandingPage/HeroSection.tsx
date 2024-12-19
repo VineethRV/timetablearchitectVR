@@ -3,18 +3,13 @@ import { Button } from "antd";
 import Avatar1 from "/Avatars/avatar1.png";
 import Avatar2 from "/Avatars/avatar2.png";
 import Scrum from "/Illustrations/Scrum.png";
+import { useNavigate } from "react-router-dom";
 
 const HeroSection = () => {
-  async function getStartedClickHandler() {
-    // const auth = await checkAuthentication(localStorage.getItem('token') || "")
-    // if (auth) {
-    //   router.push('/dashboard');
-    //   toast.success("Welcome back !!");
-    // }
-    // else {
-    //   router.push('/signin');
-    //   toast.info("Please login to continue");
-    // }
+  const navigate = useNavigate();
+
+  function getStartedClickHandler() {
+    navigate('/dashboard');
   }
 
   return (

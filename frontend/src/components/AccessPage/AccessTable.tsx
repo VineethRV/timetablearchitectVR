@@ -1,131 +1,77 @@
 "use client";
-import React from 'react';
-import { Avatar, Button, ConfigProvider, Input, Select, Table, Tooltip } from 'antd';
-import type { TableColumnsType } from 'antd';
-import { FaCheck } from 'react-icons/fa';
-import { MdDelete } from 'react-icons/md';
-import { CiSearch } from 'react-icons/ci';
-import { DEPARTMENTS_OPTIONS } from '../../../info';
+import React, { useEffect, useState } from "react";
+import {
+  Avatar,
+  Button,
+  ConfigProvider,
+  Input,
+  Select,
+  Table,
+  Tooltip,
+} from "antd";
+import type { TableColumnsType } from "antd";
+import { FaCheck } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
+import { CiSearch } from "react-icons/ci";
+import { colorCombos, DEPARTMENTS_OPTIONS } from "../../../info";
+import Loading from "../Loading/Loading";
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
+import { statusCodes } from "../../types/statusCodes";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const getRandomColor = () => {
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  };
-  
-const colorCombos: Record<string, string>[] = [
-    { textColor: "#FFFFFF", backgroundColor: "#000000" },
-    { textColor: "#333333", backgroundColor: "#FFFBCC" },
-    { textColor: "#1D3557", backgroundColor: "#A8DADC" },
-    { textColor: "#F2F2F2", backgroundColor: "#00796B" },
-    { textColor: "#FFFFFF", backgroundColor: "#283593" },
-    { textColor: "#FFFFFF", backgroundColor: "#2C3E50" },
-    { textColor: "#000000", backgroundColor: "#F2F2F2" },
-    { textColor: "#F2F2F2", backgroundColor: "#424242" },
-    { textColor: "#000000", backgroundColor: "#F4E04D" },
-    { textColor: "#2F4858", backgroundColor: "#F8B400" },
-  ];
-  
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 const deptColors: Record<string, string> = {};
 
 interface AccessType {
-    key: React.Key,
-    name: string,
-    email: string,
-    department: string,
-    level_of_access: "viewer" | "admin" | "editor"
+  key: React.Key;
+  name: string;
+  email: string;
+  department: string;
+  level_of_access: "viewer" | "admin" | "editor";
 }
 
+const AccessTable = () => {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<AccessType[]>([]);
+  const navigate = useNavigate();
 
+  async function accessHandler(id: React.Key, access: Boolean) {
+    axios
+      .post(
+        BACKEND_URL + "/admin/change_access",
+        {
+          access_id: id,
+          access,
+        },
+        {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then((res) => {
+        const status = res.data.status;
+        if (status == statusCodes.OK) {
+          setData((prevData) => prevData.filter((item) => item.key !== id));
+        } else if (status == statusCodes.UNAUTHORIZED) {
+          toast.error("Not allowed!!");
+        } else if (status == statusCodes.INTERNAL_SERVER_ERROR) {
+          toast.error("Server error!!");
+        }
+      });
+  }
 
-const dataWithKeys: AccessType[] = [
-    {
-      key: '1',
-      name: 'John Brown',
-      email: "john.brown@gmail.com",
-      department: "Computer Science and Engineering",
-      level_of_access: "viewer"
-    },
-    {
-      key: '2',
-      name: 'Sarah Johnson',
-      email: "sarah.johnson@gmail.com",
-      department: "Electrical Engineering",
-      level_of_access: "editor"
-    },
-    {
-      key: '3',
-      name: 'Michael Williams',
-      email: "michael.williams@gmail.com",
-      department: "Mechanical Engineering",
-      level_of_access: "admin"
-    },
-    {
-      key: '4',
-      name: 'Emily Davis',
-      email: "emily.davis@gmail.com",
-      department: "Civil Engineering",
-      level_of_access: "viewer"
-    },
-    {
-      key: '5',
-      name: 'David Wilson',
-      email: "david.wilson@gmail.com",
-      department: "Computer Science and Engineering",
-      level_of_access: "editor"
-    },
-    {
-      key: '6',
-      name: 'Jessica Martinez',
-      email: "jessica.martinez@gmail.com",
-      department: "Biotechnology",
-      level_of_access: "viewer"
-    },
-    {
-      key: '7',
-      name: 'Daniel Anderson',
-      email: "daniel.anderson@gmail.com",
-      department: "Information Technology",
-      level_of_access: "admin"
-    },
-    {
-      key: '8',
-      name: 'Sophia Taylor',
-      email: "sophia.taylor@gmail.com",
-      department: "Computer Science and Engineering",
-      level_of_access: "editor"
-    },
-    {
-      key: '9',
-      name: 'James Thomas',
-      email: "james.thomas@gmail.com",
-      department: "Electrical Engineering",
-      level_of_access: "viewer"
-    },
-    {
-      key: '10',
-      name: 'Olivia Harris',
-      email: "olivia.harris@gmail.com",
-      department: "Mechanical Engineering",
-      level_of_access: "admin"
-    }
-  ];
-  
-
-let cnt = 0;
-
-dataWithKeys?.forEach((_) => {
-    if (!deptColors[_.department as string]) {
-      deptColors[_.department as string] =
-        colorCombos[cnt % colorCombos.length].backgroundColor;
-      cnt++;
-    }
-  });
-
-const columns: TableColumnsType<AccessType> = [
+  const columns: TableColumnsType<AccessType> = [
     {
       title: "Avatar",
       dataIndex: "name",
@@ -169,7 +115,7 @@ const columns: TableColumnsType<AccessType> = [
             {dept}
           </h1>
         );
-    },
+      },
     },
     {
       title: "Level",
@@ -179,11 +125,12 @@ const columns: TableColumnsType<AccessType> = [
       },
     },
     {
-    title: "",
-    render: () => {
+      title: "",
+      render: ({ key }) => {
         return (
           <Tooltip title="Access">
             <Button
+              onClick={() => accessHandler(key, true)}
               type="primary"
               className="bg-green-500"
               shape="circle"
@@ -195,10 +142,11 @@ const columns: TableColumnsType<AccessType> = [
     },
     {
       title: "",
-      render: () => {
+      render: ({ key }) => {
         return (
           <Tooltip title="Revoke">
             <Button
+              onClick={() => accessHandler(key, false)}
               className="bg-red-400"
               type="primary"
               shape="circle"
@@ -210,10 +158,46 @@ const columns: TableColumnsType<AccessType> = [
     },
   ];
 
+  data?.forEach((item, index) => {
+    if (!deptColors[item.department]) {
+      deptColors[item.department] =
+        colorCombos[index % colorCombos.length].backgroundColor;
+    }
+  });
 
-const AccessTable = () => {
-    return <main className='py-4'>
-        <div className="flex space-x-8 justify-between py-6">
+  useEffect(() => {
+    axios
+      .get(BACKEND_URL + "/admin/get_access_requests", {
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+
+        if (status == statusCodes.OK) {
+          const formattedData = res.data.data.map((item: any) => ({
+            key: item.id,
+            name: item.user.name,
+            email: item.user.email,
+            department: item.department,
+            level_of_access: item.level,
+          }));
+          setData(formattedData);
+        } else {
+          navigate("/dashboard");
+          toast.error("You are not allowed !!");
+        }
+
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <Loading />;
+
+  return (
+    <main className="py-4">
+      <div className="flex space-x-8 justify-between py-6">
         <Input
           className="w-fit"
           addonBefore={<CiSearch />}
@@ -234,20 +218,19 @@ const AccessTable = () => {
             <Select
               className="w-[300px]"
               defaultValue="All Departments"
-            //   value={departmentFilter}
               options={DEPARTMENTS_OPTIONS}
-            //   onChange={(e) => setDepartmentFilter(e)}
             />
           </div>
-        </ConfigProvider>  
-          <Button>Clear filters</Button>
+        </ConfigProvider>
+        <Button>Clear filters</Button>
       </div>
-        <Table<AccessType>
+      <Table<AccessType>
         columns={columns}
-        dataSource={dataWithKeys}
+        dataSource={data}
         pagination={{ pageSize: 5 }}
       />
     </main>
+  );
 };
 
 export default AccessTable;

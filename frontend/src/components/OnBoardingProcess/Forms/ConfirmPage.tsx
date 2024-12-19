@@ -4,12 +4,17 @@ import { Dispatch, SetStateAction, useState } from "react";
 import SuccessTick from "../../LottieComponents/SuccessTick";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-
+import { OrganisationSchema } from "../../../types/main";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../config";
+import { statusCodes } from "../../../types/statusCodes";
 const { Title, Paragraph } = Typography;
 
 const ConfirmPage = ({
   setBackBtnDisable,
+  organisationDetails,
 }: {
+  organisationDetails: OrganisationSchema;
   setBackBtnDisable: Dispatch<SetStateAction<boolean>>;
 }) => {
   const [loading, setLoading] = useState(false);
@@ -18,24 +23,48 @@ const ConfirmPage = ({
 
   const handleSubmit = () => {
     setLoading(true);
+    setBackBtnDisable(true);
+    axios
+      .post(
+        BACKEND_URL + "/org/onboarding",
+        {
+          name: organisationDetails.name,
+          sections: organisationDetails.sections,
+          teachers: organisationDetails.teachers,
+          students: organisationDetails.students,
+          depts_list: organisationDetails.depts_list,
+        },
+        {
+          headers: {
+            Authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then((res) => {
+        const status = res.data.status;
+        if (status == statusCodes.CREATED) {
+          setSubmitted(true);
+          const promise = () =>
+            new Promise((resolve) =>
+              setTimeout(() => {
+                navigate("/");
+                resolve("");
+              }, 5000)
+            );
 
-    // Timeout simulating an api call to backend to register organisation
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      setBackBtnDisable(true);
-      const promise = () =>
-        new Promise((resolve) =>
-          setTimeout(() => {
-            navigate("/");
-            resolve("");
-          }, 5000)
-        );
-
-      toast.promise(promise, {
-        loading: "Redirecting...",
+          toast.promise(promise, {
+            loading: "Redirecting...",
+          });
+        } else if (status == statusCodes.BAD_REQUEST) {
+          toast.error("Invalid request !!");
+        } else if (status == statusCodes.CONFLICT) {
+          toast.error("Organisation name already taken !!");
+        } else {
+          toast.error("Server error !!");
+        }
+        setLoading(false);
+        setBackBtnDisable(false);
       });
-    }, 4000);
   };
 
   return (

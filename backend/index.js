@@ -1,19 +1,17 @@
 const express = require("express");
 const auth = require("./lib/actions/auth.js");
-const onboard = require("./lib/actions/onboarding.js");
 const teacher = require("./lib/actions/teacher.js");
 const room = require("./lib/actions/room.js");
 const lab = require("./lib/actions/lab.js");
 const elective = require("./lib/actions/electives.js");
 const course = require("./lib/actions/course.js");
 const cors = require("cors");
-const { default: PrismaClientManager } = require("./lib/pgConnect.js");
-const { statusCodes } = require("./lib/types/statusCodes.js");
 const app = express();
 const port = 3000;
-const jwt = require("jsonwebtoken");
-
-const prisma = PrismaClientManager.getInstance().getPrismaClient();
+const { adminRouter } = require("./routes/admin.js");
+const { userRouter } = require("./routes/user.js");
+const { authRouter } = require("./routes/auth.js");
+const { orgRouter } = require("./routes/org.js");
 
 app.use(express.json());
 app.use(
@@ -21,6 +19,10 @@ app.use(
     origin: "*",
   })
 );
+app.use("/api/admin", adminRouter);
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/org", orgRouter);
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
@@ -32,12 +34,12 @@ app.post("/api/checkAuthentication", async (req, res) => {
   try {
     const isAuthenticated = await auth.checkAuthentication(token);
     if (isAuthenticated) {
-      res.status(200).json({ status: 200, message: "Authenticated" });
+      res.json({ status: 200, message: "Authenticated" });
     } else {
-      res.status(200).json({ status: 401, message: "Unauthorized" });
+      res.json({ status: 401, message: "Unauthorized" });
     }
   } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
+    res.json({ status: 500, message: "Server error" });
   }
 });
 
@@ -87,167 +89,6 @@ app.post("/api/getPosition", async (req, res) => {
     res.status(200).json({ status: result.status, message: result.user });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Send verification email
-app.post("/api/sendVerificationEmail", async (req, res) => {
-  const { username, email } = req.body;
-  if (!username || !email) {
-    return res
-      .status(200)
-      .json({ status: 400, message: "Username and email are required" });
-  }
-
-  try {
-    const result = await auth.sendVerificationEmail(username, email);
-    res.status(200).json({
-      status: result ? 200 : 500,
-      message: result ? "Email sent" : "Failed to send email",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Check if user exists
-app.post("/api/checkUserExists", async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(200).json({ status: 400, message: "Email is required" });
-  }
-
-  try {
-    const exists = await auth.checkUserExists(email);
-    res.status(200).json({
-      status: 200,
-      message: exists ? "User exists" : "User does not exist",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Change password
-app.post("/api/changePassword", async (req, res) => {
-  const { verificationToken, email, newPassword } = req.body;
-  if (!verificationToken || !email || !newPassword) {
-    return res.status(200).json({
-      status: 400,
-      message: "Verification token, email, and new password are required",
-    });
-  }
-
-  try {
-    const result = await auth.changePassword(
-      verificationToken,
-      email,
-      newPassword
-    );
-    res.status(200).json({
-      status: result.status,
-      message:
-        result.status === 200
-          ? "Password changed"
-          : "Failed to change password",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Verify OTP
-app.post("/api/verifyOTP", async (req, res) => {
-  const { email, otp } = req.body;
-  if (!email || !otp) {
-    return res
-      .status(200)
-      .json({ status: 400, message: "Email and OTP are required" });
-  }
-
-  try {
-    const result = await auth.verifyOTP(email, otp);
-    res.status(200).json({ status: result.status, message: result.token });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Forget OTP
-app.post("/api/forgetOTP", async (req, res) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.status(200).json({ status: 400, message: "Email is required" });
-  }
-
-  try {
-    const result = await auth.forgetOTP(email);
-    res.status(200).json({
-      status: result.status,
-      message: result.status === 200 ? "OTP sent" : "Failed to send OTP",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-// Verify email
-app.post("/api/verifyEmail", async (req, res) => {
-  const { token } = req.body;
-  if (!token) {
-    return res.status(200).json({ status: 400, message: "Token is required" });
-  }
-
-  try {
-    const result = await auth.verifyEmail(token);
-    res.status(200).json({
-      status: result ? 200 : 500,
-      message: result ? "Email verified" : "Failed to verify email",
-    });
-  } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
-  }
-});
-
-//onboarding
-
-app.post("/api/onboard", async (req, res) => {
-  const { name, sections, teachers, students, depts_list } = req.body;
-
-  // Validate request body
-  if (!name || !sections || !teachers || !students || !depts_list) {
-    return res.json({
-      status: 400,
-      message:
-        "Name, number of sections, number of teachers, number of students, and department list are required",
-    });
-  }
-
-  try {
-    // Call the onboarding function
-    const result = await onboard.onboarding(
-      name,
-      sections,
-      teachers,
-      students,
-      depts_list
-    );
-
-    // Handle the response based on the result
-    if (result.status === statusCodes.CREATED) {
-      res.json({
-        status: result.status,
-        message: "Organization onboarded successfully",
-      });
-    } else {
-      res.json({
-        status: result.status,
-        message: "Internal server error",
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    res.json({ status: 500, message: "Server error" });
   }
 });
 
@@ -392,6 +233,7 @@ app.delete("/api/teachers", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+
 // Create a new room
 app.post("/api/rooms", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -849,7 +691,11 @@ app.get("/api/courses", async (req, res) => {
   }
 
   try {
-    const result = await course.getCourses(token, parseInt(semester), department);
+    const result = await course.getCourses(
+      token,
+      parseInt(semester),
+      department
+    );
     res.status(200).json({ status: result.status, message: result.courses });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
@@ -874,47 +720,6 @@ app.post("/api/courses/peek", async (req, res) => {
   }
 });
 
-app.post("/request_access", async (req, res) => {
-  const { invite_code, level } = req.body;
-  const token = req.headers.authorization?.split(" ")[1];
-
-  try {
-    const organisation = await prisma.organisation.findFirst({
-      where: {
-        invite_code,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    const { userId } = jwt.decode(token);
-
-    const _ = prisma.accessRequest.findFirst({
-      where: {
-        userId,
-        orgId: organisation.id,
-      },
-    });
-
-    if (_) return { status: statusCodes.BAD_REQUEST };
-
-    await prisma.accessRequest.create({
-      data: {
-        userId,
-        orgId: organisation.id,
-        level,
-      },
-    });
-
-    return res.json({
-      status: statusCodes.OK,
-    });
-  } catch (e) {
-    return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
-  }
-});
-
 app.post("/api/getLabRecommendation", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { courses, teachers, rooms } = req.body;
@@ -925,8 +730,14 @@ app.post("/api/getLabRecommendation", async (req, res) => {
     });
   }
   try {
-    const result = await lab.getRecommendations(token, { courses, teachers, rooms });
-    res.status(200).json({ status: result.status, timetable: result.timetable });
+    const result = await lab.getRecommendations(token, {
+      courses,
+      teachers,
+      rooms,
+    });
+    res
+      .status(200)
+      .json({ status: result.status, timetable: result.timetable });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
