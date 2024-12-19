@@ -12,6 +12,7 @@ const { adminRouter } = require("./routes/admin.js");
 const { userRouter } = require("./routes/user.js");
 const { authRouter } = require("./routes/auth.js");
 const { orgRouter } = require("./routes/org.js");
+const labF = require("./lib/functions/lab.js");
 
 app.use(express.json());
 app.use(
@@ -730,7 +731,7 @@ app.post("/api/getLabRecommendation", async (req, res) => {
     });
   }
   try {
-    const result = await lab.getRecommendations(token, {
+    const result = await labF.getRecommendations(token, {
       courses,
       teachers,
       rooms,
