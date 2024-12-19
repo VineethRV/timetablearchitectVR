@@ -7,8 +7,8 @@ import Loading from "../components/Loading/Loading";
 import { useNavigate } from "react-router-dom";
 import { BACKEND_URL } from "../../config";
 import axios from "axios";
-import { toast } from "sonner";
 import Form from "../components/onboardPage/form";
+import { toast } from "sonner";
 
 const Onboard = () => {
   const [loading, setLoading] = useState(true);
@@ -28,14 +28,14 @@ const Onboard = () => {
       )
       .then((res) => {
         const status = res.data.status;
-        console.log(status)
-        // if (status != 200) {
-        //   navigate("/signup");
-        //   toast.success("Register before joining or creating an organisation!");
-        // }
 
+        if (status == 200) {
+        } else {
+          navigate("/signin");
+          toast.error("Please login to continue !!");
+        }
         setLoading(false);
-      })
+      });
   }, []);
 
   if (loading) return <Loading />;
