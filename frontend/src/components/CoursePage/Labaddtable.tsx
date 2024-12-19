@@ -21,7 +21,6 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
   onEditClick,
   onDeleteClick,
 }) => {
-  console.log(data)
   const columns: TableProps<DataType>["columns"] = [
     {
       title: "Course",

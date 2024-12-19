@@ -16,6 +16,8 @@ import { motion } from "framer-motion";
 import Timetable from "../../../../components/timetable";
 import { useNavigate } from "react-router-dom";
 import LabAddTable from "../../../../components/CoursePage/Labaddtable";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../../config";
 
 const formItemLayout = {
   labelCol: {
@@ -96,7 +98,57 @@ const AddLabpage: React.FC = () => {
     updatedFields[index][field] = value;
     setFormFields(updatedFields);
   };
+  const semester="5";
+  const department="Computer Science Engineering"
+  const getCourses=()=>
+  {
+    axios.get(
+      BACKEND_URL+"/courses",
+      {
+        semester,
+        department
+      },
+    ).then((res)=>{
+        console.log(res.data.message)
+    })
+  }
 
+  const test = async () => {
+    const validBatches = formFields.filter(
+      (field) => field.course && field.teacher && field.room
+    );
+  
+    if (validBatches.length !== formFields.length) {
+      messageApi.error("Please fill in all required fields.");
+      return;
+    }
+  
+    // Prepare the data for the API
+    const payload = {
+      courses: validBatches.map((batch) => batch.course),
+      teachers: validBatches.flatMap((batch) => batch.teacher.split(",")), // Split and flatten
+      rooms: validBatches.flatMap((batch) => batch.room.split(",")),       // Split and flatten
+    };
+  
+    try {
+      await axios.post(
+        `${BACKEND_URL}/getLabRecommendation`,
+        payload,
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then((res)=>{
+          console.log(res)
+      })
+    } catch (error) {
+      messageApi.error("Failed to submit lab details.");
+      console.error(error);
+    }
+    setIsModalOpen(false);
+  };
 
   const handleModalSubmit = () => {
     const validBatches = formFields.filter(
@@ -183,7 +235,7 @@ const AddLabpage: React.FC = () => {
               visible={isModalOpen}
               title="Enter Batch Details"
               onCancel={handleCloseModal}
-              onOk={handleModalSubmit}
+              onOk={test}
             >
               {formFields.map((_, index) => (
                 <div key={index}>

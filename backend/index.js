@@ -762,6 +762,7 @@ app.post("/api/courses/peek", async (req, res) => {
 
 
 app.post("/api/getLabRecommendation", async (req, res) => {
+  console.log(1)
   const token = req.headers.authorization?.split(" ")[1];
   const { courses, teachers, rooms } = req.body;
   if (!token || !courses || !teachers || !rooms) {
@@ -780,6 +781,7 @@ app.post("/api/getLabRecommendation", async (req, res) => {
       .status(200)
       .json({ status: result.status, timetable: result.timetable });
   } catch (error) {
+    console.log(error)
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
