@@ -7,6 +7,7 @@ const prisma = PrismaClientManager.getInstance().getPrismaClient();
 const officialEmail = process.env.ARCHITECT_EMAIL;
 const { transport } = require("../lib/emailutils");
 const jwt = require("jsonwebtoken");
+const secretKey = process.env.JWT_SECRET_KEY;
 
 async function sendForgetPassOTP(email, otp) {
   // offload to redis ?
@@ -73,11 +74,11 @@ authRouter.post("/reset_pass", async (req, res) => {
   }
 });
 
-authRouter.post("/verify-email", async (req, res) => {
+authRouter.post("/verify_email", async (req, res) => {
   const { token } = req.body;
 
   try {
-    jwt.verify(token);
+    jwt.verify(token,secretKey);
   } catch {
     return res.json({ status: statusCodes.UNAUTHORIZED });
   }

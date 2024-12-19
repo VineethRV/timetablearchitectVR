@@ -13,6 +13,7 @@ const { userRouter } = require("./routes/user.js");
 const { authRouter } = require("./routes/auth.js");
 const { orgRouter } = require("./routes/org.js");
 const labF = require("./lib/functions/lab.js");
+const { sendVerificationEmail } = require("./lib/emailutils.js");
 
 app.use(express.json());
 app.use(
@@ -71,7 +72,7 @@ app.post("/api/register", async (req, res) => {
   }
   try {
     const token = await auth.register(name, email, password);
-    await auth.sendVerificationEmail(name, email);
+    await sendVerificationEmail(name, email);
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
     console.log(error);
