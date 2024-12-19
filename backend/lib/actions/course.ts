@@ -264,8 +264,8 @@ export async function getCourses(
 export async function peekCourse(
   JWTtoken: string,
   name: string,
+  semester: number,
   department: string | null = null,
-  semester: number
 ): Promise<{ status: number; course: Course | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
