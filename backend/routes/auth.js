@@ -4,20 +4,9 @@ const { statusCodes } = require("../lib/types/statusCodes");
 const authRouter = require("express").Router();
 const bcrypt = require("bcryptjs");
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
-const nodemailer = require("nodemailer");
-const secretKey = process.env.JWT_SECRET_KEY;
 const officialEmail = process.env.ARCHITECT_EMAIL;
-const emailAccessToken = process.env.EMAIL_ACCESS_TOKEN;
-
-const transport = nodemailer.createTransport({
-  service: "gmail",
-  secure: true,
-  port: 465,
-  auth: {
-    user: officialEmail,
-    pass: emailAccessToken,
-  },
-});
+const { transport } = require("../lib/emailutils");
+const jwt = require("jsonwebtoken");
 
 async function sendForgetPassOTP(email, otp) {
   // offload to redis ?
@@ -79,6 +68,42 @@ authRouter.post("/reset_pass", async (req, res) => {
     }
 
     return res.json({ status: statusCodes.UNAUTHORIZED });
+  } catch {
+    return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
+  }
+});
+
+authRouter.post("/verify-email", async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    jwt.verify(token);
+  } catch {
+    return res.json({ status: statusCodes.UNAUTHORIZED });
+  }
+
+  try {
+    const { email } = jwt.decode(token);
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (user.hasAccess) {
+      return res.json({ status: statusCodes.BAD_REQUEST });
+    }
+
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        hasAccess: true,
+      },
+    });
+
+    return res.json({ status: statusCodes.OK });
   } catch {
     return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
   }

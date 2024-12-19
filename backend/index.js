@@ -70,6 +70,7 @@ app.post("/api/register", async (req, res) => {
   }
   try {
     const token = await auth.register(name, email, password);
+    await auth.sendVerificationEmail(name, email);
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
     console.log(error);
