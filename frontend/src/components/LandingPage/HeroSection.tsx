@@ -13,7 +13,7 @@ const HeroSection = () => {
   }
 
   return (
-    <div className="py-16 mt-[60px] flex flex-col items-center space-y-10 px-4 lg:px-16">
+    <div className="py-16 mt-[20px] md:mt-[60px] flex flex-col items-center space-y-10 px-4 lg:px-16">
       {/* Header Section */}
       <div className="flex flex-col items-center lg:flex-row lg:justify-around w-full space-y-6 lg:space-y-0">
         <img

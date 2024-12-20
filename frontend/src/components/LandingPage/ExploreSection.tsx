@@ -4,7 +4,7 @@ import TeamCollab from "/Illustrations/TeamCollab.png";
 
 const ExploreSection = () => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 py-16 px-8 lg:px-36">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 py-16 px-4 lg:px-36">
       {/* Section 1 */}
       <div className="flex flex-col py-8 px-6 lg:px-12 justify-center space-y-6">
         <h1 className="font-bold text-3xl lg:text-4xl">

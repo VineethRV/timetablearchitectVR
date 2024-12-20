@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 const AskUniversity = () => {
   return (
     <div className="px-6 lg:px-36 py-8">
-      <Card className="bg-[#636AE8FF] p-8 lg:p-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+      <Card className="bg-[#636AE8FF] p-4 lg:p-12 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex flex-col space-y-6 items-center text-center">
           <h1 className="text-2xl lg:text-4xl font-bold text-white">
             Are you a university?

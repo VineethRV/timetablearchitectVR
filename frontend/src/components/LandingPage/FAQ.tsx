@@ -57,7 +57,7 @@ const FAQ = () => {
         draggable={false}
         src={FAQIllus}
         alt="faq"
-        className="h-[380px] mx-auto max-w-full"
+        className="h-[80px] md:h-[380px] mx-auto max-w-full"
       />
       
       {/* FAQ Content */}
