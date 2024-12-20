@@ -3,6 +3,42 @@ const { statusCodes } = require("../lib/types/statusCodes.js");
 const { default: PrismaClientManager } = require("../lib/pgConnect.js");
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
 const leaderRouter = express.Router();
+const fs = require("fs");
+const path = require("path");
+const templatePath = path.join(__dirname, "../html_content/org_approved.html");
+const orgTemplate = fs.readFileSync(templatePath, "utf-8");
+const officialEmail = process.env.ARCHITECT_EMAIL;
+const emailAccessToken = process.env.EMAIL_ACCESS_TOKEN;
+const nodemailer = require("nodemailer");
+
+const transport = nodemailer.createTransport({
+  service: "gmail",
+  secure: true,
+  port: 465,
+  auth: {
+    user: officialEmail,
+    pass: emailAccessToken,
+  },
+});
+
+async function sendOrganisationApprovedMail(org, inviteCode, email) {
+  let htmlContent = orgTemplate;
+  htmlContent = htmlContent.replace("{{ORG}}", org);
+  htmlContent = htmlContent.replace("{{INVITE_CODE}}", inviteCode);
+  htmlContent = htmlContent.replace(
+    "[INSERT_LOGIN_URL]",
+    process.env.MAIN_WEBSITE_URL + "/signin"
+  );
+
+  const receiver = {
+    from: officialEmail,
+    to: email,
+    subject: "Organsiation Approved !!",
+    html: htmlContent,
+  };
+
+  await transport.sendMail(receiver);
+}
 
 // Helper function to generate a 6-character invite code
 function generateInviteCode() {
@@ -24,6 +60,13 @@ leaderRouter.post("/approve_org", async (req, res) => {
     // Fetch the organisation by ID
     const organisation = await prisma.organisation.findUnique({
       where: { id: organisationId },
+      include: {
+        owner: {
+          select: {
+            email: true,
+          },
+        },
+      },
     });
 
     if (!organisation) {
@@ -59,6 +102,12 @@ leaderRouter.post("/approve_org", async (req, res) => {
         data: { orgId: organisationId, role: "admin" },
       });
     }
+
+    await sendOrganisationApprovedMail(
+      organisation.name,
+      inviteCode,
+      organisation.owner.email
+    );
 
     return res.json({
       status: statusCodes.OK,
