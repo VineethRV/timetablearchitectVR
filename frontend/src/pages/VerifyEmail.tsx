@@ -72,7 +72,7 @@ const VerifyEmail = () => {
   );
 };
 
-export default function Page() {
+export default function VerifyComponent() {
   return (
     <Suspense fallback={<Loading />}>
       <VerifyEmail />

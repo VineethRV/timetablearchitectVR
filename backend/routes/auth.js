@@ -90,7 +90,7 @@ authRouter.post("/verify_email", async (req, res) => {
         email,
       },
     });
-
+    // if(!user) res.json({ status: statusCodes.BAD_REQUEST });
     if (user.hasAccess) {
       return res.json({ status: statusCodes.BAD_REQUEST });
     }

@@ -27,6 +27,7 @@ import OnboardingPage from "./pages/Onboarding";
 import Onboard from "./pages/register";
 import Access from "./pages/dashboard/admin/access";
 import ForgetOTP from "./pages/ForgetPassword";
+import VerifyComponent from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/onboard" element={<Onboard />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
+        <Route path="/verify-email" element={<VerifyComponent />}/>
         <Route path="/forget-password" element={<ForgetOTP />} />
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<AdminPanel />} />
