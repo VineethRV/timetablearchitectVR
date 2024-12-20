@@ -1,4 +1,3 @@
-const { forgetPassOTPHtmlContent } = require("../html_content/main");
 const { default: PrismaClientManager } = require("../lib/pgConnect");
 const { statusCodes } = require("../lib/types/statusCodes");
 const authRouter = require("express").Router();
@@ -8,14 +7,19 @@ const officialEmail = process.env.ARCHITECT_EMAIL;
 const { transport } = require("../lib/emailutils");
 const jwt = require("jsonwebtoken");
 const secretKey = process.env.JWT_SECRET_KEY;
+const fs = require("fs");
+const path = require("path");
+const templatePath = path.join(__dirname, "../html_content/otp.html");
+const forgetPassHtmlTemplate = fs.readFileSync(templatePath, "utf-8");
 
 async function sendForgetPassOTP(email, otp) {
-  // offload to redis ?
+  const htmlContent = forgetPassHtmlTemplate.replace("{{OTP_CODE}}", otp);
+
   const receiver = {
     from: officialEmail,
     to: email,
     subject: "Password Reset: OTP Verification Code",
-    html: forgetPassOTPHtmlContent.replace("{{OTP_CODE}}", otp.toString()),
+    html: htmlContent,
   };
 
   await transport.sendMail(receiver);
@@ -78,7 +82,7 @@ authRouter.post("/verify_email", async (req, res) => {
   const { token } = req.body;
 
   try {
-    jwt.verify(token,secretKey);
+    jwt.verify(token, secretKey);
   } catch {
     return res.json({ status: statusCodes.UNAUTHORIZED });
   }
