@@ -158,7 +158,7 @@ const emailVerificationHtml = `<!DOCTYPE html>
         <p>If you didn’t sign up for this account, please disregard this message.</p>
       </div>
       <div class="footer">
-        <p>&copy; 2024 Your Company. All rights reserved.</p>
+        <p>&copy; 2024 Timetable Architect. All rights reserved.</p>
       </div>
     </div>
   </body>
