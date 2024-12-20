@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import {
@@ -16,6 +16,9 @@ import { motion } from "framer-motion";
 import Timetable from "../../../../components/timetable";
 import { useNavigate } from "react-router-dom";
 import LabAddTable from "../../../../components/CoursePage/Labaddtable";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../../config";
+
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -43,30 +46,278 @@ const timeslots = [
   "2:30-3:30",
   "3:30-4:30",
 ];
+interface BatchField {
+  courseSet: string; // Add batchSet here
+  name: string;
+  course: string;
+  teacher: string;
+  room: string;
+}
 
-const AddLabpage: React.FC = () => {
+const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
-  const success = () => {
-    message.success("Lab Course Added successfully!", 3);
-  };
-  const navigate=useNavigate();
+  const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
+  const [formFields, setFormFields] = useState<BatchField[]>([]);
+  const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
+  const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
+  const semester = 5;
+  const department = "Computer Science Engineering";
+  const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [buttonStatus, setButtonStatus] = useState(
+    weekdays.map(() => timeslots.map(() => "Free"))
+  );
+  const [tableData, setTableData] = useState<BatchField[]>([]);
+
+  const navigate = useNavigate();
 
   const handleOpenModal = () => {
+    const currentBatches = form.getFieldValue("numberOfBatches");
+    setNumberOfBatches(currentBatches || 1);
+    setFormFields(
+      Array.from({ length: currentBatches || 1 }, (_, i) => ({
+        name: `batch${i + 1}`,
+        courseSet: "",
+        course: "",
+        teacher: "",
+        room: "",
+      }))
+    );
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    form.resetFields(); // Clear form on modal close
+    setFormFields([
+      { name: "", courseSet: "", course: "", teacher: "", room: "" },
+    ]);
   };
 
-  const [buttonStatus, setButtonStatus] = useState(
-    weekdays.map(() => timeslots.map(() => "Free"))
-  );
+  const handleBatchChange = (
+    index: number,
+    field: keyof BatchField,
+    value: string
+  ) => {
+    const updatedFields = [...formFields];
+    updatedFields[index][field] = value;
+    setFormFields(updatedFields);
+  };
+
+  const fetchTeachers = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + "/teachers", {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      });
+      setTeacherOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+    } catch (error) {
+      console.error("Failed to fetch teachers:", error);
+      message.error("Error fetching teacher data.");
+    }
+  };
+  const fetchElectives = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        return;
+      }
+
+      const response = await axios.get(BACKEND_URL + "/electives", {
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+        params: {
+          semester,
+          department,
+        },
+      });
+
+      if (response.data.status === 200) {
+        setElectiveOptions(response.data.message); // Assuming `message` contains the array of electives
+      } else {
+        message.error(response.data.message || "Failed to fetch electives.");
+      }
+    } catch (error) {
+      message.error("An error occurred while fetching electives.");
+      console.error(error);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const response = await axios.get(BACKEND_URL + "/rooms", {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      });
+      setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error);
+      message.error("Error fetching room data.");
+    }
+  };
+  useEffect(() => {
+    fetchTeachers();
+    fetchRooms();
+    fetchElectives();
+  }, []);
+  const handleModalSubmit = () => {
+    const validBatches = formFields.filter(
+      (field) => field.course && field.teacher && field.room
+    );
+
+    console.log(validBatches);
+    if (validBatches.length !== formFields.length) {
+      messageApi.error("Please fill in all required fields.");
+      return;
+    }
+    const courset = validBatches.map((batch) => batch.course).join("/");
+
+    const updatedBatches = validBatches.map((batch) => ({
+      ...batch,
+      courseSet: courset, // Set courseSet dynamically as concatenated course names
+    }));
+
+    setTableData((prevData) => [...prevData, ...updatedBatches]);
+    setIsModalOpen(false);
+
+    handleCloseModal();
+  };
+
+  const test = async () => {
+    try {
+      const courses = formFields.map((field) => field.course);
+      const teachers = formFields
+        .map((field) =>
+          field.teacher.split(",").map((teacher) => teacher.trim())
+        )
+        .flat();
+      const rooms = formFields.map((field) => field.room);
+
+      if (!courses.length || !teachers.length || !rooms.length) {
+        message.error("Please ensure all fields are filled!");
+        return;
+      }
+      console.log({ courses, teachers, rooms });
+      const response = await axios.post(
+        BACKEND_URL + "/getLabRecommendation",
+        {
+          courses,
+          teachers,
+          rooms,
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+
+      if (response.data.status === 200) {
+        message.success("Timetable recommendations fetched successfully!");
+        console.log("Timetable:", response.data.timetable);
+      } else {
+        message.error(
+          response.data.message || "Failed to fetch recommendations."
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching lab recommendations:", error);
+      message.error("An error occurred while fetching recommendations.");
+    }
+  };
+  
+  const getCourseData = (tableData: { courseSet: string; teacher: string; room: string }[]) => {
+    // Reduce the tableData into a single record
+    const courseData = tableData.reduce(
+      (acc, item) => {
+        const { courseSet, teacher, room } = item;
+  
+        // Ensure entries exist for this courseSet
+        if (!acc.courseSets.includes(courseSet)) {
+          acc.courseSets.push(courseSet);
+        }
+  
+        // Add teachers for this courseSet
+        if (!acc.teachers[courseSet]) {
+          acc.teachers[courseSet] = [];
+        }
+        acc.teachers[courseSet].push(...teacher.split(",").map((t) => t.trim()));
+  
+        // Add rooms for this courseSet
+        if (!acc.rooms[courseSet]) {
+          acc.rooms[courseSet] = [];
+        }
+        acc.rooms[courseSet].push(...room.split(",").map((r) => r.trim()));
+  
+        return acc;
+      },
+      {
+        courseSets: [] as string[], // List of unique courseSets
+        teachers: {} as Record<string, string[]>, // Teachers grouped by courseSet
+        rooms: {} as Record<string, string[]> // Rooms grouped by courseSet
+      }
+    );
+  
+    // Convert teachers and rooms to lists of arrays
+    const teachers = Object.values(courseData.teachers);
+    const rooms = Object.values(courseData.rooms);
+  
+    return {
+      courseSets: courseData.courseSets,
+      teachers,
+      rooms
+    };
+  };
+
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error("Authorization token is missing!");
+      navigate("/signIn");
+      return;
+    }
+    const { courseSets, teachers, rooms } = getCourseData(tableData);
+    console.log(
+      form.getFieldValue("batchSetName"),
+      semester,
+      courseSets,
+      teachers,
+      rooms,
+      buttonStatus,
+      "Computer Science Engineering"
+    );
+    const response = await axios.post(
+      BACKEND_URL + "/labs",
+      {
+        name: form.getFieldValue("batchSetName"),
+        semester: semester,
+        batches: courseSets,
+        teachers: teachers,
+        rooms: rooms,
+        timetables: buttonStatus,
+        department: "Computer Science Engineering",
+      },
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
+    );
+    console.log(response.data)
+    if (response.data.status === 200) {
+      message.success("Added successfully!");
+    } else {
+      message.error(response.data.message || "Failed to add");
+    }
+  };
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
+      {contextHolder}
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] text-xl text-bold">
         <div
           onClick={() => {
@@ -95,12 +346,27 @@ const AddLabpage: React.FC = () => {
         }}
         className="flex mt-12 items-center pl-4"
       >
-        <Form {...formItemLayout} form={form} layout="vertical" requiredMark >
-          <Form.Item label="Batch Set Name" required>
+        <Form {...formItemLayout} form={form} layout="vertical" requiredMark>
+          <Form.Item name="batchSetName" label="Batch Set Name" required>
             <Input placeholder="Name" className="font-normal w-96" />
           </Form.Item>
-          <Form.Item label="Number of Batches" required>
-            <InputNumber min={1} className="font-normal w-96" />
+          <Form.Item
+            label="Number of Batches"
+            name="numberOfBatches"
+            initialValue={1}
+            rules={[
+              {
+                required: true,
+                message: "Please specify the number of batches!",
+              },
+            ]}
+          >
+            <InputNumber
+              min={1}
+              className="font-normal w-96"
+              placeholder="Number of Batches"
+              onChange={(value) => setNumberOfBatches(value || 1)}
+            />
           </Form.Item>
           <label>
             <div>
@@ -111,67 +377,82 @@ const AddLabpage: React.FC = () => {
                 </Tooltip>
               </span>
               <Button
-                color="primary"
-                variant="link"
                 onClick={handleOpenModal}
-                className="text-purple"
+                className="ml-4 text-[#636AE8FF] hover:underline"
               >
                 &#x002B; Add
               </Button>
               <Modal
-                title="Enter details for each Batch"
                 visible={isModalOpen}
+                title="Enter Batch Details"
                 onCancel={handleCloseModal}
-                okText="Submit"
-                cancelText="Cancel"
+                onOk={handleModalSubmit}
               >
-                <Form form={form} layout="vertical">
-                  <Form.Item
-                    name="batch1"
-                    label="Batch 1"
-                    rules={[
-                      { required: true, message: "Please input Field 1!" },
-                    ]}
-                  >
-                    <div>
-                      <label>Course</label>
-                      <Input placeholder="Course" />
-                      <label>Teachers</label>
-                      <Select placeholder="teacher" />
-                      <label>Rooms</label>
-                      <Select placeholder="rooms" />
-                    </div>
-                  </Form.Item>
-                  <Form.Item
-                    name="batch2"
-                    label="Batch 2"
-                    rules={[
-                      { required: true, message: "Please input Field 1!" },
-                    ]}
-                  >
-                    <label>Course</label>
-                    <Input placeholder="Course" />
-                    <label>Teachers</label>
-                    <Select placeholder="teacher" />
-                    <label>Rooms</label>
-                    <Select placeholder="rooms" />
-                  </Form.Item>
-                </Form>
+                {formFields.map((_, index) => (
+                  <div key={index}>
+                    <Form.Item label="Course">
+                      <Input
+                        placeholder="Enter course"
+                        onChange={(e) =>
+                          handleBatchChange(index, "course", e.target.value)
+                        }
+                      />
+                    </Form.Item>
+                    <Form.Item label="Teacher">
+                      <Select
+                        mode="tags"
+                        placeholder="Select Teachers"
+                        onChange={(val) =>
+                          handleBatchChange(index, "teacher", val.join(","))
+                        }
+                        options={teacherOptions.map((teacher) => ({
+                          label: teacher,
+                          value: teacher,
+                        }))}
+                      />
+                    </Form.Item>
+                    <Form.Item label="Room">
+                      <Select
+                        mode="tags"
+                        placeholder="Enter Room Details"
+                        onChange={(val) =>
+                          handleBatchChange(index, "room", val.join(","))
+                        }
+                        options={roomOptions.map((room) => ({
+                          label: room,
+                          value: room,
+                        }))}
+                      />
+                    </Form.Item>
+                  </div>
+                ))}
               </Modal>
             </div>
           </label>
-          <LabAddTable />
-          <br></br>
-          <Form.Item
-            label="Electives and Common time courses"
-            className="w-96"
-          >
-            <Select placeholder="Electives" className="font-normal" />
+          <LabAddTable
+            data={tableData.map((batch, index) => ({
+              key: `${index}`,
+              courseSet: batch.courseSet,
+              Course: batch.course,
+              teachers: [batch.teacher],
+              rooms: [batch.room],
+            }))}
+          />
+          <br />
+          <Form.Item label="Electives and Common time courses" className="w-96">
+            <Select
+              options={electiveOptions.map((elective) => ({
+                value: elective,
+                label: elective,
+              }))}
+              placeholder="Electives"
+              className="font-normal"
+            />
           </Form.Item>
           <label>
             <div className="flex items-center">
               <span>
-                Click on the slots you do not want the lab to be alloted
+                Click on the slots you do not want the lab to be allotted
               </span>
             </div>
           </label>
@@ -187,7 +468,10 @@ const AddLabpage: React.FC = () => {
                 </Button>
               </Form.Item>
               <Form.Item>
-                <Button onClick={success} className="bg-primary text-[#FFFFFF]">
+                <Button
+                  onClick={handleSubmit}
+                  className="bg-primary text-[#FFFFFF]"
+                >
                   Submit
                 </Button>
               </Form.Item>
@@ -199,4 +483,4 @@ const AddLabpage: React.FC = () => {
   );
 };
 
-export default AddLabpage;
+export default AddLabPage;

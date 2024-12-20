@@ -16,7 +16,7 @@ export type getRecommendationsLab={
 //To call this function place an api call to /api/getLabRecommendation with the body, couse list, teachername list and room name list. also pass token in the header
 //after that the function returns a status of 200 and a timetable string, with 0 in place of empty slots and names of subjects in place of filled slots. parse it using the convertStringToTable function(available in common.ts)
 //if a collision occurs it returns alloted timetable till the collisiion occured and status code 503(Servie unavailable)
-async function getRecommendations(token:string,lab:getRecommendationsLab): Promise<{status:number, timetable: string|null}> {
+export async function getRecommendations(token:string,lab:getRecommendationsLab): Promise<{status:number, timetable: string|null}> {
     let timetable:string[][]|null=null
     //iterate through each course, and each teacher and room
     try{
