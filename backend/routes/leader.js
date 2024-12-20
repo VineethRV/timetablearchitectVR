@@ -47,19 +47,28 @@ function generateInviteCode() {
 
 // Approve organisation endpoint
 leaderRouter.post("/approve_org", async (req, res) => {
-  const { organisationId } = req.body;
+  const { organisationId, organisationName } = req.body;
 
-  if (!organisationId) {
+  // Ensure at least one filter (ID or name) is provided
+  if (!organisationId && !organisationName) {
     return res.json({
       status: statusCodes.BAD_REQUEST,
-      message: "Organisation ID is required.",
+      message: "Organisation ID or Organisation Name is required.",
     });
   }
 
   try {
-    // Fetch the organisation by ID
-    const organisation = await prisma.organisation.findUnique({
-      where: { id: organisationId },
+    // Build the where clause dynamically based on the provided filter
+    let whereClause = {};
+    if (organisationId) {
+      whereClause = { id: organisationId };
+    } else if (organisationName) {
+      whereClause = { name: organisationName };
+    }
+
+    // Fetch the organisation by ID or Name
+    const organisation = await prisma.organisation.findFirst({
+      where: whereClause,
       include: {
         owner: {
           select: {
@@ -88,7 +97,7 @@ leaderRouter.post("/approve_org", async (req, res) => {
 
     // Update the organisation to set approved to true and add the invite code
     const updatedOrganisation = await prisma.organisation.update({
-      where: { id: organisationId },
+      where: { id: organisation.id },
       data: {
         approved: true,
         invite_code: inviteCode,
@@ -99,7 +108,7 @@ leaderRouter.post("/approve_org", async (req, res) => {
     if (updatedOrganisation.ownerId) {
       await prisma.user.update({
         where: { id: updatedOrganisation.ownerId },
-        data: { orgId: organisationId, role: "admin" },
+        data: { orgId: organisation.id, role: "admin" },
       });
     }
 
@@ -118,7 +127,7 @@ leaderRouter.post("/approve_org", async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return res.json({
       status: statusCodes.INTERNAL_SERVER_ERROR,
       message: "An error occurred while approving the organisation.",
