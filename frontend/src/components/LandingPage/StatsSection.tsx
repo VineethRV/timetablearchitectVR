@@ -6,37 +6,49 @@ import { VscWorkspaceTrusted } from "react-icons/vsc";
 
 const StatsSection = () => {
   return (
-    <div className="grid grid-cols-4 gap-8 px-44 py-8">
-      <Card className="flex bg-[#F2F2FDFF] flex-col items-center hover:scale-105 transition-all duration-300">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-8 lg:px-44 py-12">
+      {/* New Users */}
+      <Card className="flex flex-col items-center bg-[#F2F2FDFF] hover:scale-105 transition-all duration-300 shadow-lg rounded-lg">
         <div className="flex justify-center">
-        <FaRegUserCircle className="text-[#636AE8FF]" fontSize={40}/>
+          <FaRegUserCircle className="text-[#636AE8FF]" fontSize={40} />
         </div>
-        <h1 className="font-bold text-[#636AE8FF] text-2xl text-center mt-2">1K+</h1>
-        <h1  className="text-base">New Users</h1>
+        <h1 className="font-bold text-[#636AE8FF] text-2xl text-center mt-2">
+          1K+
+        </h1>
+        <h1 className="text-base text-gray-700">New Users</h1>
       </Card>
 
-      <Card className="flex flex-col bg-[#EFFCFAFF] items-center space-y-1 hover:scale-105 transition-all duration-300">
+      {/* Timetables Generated */}
+      <Card className="flex flex-col items-center bg-[#EFFCFAFF] hover:scale-105 transition-all duration-300 shadow-lg rounded-lg">
         <div className="flex justify-center">
-        <MdEventAvailable className="text-[#22CCB2FF]" fontSize={40}/>
+          <MdEventAvailable className="text-[#22CCB2FF]" fontSize={40} />
         </div>
-        <h1 className="font-bold text-[#22CCB2FF] text-2xl text-center mt-2">100+</h1>
-        <h1 className="text-base">Timetables generated</h1>
+        <h1 className="font-bold text-[#22CCB2FF] text-2xl text-center mt-2">
+          100+
+        </h1>
+        <h1 className="text-base text-gray-700">Timetables Generated</h1>
       </Card>
 
-      <Card className="flex bg-[#FDF1F5FF] flex-col items-center space-y-1 hover:scale-105 transition-all duration-300">
+      {/* Trusted Universities */}
+      <Card className="flex flex-col items-center bg-[#FDF1F5FF] hover:scale-105 transition-all duration-300 shadow-lg rounded-lg">
         <div className="flex justify-center">
-        <VscWorkspaceTrusted className="text-[#E8618CFF]" fontSize={40}/>
+          <VscWorkspaceTrusted className="text-[#E8618CFF]" fontSize={40} />
         </div>
-        <h1 className="font-bold text-2xl text-center mt-2 text-[#E8618CFF]">30+</h1>
-        <h1  className="text-base">Trusted Universities</h1>
+        <h1 className="font-bold text-[#E8618CFF] text-2xl text-center mt-2">
+          30+
+        </h1>
+        <h1 className="text-base text-gray-700">Trusted Universities</h1>
       </Card>
 
-      <Card className="flex bg-[#F5F2FDFF] flex-col items-center space-y-1 hover:scale-105 transition-all duration-300">
+      {/* Time Saved */}
+      <Card className="flex flex-col items-center bg-[#F5F2FDFF] hover:scale-105 transition-all duration-300 shadow-lg rounded-lg">
         <div className="flex justify-center">
-        <IoMdTime className="text-[#7F55E0FF]" fontSize={40}/>
+          <IoMdTime className="text-[#7F55E0FF]" fontSize={40} />
         </div>
-        <h1 className="font-bold text-[#7F55E0FF] text-2xl text-center mt-2">90%</h1>
-        <h1 className="text-base">Saves Time</h1>
+        <h1 className="font-bold text-[#7F55E0FF] text-2xl text-center mt-2">
+          90%
+        </h1>
+        <h1 className="text-base text-gray-700">Saves Time</h1>
       </Card>
     </div>
   );
