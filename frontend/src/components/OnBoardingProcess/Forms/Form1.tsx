@@ -25,7 +25,7 @@ const Form1 = ({
               return new_org;
             });
           }}
-          placeholder="John Doe"
+          placeholder="XYZ University"
         />
       </div>
 
