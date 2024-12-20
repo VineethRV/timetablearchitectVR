@@ -31,7 +31,7 @@ async function accessEmailSend(name, org, email) {
   const receiver = {
     from: officialEmail,
     to: email,
-    subject: "Organsiation Approved !!",
+    subject: "Access Granted !!",
     html: htmlContent,
   };
 
