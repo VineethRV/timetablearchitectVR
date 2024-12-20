@@ -648,7 +648,11 @@ app.post("/api/labs/peek", async (req, res) => {
 // Get list of labs
 app.get("/api/labs", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { department, semester } = req.query;
+  //const { department, semester } = req.query;
+  
+const semester=5
+const department="Computer Science Engineering"
+  console.log(department,semester)
   if (!token) {
     return res.status(200).json({ status: 400, message: "Token is required" });
   }

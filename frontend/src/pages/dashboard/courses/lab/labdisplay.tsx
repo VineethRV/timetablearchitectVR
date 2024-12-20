@@ -9,14 +9,15 @@ import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Lab } from "../../../../types/main";
-
+const semester=5
+const department="Computer Science Engineering"
 function page() {
   const [labsData, setLabsData] = useState<Lab[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     axios
-      .get(BACKEND_URL + "/labs",{
+      .get(BACKEND_URL + `/labs`,{
         headers: {
           authorization: localStorage.getItem("token"),
         },
@@ -24,6 +25,7 @@ function page() {
       .then((res) => {
         const statusCode = res.data.status;
         if (statusCode == statusCodes.OK) {
+          setLabsData(res.data.message)
           console.log(res.data.message);
         }
         else {

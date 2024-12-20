@@ -35,6 +35,21 @@ const LabsTable = ({
 
   const [selectedLabs, setSelectedLabs] = useState<Lab[]>([]);
 
+  const formattedLabData = labData.flatMap((lab) => {
+    const names = lab.name.split(";");
+    const batches=lab.batches?.split(";")
+    const rooms = lab.rooms?.split(";");
+    const teachers = lab.teachers?.split(";");
+
+    return names.map((batch, index) => ({
+      ...lab,
+      name: batch,
+      batches: batches?.[index]|| batches?.[0],
+      rooms: rooms?.[index] || rooms?.[0], // Default to first room if missing
+      teachers: teachers?.[index] || teachers?.[0], 
+      key: `${lab.batches}-${index}`,
+    }));
+  });
 
   // Row Selection logic by ant design
   const rowSelection: TableProps<Lab>["rowSelection"] = {
@@ -82,7 +97,7 @@ const LabsTable = ({
 
 const columns: TableColumnsType<Lab> = [
     {
-      title: "name",
+      title: "BatchSet",
       dataIndex: "name",
       render: (value, row,index) => {
         // Calculate row span
@@ -98,15 +113,14 @@ const columns: TableColumnsType<Lab> = [
       },
     },
     {
-      title: "Lab Name",
-      dataIndex: "name",
-    },
-    {
-      title: "Labs",
-      dataIndex: "Labs",
-      render: (_, { rooms }) => (
+      title: "Courses",
+      dataIndex: "batches",
+    }, {
+      title: "Teachers",
+      dataIndex: "teachers",
+      render: (_, { teachers }) => (
         <>
-          {rooms?.split(',').map((tag) => {
+          {teachers?.split(',').map((tag) => {
             const color = 'blue'
             return (
               <Tag color={color} key={tag}>
@@ -169,7 +183,7 @@ function deleteLabsHandler(Labs: Lab[]) {
     return;
   }
   const res = axios
-    .delete(BACKEND_URL + "/Labs", {
+    .delete(BACKEND_URL + "/labs", {
       data: { Labs },
       headers: { Authorization: localStorage.getItem("token") },
     })
@@ -226,7 +240,7 @@ function deleteLabsHandler(Labs: Lab[]) {
       <Table<Lab>
         rowSelection={{ type: "checkbox", ...rowSelection }}
         columns={columns}
-        dataSource={labData}
+        dataSource={formattedLabData}
         pagination={{ pageSize: 5 }}
       />
     </div>
