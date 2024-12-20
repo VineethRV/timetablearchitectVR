@@ -13,6 +13,8 @@ const { userRouter } = require("./routes/user.js");
 const { authRouter } = require("./routes/auth.js");
 const { orgRouter } = require("./routes/org.js");
 const labF = require("./lib/functions/lab.js");
+const { sendVerificationEmail } = require("./lib/emailutils.js");
+const { leaderRouter } = require("./routes/leader.js");
 
 app.use(express.json());
 app.use(
@@ -24,6 +26,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/org", orgRouter);
+app.use("/api/leader",leaderRouter);
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
@@ -71,6 +74,7 @@ app.post("/api/register", async (req, res) => {
   }
   try {
     const token = await auth.register(name, email, password);
+    await sendVerificationEmail(name, email);
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
     console.log(error);

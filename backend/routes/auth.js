@@ -1,31 +1,25 @@
-const { forgetPassOTPHtmlContent } = require("../html_content/main");
 const { default: PrismaClientManager } = require("../lib/pgConnect");
 const { statusCodes } = require("../lib/types/statusCodes");
 const authRouter = require("express").Router();
 const bcrypt = require("bcryptjs");
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
-const nodemailer = require("nodemailer");
-const secretKey = process.env.JWT_SECRET_KEY;
 const officialEmail = process.env.ARCHITECT_EMAIL;
-const emailAccessToken = process.env.EMAIL_ACCESS_TOKEN;
-
-const transport = nodemailer.createTransport({
-  service: "gmail",
-  secure: true,
-  port: 465,
-  auth: {
-    user: officialEmail,
-    pass: emailAccessToken,
-  },
-});
+const { transport } = require("../lib/emailutils");
+const jwt = require("jsonwebtoken");
+const secretKey = process.env.JWT_SECRET_KEY;
+const fs = require("fs");
+const path = require("path");
+const templatePath = path.join(__dirname, "../html_content/otp.html");
+const forgetPassHtmlTemplate = fs.readFileSync(templatePath, "utf-8");
 
 async function sendForgetPassOTP(email, otp) {
-  // offload to redis ?
+  const htmlContent = forgetPassHtmlTemplate.replace("{{OTP_CODE}}", otp);
+
   const receiver = {
     from: officialEmail,
     to: email,
     subject: "Password Reset: OTP Verification Code",
-    html: forgetPassOTPHtmlContent.replace("{{OTP_CODE}}", otp.toString()),
+    html: htmlContent,
   };
 
   await transport.sendMail(receiver);
@@ -79,6 +73,42 @@ authRouter.post("/reset_pass", async (req, res) => {
     }
 
     return res.json({ status: statusCodes.UNAUTHORIZED });
+  } catch {
+    return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
+  }
+});
+
+authRouter.post("/verify_email", async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    jwt.verify(token, secretKey);
+  } catch {
+    return res.json({ status: statusCodes.UNAUTHORIZED });
+  }
+
+  try {
+    const { email } = jwt.decode(token);
+    const user = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+    // if(!user) res.json({ status: statusCodes.BAD_REQUEST });
+    if (user.hasAccess) {
+      return res.json({ status: statusCodes.BAD_REQUEST });
+    }
+
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        hasAccess: true,
+      },
+    });
+
+    return res.json({ status: statusCodes.OK });
   } catch {
     return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
   }

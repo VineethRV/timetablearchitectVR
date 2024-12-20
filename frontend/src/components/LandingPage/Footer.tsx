@@ -7,16 +7,21 @@ import { Divider } from "antd";
 
 const Footer = () => {
   return (
-    <div className="flex flex-col space-y-4 px-36 bg-[#FAFAFBFF] pt-8 pb-2">
-      <div className="flex space-x-2 items-center">
+    <div className="flex flex-col space-y-6 px-6 sm:px-12 lg:px-36 bg-[#FAFAFBFF] pt-8 pb-6">
+      {/* Logo and Title */}
+      <div className="flex space-x-3 items-center justify-center sm:justify-start">
         <img draggable={false} className="w-8 h-8" alt="tta" src={Logo} />
-        <h1 className="font-bold text-base">Timetable Architect</h1>
+        <h1 className="font-bold text-base sm:text-lg">Timetable Architect</h1>
       </div>
-      <p className={`text-gray-400 text-sm w-[300px]`}>
+
+      {/* Description */}
+      <p className="text-gray-400 text-sm text-center sm:text-left sm:w-[300px] mx-auto sm:mx-0">
         Streamline the process of creating, managing, and optimizing timetables
         for students and teachers
       </p>
-      <div className="flex space-x-4">
+
+      {/* Social Icons */}
+      <div className="flex justify-center sm:justify-start space-x-6">
         <img
           draggable={false}
           src={FBIcon}
@@ -42,9 +47,12 @@ const Footer = () => {
           className="w-6 h-6 hover:scale-110 hover:cursor-pointer transition-all duration-200"
         />
       </div>
+
       <Divider />
-      <div className={`flex justify-end`}>
-        <div className="flex space-x-12 text-gray-400 text-xs">
+
+      {/* Footer Links */}
+      <div className="flex justify-center sm:justify-end">
+        <div className="flex space-x-8 text-gray-400 text-xs">
           <p>&copy; 2024 TTA</p>
           <p>&bull; Privacy &bull; Terms &bull; Sitemap</p>
         </div>

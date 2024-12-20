@@ -5,6 +5,39 @@ const adminRouter = require("express").Router();
 const prisma = PrismaClientManager.getInstance().getPrismaClient();
 const secretKey = process.env.JWT_SECRET_KEY;
 
+const fs = require("fs");
+const path = require("path");
+const templatePath = path.join(__dirname, "../html_content/access.html");
+const accessTemplate = fs.readFileSync(templatePath, "utf-8");
+const officialEmail = process.env.ARCHITECT_EMAIL;
+const emailAccessToken = process.env.EMAIL_ACCESS_TOKEN;
+const nodemailer = require("nodemailer");
+
+const transport = nodemailer.createTransport({
+  service: "gmail",
+  secure: true,
+  port: 465,
+  auth: {
+    user: officialEmail,
+    pass: emailAccessToken,
+  },
+});
+
+async function accessEmailSend(name, org, email) {
+  let htmlContent = accessTemplate;
+  htmlContent = htmlContent.replace("{{name}}", name);
+  htmlContent = htmlContent.replace("{{organisation_name}}", org);
+  htmlContent = htmlContent.replace('[LOGIN_URL]',process.env.MAIN_WEBSITE_URL + "/signin")
+  const receiver = {
+    from: officialEmail,
+    to: email,
+    subject: "Access Granted !!",
+    html: htmlContent,
+  };
+
+  await transport.sendMail(receiver);
+}
+
 async function adminMiddleware(req, res, next) {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -31,7 +64,7 @@ async function adminMiddleware(req, res, next) {
         status: statusCodes.UNAUTHORIZED,
       });
     }
-
+    req.headers.orgId = user.orgId;
     next();
   } catch {
     return res.json({
@@ -44,6 +77,9 @@ async function adminMiddleware(req, res, next) {
 adminRouter.get("/get_access_requests", adminMiddleware, async (req, res) => {
   try {
     const data = await prisma.accessRequest.findMany({
+      where: {
+        orgId: req.headers.orgId,
+      },
       include: {
         user: {
           select: {
@@ -75,10 +111,23 @@ adminRouter.post("/change_access", adminMiddleware, async (req, res) => {
           organisation: {
             select: {
               id: true,
+              name: true,
+            },
+          },
+          user: {
+            select: {
+              name: true,
+              email: true,
             },
           },
         },
       });
+
+      await accessEmailSend(
+        access_request.user.name,
+        access_request.organisation.name,
+        access_request.user.email
+      );
 
       await prisma.user.update({
         where: {
@@ -102,6 +151,7 @@ adminRouter.post("/change_access", adminMiddleware, async (req, res) => {
       status: statusCodes.OK,
     });
   } catch (e) {
+    console.log(e);
     return res.json({ status: statusCodes.INTERNAL_SERVER_ERROR });
   }
 });

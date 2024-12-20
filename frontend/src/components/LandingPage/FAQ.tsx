@@ -51,11 +51,21 @@ const items: CollapseProps["items"] = [
 
 const FAQ = () => {
   return (
-    <div className="grid grid-cols-2 px-36 py-12">
-      <img draggable={false} src={FAQIllus} alt="faq" className="h-[380px]" />
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-8 lg:px-36 py-12">
+      {/* FAQ Illustration */}
+      <img
+        draggable={false}
+        src={FAQIllus}
+        alt="faq"
+        className="h-[80px] md:h-[380px] mx-auto max-w-full"
+      />
+      
+      {/* FAQ Content */}
       <div className="flex flex-col space-y-8">
-        <h1 className="font-bold text-3xl">FAQ?</h1>
-        <Collapse items={items} defaultActiveKey={["2"]} />
+        <h1 className="font-bold text-2xl lg:text-3xl text-center lg:text-left">
+          Frequently Asked Questions
+        </h1>
+        <Collapse items={items} defaultActiveKey={["2"]} className="space-y-4" />
       </div>
     </div>
   );

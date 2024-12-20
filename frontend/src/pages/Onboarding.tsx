@@ -10,6 +10,11 @@ import ConfirmPage from "../components/OnBoardingProcess/Forms/ConfirmPage";
 import { OrganisationSchema } from "../types/main";
 import { IoIosArrowBack } from "react-icons/io";
 import { FaChevronRight } from "react-icons/fa";
+import { BACKEND_URL } from "../../config";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import Loading from "../components/Loading/Loading";
 
 const totalPageNumbers = 3;
 
@@ -27,6 +32,7 @@ const OnboardingPage = () => {
     });
 
   const [backBtnDisable, setBackBtnDisable] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Disable back button when user is at pageNumber 0
   useEffect(() => {
@@ -58,6 +64,33 @@ const OnboardingPage = () => {
     (acc, curr) => curr() || acc,
     false
   );
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios
+      .post(
+        BACKEND_URL + "/checkAuthentication",
+        {},
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then((res) => {
+        const status = res.data.status;
+
+        if (status == 200) {
+        } else {
+          navigate("/signin");
+          toast.error("Please login to continue !!");
+        }
+
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <Loading />;
 
   return (
     <main className="grid grid-cols-2 h-screen">

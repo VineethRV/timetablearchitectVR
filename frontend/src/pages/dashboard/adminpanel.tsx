@@ -1,68 +1,53 @@
+import { Layout, Card, Row, Col } from "antd";
 import { TbLayoutDashboard } from "react-icons/tb";
-import { CircularProgressbar } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-import { RxCrossCircled } from "react-icons/rx";
+import { FiBarChart2 } from "react-icons/fi";
+import CapacityCard from "../../components/AdminPanelComp/CapacityCard";
+import RequestAccessWrapper from "../../components/AdminPanelComp/RequestAccessWrap";
 
-const capacity = [
-  { title: "Labs at", capacity: 67 },
-  { title: "Rooms at", capacity: 80 },
-  { title: "Teachers at", capacity: 70 },
+const { Header, Content } = Layout;
+
+const stats = [
+  { title: "Sections formed", number: 54 },
+  { title: "Core courses allocated", number: 12 },
+  { title: "Allotted labs", number: 84 },
 ];
-const stats = [{ title: "Sections formed", number: 54 },{title: "Core courses allocated", number: 12}, {title: "Alloted labs", number:84}];
+
 const AdminPanel = () => {
   return (
-    <main>
-      <div className="flex space-x-2 items-center border-b-2 py-4 px-2">
-        <TbLayoutDashboard size={25} />
+    <Layout className="bg-slate-50 overflow-scroll h-full w-full overflow-x-hidden">
+      {/* Header Section */}
+      <Header className="bg-white border-b-2 shadow-md flex items-center px-4">
+        <TbLayoutDashboard size={25} className="mr-2 text-purple-500" />
         <h1 className="text-lg font-bold">Dashboard</h1>
-      </div>
+      </Header>
 
-      <div className="grid grid-cols-3 gap-16 px-16 py-12">
-        {stats.map((s) => {
-          return (
-            <div className="flex bg-[#E6E6FA] p-4 rounded-2xl items-center space-x-4">
-              <RxCrossCircled className="w-16 h-16" />
-              <div className="flex flex-col">
-                <h1 className="text-base">{s.title}</h1>
-                <h1 className="text-4xl">{s.number}</h1>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="flex justify-center">
-        <div className="flex flex-row space-x-24 py-4 px-8 shadow-md bg-[#E6E6FA] w-fit rounded-xl">
-          {capacity.map((c) => {
-            return (
-              <div className="flex flex-col space-y-2">
-                <h1>{c.title}</h1>
-                <div className="h-36 w-36">
-                  <CircularProgressbar
-                    styles={{
-                      text: {
-                        fontSize: "10px",
-                        fontWeight: 700,
-                        fill: "#000000",
-                      },
-                      path: {
-                        stroke: "#FF5349",
-                      },
-                      trail: {
-                        stroke: "black",
-                      },
-                    }}
-                    value={c.capacity}
-                    maxValue={100}
-                    text={`${c.capacity}% Capacity`}
-                  />
+      <Content className="px-8 py-6">
+        {/* Stats Section */}
+        <Row gutter={[16, 16]}>
+          {stats.map((stat) => (
+            <Col xs={24} sm={12} md={8} key={stat.title}>
+              <Card
+                className="rounded-lg"
+                style={{ backgroundColor: "#E6E6FA" }}
+                bodyStyle={{ display: "flex", alignItems: "center" }}
+              >
+                <FiBarChart2 className="text-4xl text-green-500 mr-4" />
+                <div>
+                  <h1 className="text-base font-semibold text-gray-700">
+                    {stat.title}
+                  </h1>
+                  <h1 className="text-3xl font-bold text-black">
+                    {stat.number}
+                  </h1>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </main>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+        <CapacityCard/>
+        <RequestAccessWrapper/>
+      </Content>
+    </Layout>
   );
 };
 
