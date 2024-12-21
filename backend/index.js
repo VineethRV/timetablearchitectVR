@@ -12,6 +12,9 @@ const { adminRouter } = require("./routes/admin.js");
 const { userRouter } = require("./routes/user.js");
 const { authRouter } = require("./routes/auth.js");
 const { orgRouter } = require("./routes/org.js");
+const labF = require("./lib/functions/lab.js");
+const { sendVerificationEmail } = require("./lib/emailutils.js");
+const { leaderRouter } = require("./routes/leader.js");
 
 app.use(express.json());
 app.use(
@@ -23,6 +26,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/org", orgRouter);
+app.use("/api/leader",leaderRouter);
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
@@ -70,6 +74,7 @@ app.post("/api/register", async (req, res) => {
   }
   try {
     const token = await auth.register(name, email, password);
+    await sendVerificationEmail(name, email);
     res.status(200).json({ status: token.status, message: token.token });
   } catch (error) {
     console.log(error);
@@ -643,7 +648,11 @@ app.post("/api/labs/peek", async (req, res) => {
 // Get list of labs
 app.get("/api/labs", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { department, semester } = req.query;
+  //const { department, semester } = req.query;
+  
+const semester=5
+const department="Computer Science Engineering"
+  console.log(department,semester)
   if (!token) {
     return res.status(200).json({ status: 400, message: "Token is required" });
   }
@@ -730,7 +739,7 @@ app.post("/api/getLabRecommendation", async (req, res) => {
     });
   }
   try {
-    const result = await lab.getRecommendations(token, {
+    const result = await labF.getRecommendations(token, {
       courses,
       teachers,
       rooms,

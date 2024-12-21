@@ -1,0 +1,152 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html dir="ltr" lang="en">
+
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <style>
+        body {
+            background-color: #f7f9fc;
+            font-family: Arial, sans-serif;
+            color: #333;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .header-logo {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .header-logo img {
+            height: 75px;
+        }
+
+        .content h1 {
+            color: #4CAF50;
+            font-size: 24px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .invite-code {
+            background-color: #e8f5e9;
+            border: 1px dashed #4CAF50;
+            padding: 15px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 25px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .footer {
+            font-size: 14px;
+            color: #999;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <!-- Header Section -->
+        <div class="header-logo">
+            <img alt="Timetable Architect"
+                src="https://png.pngtree.com/png-vector/20221013/ourmid/pngtree-calendar-icon-logo-2023-date-time-png-image_6310337.png"
+                style="display:block;margin:0 auto;padding-bottom:20px;width: 100px;height: 100px;" />
+        </div>
+
+        <!-- Content Section -->
+        <div class="content">
+            <h1>Congratulations! Your Organisation Has Been Approved</h1>
+            <p>
+                Dear <strong>{{ORG}}</strong>,<br /><br />
+                We’re thrilled to inform you that your organisation has been approved to use
+                <strong>Timetable Architect</strong>!
+            </p>
+            <p>
+                Please log in to the platform to access your organisation's dashboard
+                and start creating timetables effortlessly.
+            </p>
+
+            <!-- Invite Code Section -->
+            <div class="invite-code">
+                Your Invite Code: <strong>{{INVITE_CODE}}</strong>
+            </div>
+
+            <p>
+                Share this invite code with members of your organisation so they can join and collaborate with you on
+                the platform.
+            </p>
+
+            <!-- CTA Button -->
+            <div class="button-container">
+                <a href="[INSERT_LOGIN_URL]" style="background-color:#4CAF50;color:#fff;padding:12px 24px;border-radius:6px;font-size:16px;text-decoration:none;display:inline-block;font-weight:bold" class="button" target="_blank">Log In to Your Dashboard</a>
+            </div>
+
+            <!-- Info Section -->
+            <p>
+                <strong>About Timetable Architect:</strong><br />
+                Timetable Architect is a cutting-edge software solution that automates the process of creating
+                timetables for colleges. It reduces the time required to design timetables from weeks to just a few
+                hours, generating optimal schedules for both students and teachers.
+            </p>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="footer">
+            <p>
+                Need help? Contact us at
+                <a href="mailto:support@timetablearchitect.com">support@timetablearchitect.com</a>
+            </p>
+            <p>
+                Timetable Architect<br />
+                Bangalore, India
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

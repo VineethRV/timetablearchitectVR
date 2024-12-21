@@ -18,7 +18,6 @@ import Loading from "../Loading/Loading";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 import { statusCodes } from "../../types/statusCodes";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const getRandomColor = () => {
@@ -43,7 +42,6 @@ interface AccessType {
 const AccessTable = () => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AccessType[]>([]);
-  const navigate = useNavigate();
 
   async function accessHandler(id: React.Key, access: Boolean) {
     axios
@@ -185,7 +183,6 @@ const AccessTable = () => {
           }));
           setData(formattedData);
         } else {
-          navigate("/dashboard");
           toast.error("You are not allowed !!");
         }
 
