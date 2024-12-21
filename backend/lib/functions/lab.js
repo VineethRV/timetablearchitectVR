@@ -68,8 +68,8 @@ function getRecommendations(token, lab) {
                                     j = 0;
                                     _e.label = 1;
                                 case 1:
-                                    if (!(j < teachers.length)) return [3 /*break*/, 4];
-                                    return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, lab.teachers[j])];
+                                    if (!(j < lab.teachers[i].length)) return [3 /*break*/, 4];
+                                    return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, lab.teachers[i][j])];
                                 case 2:
                                     _c = (_e.sent()), status_1 = _c.status, teacher = _c.teacher;
                                     if (status_1 == statusCodes_1.statusCodes.OK && teacher) {
@@ -113,8 +113,8 @@ function getRecommendations(token, lab) {
                                     k = 0;
                                     _e.label = 5;
                                 case 5:
-                                    if (!(k < lab.rooms.length)) return [3 /*break*/, 8];
-                                    return [4 /*yield*/, (0, room_1.peekRoom)(token, lab.rooms[k])];
+                                    if (!(k < lab.rooms[i].length)) return [3 /*break*/, 8];
+                                    return [4 /*yield*/, (0, room_1.peekRoom)(token, lab.rooms[i][k])];
                                 case 6:
                                     _d = _e.sent(), status_2 = _d.status, room = _d.room;
                                     if (status_2 == statusCodes_1.statusCodes.OK && room) {

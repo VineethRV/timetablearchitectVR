@@ -4,8 +4,8 @@ import { statusCodes } from "../types/statusCodes";
 import { convertTableToString, scoreRooms, scoreTeachers } from "./common";
 export type getRecommendationsLab={
     courses:string[],
-    teachers:string[],
-    rooms:string[],
+    teachers:string[][],
+    rooms:string[][],
 }
 
 // function convertStringToTable(timetableString: string): string[][] {
@@ -24,8 +24,8 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab)
             //get every teacher and room
             let teachers=[]
             let score:number[][]|null=null
-            for(let j=0;j<teachers.length;j++){
-                let {status,teacher}=(await peekTeacher(token,lab.teachers[j]));
+            for(let j=0;j<lab.teachers[i].length;j++){
+                let {status,teacher}=(await peekTeacher(token,lab.teachers[i][j]));
                 if(status==statusCodes.OK && teacher){
                     teachers.push(teacher);
                     let scoreValue = scoreTeachers(teacher.timetable, teacher.labtable);
@@ -61,8 +61,8 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab)
                     }
             }
             let rooms=[]
-            for (let k = 0; k < lab.rooms.length; k++) {
-                let {status, room} = await peekRoom(token,lab.rooms[k]);
+            for (let k = 0; k < lab.rooms[i].length; k++) {
+                let {status, room} = await peekRoom(token,lab.rooms[i][k]);
                 if (status == statusCodes.OK && room) {
                     rooms.push(room);
                 let scoreValue = scoreRooms(room.timetable);
