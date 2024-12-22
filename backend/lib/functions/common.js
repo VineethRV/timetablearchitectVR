@@ -9,12 +9,12 @@ function convertStringToTable(timetableString) {
     if (timetableString)
         return timetableString.split(";").map(function (row) { return row.split(","); });
     else
-        return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;".split(";").map(function (row) { return row.split(","); });
+        return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0".split(";").map(function (row) { return row.split(","); });
 }
 function convertTableToString(timetable) {
     if (timetable)
         return timetable.map(function (row) { return row.join(","); }).join(";");
-    return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;";
+    return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0";
 }
 function scoreTeachers(teacherTab, teacherLab) {
     var scoredTable = [];

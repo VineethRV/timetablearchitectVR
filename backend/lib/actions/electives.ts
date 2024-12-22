@@ -38,7 +38,7 @@ export async function createElective(
           orgId: user.orgId,
           timetable: timetable
             ? timetable
-            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
         };
 
         const duplicate = await prisma.elective.findFirst({

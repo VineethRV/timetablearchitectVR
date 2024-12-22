@@ -112,10 +112,10 @@ function createTeachers(JWTtoken_1, name_1) {
                         alternateDepartments: alternateDepartments,
                         timetable: timetable
                             ? convertTableToString(timetable)
-                            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+                            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                         labtable: labtable
                             ? convertTableToString(labtable)
-                            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+                            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                         orgId: user.orgId,
                     };
                     return [4 /*yield*/, prisma.teacher.create({
@@ -252,8 +252,8 @@ function createManyTeachers(JWTtoken_1, name_1, initials_1) {
                             email: email ? email[i] : null,
                             department: department ? department : user.department,
                             alternateDepartments: null,
-                            timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
-                            labtable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+                            timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
+                            labtable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                             orgId: user.orgId,
                         });
                     }
