@@ -731,7 +731,7 @@ app.post("/api/courses/peek", async (req, res) => {
 
 app.post("/api/getLabRecommendation", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { courses, teachers, rooms } = req.body;
+  const { courses, teachers, rooms,blocks } = req.body;
   if (!token || !courses || !teachers || !rooms) {
     return res.status(200).json({
       status: 400,
@@ -743,7 +743,8 @@ app.post("/api/getLabRecommendation", async (req, res) => {
       courses,
       teachers,
       rooms,
-    });
+    },
+    blocks);
     res
       .status(200)
       .json({ status: result.status, timetable: result.timetable });
