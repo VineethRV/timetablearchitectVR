@@ -1,7 +1,7 @@
 import { peekRoom } from "../actions/room";
 import { peekTeacher } from "../actions/teacher";
 import { statusCodes } from "../types/statusCodes";
-import { convertTableToString, scoreRooms, scoreTeachers } from "./common";
+import { convertStringToTable, convertTableToString, scoreRooms, scoreTeachers } from "./common";
 export type getRecommendationsLab={
     courses:string[],
     teachers:string[][],
@@ -16,23 +16,21 @@ export type getRecommendationsLab={
 //To call this function place an api call to /api/getLabRecommendation with the body, couse list, teachername list and room name list. also pass token in the header
 //after that the function returns a status of 200 and a timetable string, with 0 in place of empty slots and names of subjects in place of filled slots. parse it using the convertStringToTable function(available in common.ts)
 //if a collision occurs it returns alloted timetable till the collisiion occured and status code 503(Servie unavailable)
-export async function getRecommendations(token:string,lab:getRecommendationsLab,blocks:string[][]|null): Promise<{status:number, timetable: string|null}> {
-    let timetable:string[][]|null=blocks
+export async function getRecommendations(token:string,lab:getRecommendationsLab,blocks:string|null): Promise<{status:number, timetable: string|null}> {
+    let timetable:string[][]|null=convertStringToTable(blocks);
     //iterate through each course, and each teacher and room
     try{
         for(let i=0;i<lab.courses.length;i++){
             //get every teacher and room
             let teachers=[]
-            let score: number[][]=[];
+            let score: number[][]=[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]];
             if (timetable) {
-                let newArray = new Array(timetable[0].length).fill(0);
                 for(let j=0;j<timetable.length;j++){
                     for(let k=0;k<timetable[j].length;k++){
                         if (timetable[j][k] != "0") {
-                            newArray[j][k] = -1;
+                            score[j][k] = -1;
                         } 
                     }
-                    score.push(newArray);
                 }
             }
             for(let j=0;j<lab.teachers[i].length;j++){
@@ -40,7 +38,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 if(status==statusCodes.OK && teacher){
                     teachers.push(teacher);
                     let scoreValue = scoreTeachers(teacher.timetable, teacher.labtable);
-                    if(!score){
+                    if(score.length==0){
                         score=scoreValue
                     }
                     else{ 
