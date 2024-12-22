@@ -63,7 +63,7 @@ function createElective(JWTtoken_1, name_1, courses_1, teachers_1, rooms_1, seme
                         orgId: user.orgId,
                         timetable: timetable
                             ? timetable
-                            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+                            : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                     };
                     const duplicate = yield prisma.elective.findFirst({
                         where: {

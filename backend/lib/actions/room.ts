@@ -41,7 +41,7 @@ export async function createRoom(
           department: user.department,
           lab: lab,
           timetable:
-            "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+            "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
         };
         if (timetable) {
           room.timetable = convertTableToString(timetable);
@@ -122,7 +122,7 @@ export async function createManyRoom(
             department: department ? department : user.department,
             lab: lab[i],
             timetable:
-              "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+              "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
           });
         }
         const duplicateChecks = await Promise.all(

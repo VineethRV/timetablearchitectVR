@@ -89,7 +89,7 @@ function createRoom(JWTtoken_1, name_1, lab_1) {
                         orgId: user.orgId,
                         department: user.department,
                         lab: lab,
-                        timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+                        timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                     };
                     if (timetable) {
                         room.timetable = convertTableToString(timetable);
@@ -175,7 +175,7 @@ function createManyRoom(JWTtoken_1, name_1, lab_1) {
                             orgId: user.orgId,
                             department: department ? department : user.department,
                             lab: lab[i],
-                            timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;",
+                            timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                         });
                     }
                     return [4 /*yield*/, Promise.all(rooms.map(function (room) {

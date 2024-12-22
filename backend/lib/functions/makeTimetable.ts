@@ -24,8 +24,8 @@ export async function suggestTimetable(
 ): Promise<{status:number,returnVal:returnStrcture|null}> {
     try {
         // Initialize the timetable with empty strings
-        const timetable: string[][] = blocks.map(row => row.map(cell => cell !== '' ? cell : ''));
-        const roomtable: string[][] = blocks.map(row => row.map(cell => cell !== '' ? '-' : ''));
+        const timetable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? cell : '0'));
+        const roomtable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? '-' : '0'));
         const departmentRoomsResponse = await getRooms(token);
         if (departmentRoomsResponse.status !== statusCodes.OK || !departmentRoomsResponse.rooms) {
             return { status: departmentRoomsResponse.status, returnVal:null};
@@ -76,7 +76,7 @@ export async function suggestTimetable(
             //check if specified room is a department name or room name
 
             //following if statement checks if the specified room is a room (if yes, code is allowed inside)
-            if(roomsInfo && rooms[i]!=''){
+            if(roomsInfo && rooms[i]!='0'){
                 currRoomInfo = roomsInfo.find(room => room?.name === rooms[i]);
                 if (!currRoomInfo) {
                     return { status: statusCodes.BAD_REQUEST, returnVal:null  };
@@ -130,7 +130,7 @@ export async function suggestTimetable(
                     }
                     for (let i = 0; i < timetable.length; i++) {
                         for (let j = 0; j < timetable[i].length; j++) {
-                            if (timetable[i][j] !== '') {
+                            if (timetable[i][j] !== '0') {
                                 bestScore[i][j] = -1;
                                 bestScoreCopy[i][j] = -1;
                             }

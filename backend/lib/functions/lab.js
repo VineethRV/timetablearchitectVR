@@ -48,23 +48,34 @@ var common_1 = require("./common");
 //To call this function place an api call to /api/getLabRecommendation with the body, couse list, teachername list and room name list. also pass token in the header
 //after that the function returns a status of 200 and a timetable string, with 0 in place of empty slots and names of subjects in place of filled slots. parse it using the convertStringToTable function(available in common.ts)
 //if a collision occurs it returns alloted timetable till the collisiion occured and status code 503(Servie unavailable)
-function getRecommendations(token, lab) {
+function getRecommendations(token, lab, blocks) {
     return __awaiter(this, void 0, void 0, function () {
         var timetable, _loop_1, i, state_1, _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    timetable = null;
+                    timetable = blocks;
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 6, , 7]);
                     _loop_1 = function (i) {
-                        var teachers, score, j, _c, status_1, teacher, scoreValue, i_1, j_1, i_2, j_2, rooms, k, _d, status_2, room, scoreValue, i_3, j, i_4, j, i_5, j, maxSum, maxSumIndices, i_6, j, sum;
+                        var teachers, score, newArray, j, k, j, _c, status_1, teacher, scoreValue, i_1, j_1, rooms, k, _d, status_2, room, scoreValue, i_2, j, i_3, j, i_4, j, maxSum, maxSumIndices, i_5, j, sum;
                         return __generator(this, function (_e) {
                             switch (_e.label) {
                                 case 0:
                                     teachers = [];
-                                    score = null;
+                                    score = [];
+                                    if (timetable) {
+                                        newArray = new Array(timetable[0].length).fill(0);
+                                        for (j = 0; j < timetable.length; j++) {
+                                            for (k = 0; k < timetable[j].length; k++) {
+                                                if (timetable[j][k] != "0") {
+                                                    newArray[j][k] = -1;
+                                                }
+                                            }
+                                            score.push(newArray);
+                                        }
+                                    }
                                     j = 0;
                                     _e.label = 1;
                                 case 1:
@@ -77,23 +88,16 @@ function getRecommendations(token, lab) {
                                         scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
                                         if (!score) {
                                             score = scoreValue;
+                                        }
+                                        else {
                                             for (i_1 = 0; i_1 < scoreValue.length; i_1++) {
                                                 for (j_1 = 0; j_1 < scoreValue[i_1].length; j_1++) {
                                                     if (scoreValue[i_1][j_1] < 0) {
                                                         score[i_1][j_1] = -1;
                                                     }
-                                                }
-                                            }
-                                        }
-                                        else {
-                                            for (i_2 = 0; i_2 < scoreValue.length; i_2++) {
-                                                for (j_2 = 0; j_2 < scoreValue[i_2].length; j_2++) {
-                                                    if (scoreValue[i_2][j_2] < 0) {
-                                                        score[i_2][j_2] = -1;
-                                                    }
                                                     else {
-                                                        if (score[i_2][j_2] != -1)
-                                                            score[i_2][j_2] += scoreValue[i_2][j_2];
+                                                        if (score[i_1][j_1] != -1)
+                                                            score[i_1][j_1] += scoreValue[i_1][j_1];
                                                     }
                                                 }
                                             }
@@ -126,10 +130,10 @@ function getRecommendations(token, lab) {
                                                         timetable: null
                                                     } }];
                                         }
-                                        for (i_3 = 0; i_3 < scoreValue.length; i_3++) {
-                                            for (j = 0; j < scoreValue[i_3].length; j++) {
-                                                if (scoreValue[i_3][j] < 0) {
-                                                    score[i_3][j] = -1;
+                                        for (i_2 = 0; i_2 < scoreValue.length; i_2++) {
+                                            for (j = 0; j < scoreValue[i_2].length; j++) {
+                                                if (scoreValue[i_2][j] < 0) {
+                                                    score[i_2][j] = -1;
                                                 }
                                             }
                                         }
@@ -155,29 +159,29 @@ function getRecommendations(token, lab) {
                                     if (!timetable) {
                                         timetable = Array(score.length).fill(null).map(function () { return Array(score[0].length).fill("0"); });
                                     }
-                                    for (i_4 = 0; i_4 < timetable.length; i_4++) {
-                                        for (j = 0; j < timetable[i_4].length; j++) {
-                                            if (timetable[i_4][j] !== "0") {
-                                                score[i_4][j] = -1;
+                                    for (i_3 = 0; i_3 < timetable.length; i_3++) {
+                                        for (j = 0; j < timetable[i_3].length; j++) {
+                                            if (timetable[i_3][j] !== "0") {
+                                                score[i_3][j] = -1;
                                             }
                                         }
                                     }
-                                    for (i_5 = 0; i_5 < score.length; i_5++) {
-                                        for (j = 0; j < score[i_5].length - 1; j += 2) {
-                                            if (score[i_5][j] == -1 || score[i_5][j + 1] == -1) {
-                                                score[i_5][j] = -1;
-                                                score[i_5][j + 1] = -1;
+                                    for (i_4 = 0; i_4 < score.length; i_4++) {
+                                        for (j = 0; j < score[i_4].length - 1; j += 2) {
+                                            if (score[i_4][j] == -1 || score[i_4][j + 1] == -1) {
+                                                score[i_4][j] = -1;
+                                                score[i_4][j + 1] = -1;
                                             }
                                         }
                                     }
                                     maxSum = -1;
                                     maxSumIndices = { i: -1, j: -1 };
-                                    for (i_6 = 0; i_6 < score.length; i_6++) {
-                                        for (j = 0; j < score[i_6].length - 1; j += 2) {
-                                            sum = score[i_6][j] + score[i_6][j + 1];
+                                    for (i_5 = 0; i_5 < score.length; i_5++) {
+                                        for (j = 0; j < score[i_5].length - 1; j += 2) {
+                                            sum = score[i_5][j] + score[i_5][j + 1];
                                             if (sum > maxSum) {
                                                 maxSum = sum;
-                                                maxSumIndices = { i: i_6, j: j };
+                                                maxSumIndices = { i: i_5, j: j };
                                             }
                                         }
                                     }
