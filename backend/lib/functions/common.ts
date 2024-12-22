@@ -4,13 +4,12 @@ export function convertStringToTable(timetableString: string|null): string[][] {
     if(timetableString)
         return timetableString.split(";").map((row) => row.split(","));
     else
-        return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;".split(";").map((row) => row.split(","));
+        return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0".split(";").map((row) => row.split(","));
 }
-
 export function convertTableToString(timetable: string[][]|null): string {
     if(timetable)
         return timetable.map((row) => row.join(",")).join(";");
-    return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;"
+    return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0"
 }
 
 export function scoreTeachers(teacherTab:string|null,teacherLab:string|null):number[][] {
