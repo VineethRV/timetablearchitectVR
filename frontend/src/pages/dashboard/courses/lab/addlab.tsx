@@ -133,7 +133,6 @@ const AddLabPage: React.FC = () => {
           department,
         },
       });
-      console.log(response.data)
       if (response.data.status === 200) {
         setElectiveOptions(response.data.message); // Assuming `message` contains the array of electives
       } else {
@@ -168,7 +167,6 @@ const AddLabPage: React.FC = () => {
       (field) => field.course && field.teacher && field.room
     );
 
-    console.log(validBatches);
     if (validBatches.length !== formFields.length) {
       messageApi.error("Please fill in all required fields.");
       return;

@@ -67,6 +67,7 @@ const EditTeacherpage = () => {
     name: string,
     department: string | null
   ) => {
+    console.log(localStorage.getItem("token"),name,department)
     axios
       .post(
         BACKEND_URL + "/teachers/peek",
