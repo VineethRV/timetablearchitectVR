@@ -54,26 +54,24 @@ function getRecommendations(token, lab, blocks) {
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    timetable = blocks;
+                    timetable = (0, common_1.convertStringToTable)(blocks);
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 6, , 7]);
                     _loop_1 = function (i) {
-                        var teachers, score, newArray, j, k, j, _c, status_1, teacher, scoreValue, i_1, j_1, rooms, k, _d, status_2, room, scoreValue, i_2, j, i_3, j, i_4, j, maxSum, maxSumIndices, i_5, j, sum;
+                        var teachers, score, j, k, j, _c, status_1, teacher, scoreValue, i_1, j_1, rooms, k, _d, status_2, room, scoreValue, i_2, j, i_3, j, i_4, j, maxSum, maxSumIndices, i_5, j, sum;
                         return __generator(this, function (_e) {
                             switch (_e.label) {
                                 case 0:
                                     teachers = [];
-                                    score = [];
+                                    score = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
                                     if (timetable) {
-                                        newArray = new Array(timetable[0].length).fill(0);
                                         for (j = 0; j < timetable.length; j++) {
                                             for (k = 0; k < timetable[j].length; k++) {
                                                 if (timetable[j][k] != "0") {
-                                                    newArray[j][k] = -1;
+                                                    score[j][k] = -1;
                                                 }
                                             }
-                                            score.push(newArray);
                                         }
                                     }
                                     j = 0;
@@ -86,7 +84,7 @@ function getRecommendations(token, lab, blocks) {
                                     if (status_1 == statusCodes_1.statusCodes.OK && teacher) {
                                         teachers.push(teacher);
                                         scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
-                                        if (!score) {
+                                        if (score.length == 0) {
                                             score = scoreValue;
                                         }
                                         else {
