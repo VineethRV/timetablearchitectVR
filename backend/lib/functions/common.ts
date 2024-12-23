@@ -30,7 +30,7 @@ export function scoreTeachers(teacherTab:string|null,teacherLab:string|null):num
         }
         scoredTable[i]=arr
         for(let j=0;j<teacherTable[i].length;j++){
-            if(teacherTable[i][j]!=""){
+            if(teacherTable[i][j]!="0"){
                 scoredTable[i][j]=-1
                 for(let k=0;k<j;k++){
                     scoredTable[i][k]=scoredTable[i][k]*((1-freeFactor)**(teacherTable[i].length-(j-k)))

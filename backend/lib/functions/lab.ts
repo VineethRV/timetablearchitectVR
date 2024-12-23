@@ -33,11 +33,13 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                     }
                 }
             }
+            console.log("timetable",timetable)
             for(let j=0;j<lab.teachers[i].length;j++){
                 let {status,teacher}=(await peekTeacher(token,lab.teachers[i][j]));
                 if(status==statusCodes.OK && teacher){
                     teachers.push(teacher);
                     let scoreValue = scoreTeachers(teacher.timetable, teacher.labtable);
+                    console.log("scoreT",scoreValue)
                     if(score.length==0){
                         score=scoreValue
                     }
@@ -68,6 +70,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 if (status == statusCodes.OK && room) {
                     rooms.push(room);
                 let scoreValue = scoreRooms(room.timetable);
+                console.log("RoomT",scoreValue)
                 if(!score){
                     return {
                         status: statusCodes.BAD_REQUEST,
@@ -94,6 +97,8 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                     timetable: null
                 }
             }
+            console.log(score)
+            console.log(timetable)
             //we have got the top valid intersections.
             if (!timetable) {
                 timetable = Array(score.length).fill(null).map(() => Array(score[0].length).fill("0"));

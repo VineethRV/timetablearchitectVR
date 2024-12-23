@@ -34,7 +34,7 @@ function scoreTeachers(teacherTab, teacherLab) {
         }
         scoredTable[i] = arr;
         for (var j = 0; j < teacherTable[i].length; j++) {
-            if (teacherTable[i][j] != "") {
+            if (teacherTable[i][j] != "0") {
                 scoredTable[i][j] = -1;
                 for (var k = 0; k < j; k++) {
                     scoredTable[i][k] = scoredTable[i][k] * (Math.pow((1 - freeFactor), (teacherTable[i].length - (j - k))));

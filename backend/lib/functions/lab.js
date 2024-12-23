@@ -74,6 +74,7 @@ function getRecommendations(token, lab, blocks) {
                                             }
                                         }
                                     }
+                                    console.log("timetable", timetable);
                                     j = 0;
                                     _e.label = 1;
                                 case 1:
@@ -84,6 +85,7 @@ function getRecommendations(token, lab, blocks) {
                                     if (status_1 == statusCodes_1.statusCodes.OK && teacher) {
                                         teachers.push(teacher);
                                         scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
+                                        console.log("scoreT", scoreValue);
                                         if (score.length == 0) {
                                             score = scoreValue;
                                         }
@@ -122,6 +124,7 @@ function getRecommendations(token, lab, blocks) {
                                     if (status_2 == statusCodes_1.statusCodes.OK && room) {
                                         rooms.push(room);
                                         scoreValue = (0, common_1.scoreRooms)(room.timetable);
+                                        console.log("RoomT", scoreValue);
                                         if (!score) {
                                             return [2 /*return*/, { value: {
                                                         status: statusCodes_1.statusCodes.BAD_REQUEST,
@@ -153,6 +156,8 @@ function getRecommendations(token, lab, blocks) {
                                                     timetable: null
                                                 } }];
                                     }
+                                    console.log(score);
+                                    console.log(timetable);
                                     //we have got the top valid intersections.
                                     if (!timetable) {
                                         timetable = Array(score.length).fill(null).map(function () { return Array(score[0].length).fill("0"); });
