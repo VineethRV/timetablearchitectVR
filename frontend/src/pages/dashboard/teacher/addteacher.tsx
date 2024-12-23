@@ -38,6 +38,11 @@ const AddTeacherpage = () => {
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
+  const buttonConvert=()=>{
+      return buttonStatus.map((row) =>
+        row.map((status) => (status === "Free" ? "0" : "1"))
+      );
+  }
 
   function teacherAdd() {
     const name = form.getFieldValue("name");
@@ -53,7 +58,7 @@ const AddTeacherpage = () => {
         email: email,
         department: department,
         alternateDepartments: "",
-        timetable: buttonStatus,
+        timetable: buttonConvert(),
         labtable: null,
       },
       {

@@ -40,6 +40,12 @@ const AddRoomPage: React.FC = () => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
 
+  const buttonConvert=()=>{
+    return buttonStatus.map((row) =>
+      row.map((status) => (status === "Free" ? "0" : "1"))
+    );
+}
+
   function clearFields() {
     form.setFieldValue('className', "");
     form.setFieldValue('lab', "");
@@ -56,7 +62,7 @@ const AddRoomPage: React.FC = () => {
       {
         name: className,
         lab: lab==1,
-        timetable: buttonStatus,
+        timetable: buttonConvert(),
         department: dept,
       },
       {
