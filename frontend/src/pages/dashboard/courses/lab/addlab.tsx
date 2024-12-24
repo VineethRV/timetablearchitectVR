@@ -46,30 +46,34 @@ const timeslots = [
   "2:30-3:30",
   "3:30-4:30",
 ];
-interface BatchField {
-  courseSet: string; // Add batchSet here
-  name: string;
+interface BatchFields {
+  key:string,
+  courseSet: string;
   course: string;
-  teacher: string;
-  room: string;
+  teachers: string;
+  rooms: string;
 }
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
-  const [formFields, setFormFields] = useState<BatchField[]>([]);
+  const [formFields, setFormFields] = useState<BatchFields[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
+  const [showTT,SetshowTT]=useState(0)
   const semester = 5;
   const department = "Computer Science Engineering";
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
-  const [tableData, setTableData] = useState<BatchField[]>([]);
+  const [buttonStatus1, setButtonStatus1] = useState(
+    weekdays.map(() => timeslots.map(() => "Free"))
+  );
+  const [tableData, setTableData] = useState<BatchFields[]>([]);
+  const [editingRecord, setEditingRecord] = useState<BatchFields[]|null>(null);
 
   const navigate = useNavigate();
 
@@ -78,11 +82,11 @@ const AddLabPage: React.FC = () => {
     setNumberOfBatches(currentBatches || 1);
     setFormFields(
       Array.from({ length: currentBatches || 1 }, (_, i) => ({
-        name: `batch${i + 1}`,
+        key: `${i}`,
         courseSet: "",
         course: "",
-        teacher: "",
-        room: "",
+        teachers: "",
+        rooms: "",
       }))
     );
     setIsModalOpen(true);
@@ -95,7 +99,7 @@ const AddLabPage: React.FC = () => {
 
   const handleBatchChange = (
     index: number,
-    field: keyof BatchField,
+    field: keyof BatchFields,
     value: string
   ) => {
     const updatedFields = [...formFields];
@@ -110,7 +114,7 @@ const AddLabPage: React.FC = () => {
           authorization: localStorage.getItem("token"),
         },
       });
-      setTeacherOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+      setTeacherOptions(response.data.message.map((item: any) => item.name));
     } catch (error) {
       console.error("Failed to fetch teachers:", error);
       message.error("Error fetching teacher data.");
@@ -162,27 +166,52 @@ const AddLabPage: React.FC = () => {
     fetchRooms();
     //fetchElectives();
   }, []);
-  const handleModalSubmit = () => {
-    const validBatches = formFields.filter(
-      (field) => field.course && field.teacher && field.room
-    );
 
-    if (validBatches.length !== formFields.length) {
-      messageApi.error("Please fill in all required fields.");
-      return;
+  function convertTableToString(timetable: string[][] | null): string {
+    if (timetable) {
+      return timetable.map((row) =>row.map((cell) => (cell === "Free" ? "0" : cell)).join(",")).join(";");
     }
-    const courset = validBatches.map((batch) => batch.course).join("/");
+    return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0";
+  }
 
-    const updatedBatches = validBatches.map((batch) => ({
-      ...batch,
-      courseSet: courset, // Set courseSet dynamically as concatenated course names
-    }));
-
-    setTableData((prevData) => [...prevData, ...updatedBatches]);
+    const handleModalSubmit = () => {
+      const validBatches = formFields.filter(
+        (field) => field.course && field.teachers && field.rooms
+      );
+      console.log(validBatches)
+      console.log(formFields)
+      if (validBatches.length !== formFields.length) {
+        message.error("Please fill in all required fields.");
+        return;
+      }
+    
+      const courset = validBatches.map((batch) => batch.course).join("/");
+    
+      const updatedBatches = validBatches.map((batch) => ({
+        ...batch,
+        courseSet: courset, // Set courseSet dynamically as concatenated course names
+      }));
+    
+      setTableData((prevData) => {
+        if (editingRecord) {
+          // If editingRecord exists, update the corresponding record
+          return prevData.map((data) =>
+            data.courseSet === editingRecord[0].courseSet // Match the unique identifier (e.g., `key`)
+              ? { ...data, ...updatedBatches[0] } // Update the matching record
+              : data
+          );
+        }
+        // If no editingRecord, add new records
+        return [...prevData, ...updatedBatches];
+      });
     setIsModalOpen(false);
-
+    setEditingRecord(null)
     handleCloseModal();
   };
+
+  const convertToTimetable=(time:string)=>{
+    setButtonStatus1(time.split(";").map((row) => row.split(",").map((value)=>(value==="0"?"Free":value))))
+  }
 
   const getRecommendation = async () => {
     try {
@@ -191,13 +220,13 @@ const AddLabPage: React.FC = () => {
         message.error("Please ensure all fields are filled!");
         return;
       }
-      console.log({ courseSets, teachers, rooms });
       const response = await axios.post(
         BACKEND_URL + "/getLabRecommendation",
         {
-          courseSets,
-          teachers,
-          rooms,
+          courses:courseSets,
+          teachers:teachers,
+          rooms:rooms,
+          blocks:convertTableToString(buttonStatus)
         },
         {
           headers: {
@@ -208,7 +237,9 @@ const AddLabPage: React.FC = () => {
 
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
-        console.log("Timetable:", response.data.timetable);
+        SetshowTT(1);
+        convertToTimetable(response.data.timetable)
+        
       } else {
         message.error(
           response.data.message || "Failed to fetch recommendations."
@@ -279,7 +310,7 @@ const AddLabPage: React.FC = () => {
         batches: courseSets,
         teachers: teachers,
         rooms: rooms,
-        timetables: buttonStatus,
+        timetables: buttonStatus1,
         department: "Computer Science Engineering",
       },
       {
@@ -298,7 +329,6 @@ const AddLabPage: React.FC = () => {
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
-      {contextHolder}
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] text-xl text-bold">
         <div
           onClick={() => {
@@ -374,7 +404,7 @@ const AddLabPage: React.FC = () => {
                 {formFields.map((_, index) => (
                   <div key={index}>
                     <label className="text-base font-semibold space-y-2">Batch {index+1}</label>
-                    <Form.Item label="Course" name={`course-${index}`}>
+                    <Form.Item label="course" name={`course-${index}`}>
                       <Input
                         placeholder="Enter course"
                         onChange={(e) =>
@@ -387,7 +417,7 @@ const AddLabPage: React.FC = () => {
                         mode="tags"
                         placeholder="Select Teachers"
                         onChange={(val) =>
-                          handleBatchChange(index, "teacher", val.join(","))
+                          handleBatchChange(index, "teachers", val.join(","))
                         }
                         options={teacherOptions.map((teacher) => ({
                           label: teacher,
@@ -400,7 +430,7 @@ const AddLabPage: React.FC = () => {
                         mode="tags"
                         placeholder="Enter Room Details"
                         onChange={(val) =>
-                          handleBatchChange(index, "room", val.join(","))
+                          handleBatchChange(index, "rooms", val.join(","))
                         }
                         options={roomOptions.map((room) => ({
                           label: room,
@@ -418,10 +448,21 @@ const AddLabPage: React.FC = () => {
             data={tableData.map((batch, index) => ({
               key: `${index}`,
               courseSet: batch.courseSet,
-              Course: batch.course,
-              teachers: [batch.teacher],
-              rooms: [batch.room],
+              course: batch.course,
+              teachers: [batch.teachers],
+              rooms: [batch.rooms],
             }))}
+            batchsize={numberOfBatches}
+            onEditClick={(records) => {
+              for(let index=0;index<records.length;index++){
+                console.log(records[index])
+              form1.setFieldValue(`course-${index}`,records[index].course)
+              form1.setFieldValue(`teacher-${index}`,records[index].teachers)
+              form1.setFieldValue(`room-${index}`,records[index].rooms)
+              handleOpenModal()
+              }
+              setEditingRecord(records)
+            }}
           />
           <br />
           <Form.Item label="Electives and Common time courses" className="w-96">
@@ -464,6 +505,10 @@ const AddLabPage: React.FC = () => {
                 </Button>
             </div>
           </div>
+            
+            {(showTT)?<Timetable 
+            buttonStatus={buttonStatus1}
+            setButtonStatus={setButtonStatus1}></Timetable>:<></>}
         </Form>
       </motion.div>
     </div>
