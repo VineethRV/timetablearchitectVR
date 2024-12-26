@@ -2,7 +2,7 @@ import { peekCourse } from "../actions/course";
 import { getRooms, peekRoom } from "../actions/room";
 import { peekTeacher } from "../actions/teacher";
 import { statusCodes } from "../types/statusCodes";
-import { convertTableToString, scoreRooms, scoreTeachers } from "./common";
+import { convertStringToTable, convertTableToString, scoreRooms, scoreTeachers } from "./common";
 
 
 // add one more dimemtion of rooms in return val toadd handling of subjects if the room is not specified explicitly
@@ -15,7 +15,7 @@ type returnStrcture={
 }
 export async function suggestTimetable(
     token: string,
-    blocks: string[][],
+    block: string,
     courses: string[],
     teachers: string[],
     rooms: string[],
@@ -23,6 +23,8 @@ export async function suggestTimetable(
     preferredRooms: string|null,
 ): Promise<{status:number,returnVal:returnStrcture|null}> {
     try {
+        // Convert the block string to a 2D array
+        const blocks = convertStringToTable(block);
         // Initialize the timetable with empty strings
         const timetable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? cell : '0'));
         const roomtable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? '-' : '0'));

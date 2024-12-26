@@ -42,15 +42,16 @@ var room_1 = require("../actions/room");
 var teacher_1 = require("../actions/teacher");
 var statusCodes_1 = require("../types/statusCodes");
 var common_1 = require("./common");
-function suggestTimetable(token, blocks, courses, teachers, rooms, semester, preferredRooms) {
+function suggestTimetable(token, block, courses, teachers, rooms, semester, preferredRooms) {
     return __awaiter(this, void 0, void 0, function () {
-        var timetable, roomtable, departmentRoomsResponse, flag_1, roomsInfo, _loop_1, i, state_1, error_1;
+        var blocks, timetable, roomtable, departmentRoomsResponse, flag_1, roomsInfo, _loop_1, i, state_1, error_1;
         var _this = this;
         var _a, _b, _c, _d;
         return __generator(this, function (_e) {
             switch (_e.label) {
                 case 0:
                     _e.trys.push([0, 7, , 8]);
+                    blocks = (0, common_1.convertStringToTable)(block);
                     timetable = blocks.map(function (row) { return row.map(function (cell) { return cell !== '0' ? cell : '0'; }); });
                     roomtable = blocks.map(function (row) { return row.map(function (cell) { return cell !== '0' ? '-' : '0'; }); });
                     return [4 /*yield*/, (0, room_1.getRooms)(token)];
