@@ -12,16 +12,22 @@ import LabTable from "../../../../components/CoursePage/Labtable";
 function page() {
   const [labsData, setLabsData] = useState<Lab[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const semester=5;
+  const department="Computer Science Engineering"
   useEffect(() => {
     axios
       .get(BACKEND_URL + `/labs`,{
         headers: {
           authorization: localStorage.getItem("token"),
         },
+        params: {
+          semester,
+          department,
+        },
       })
       .then((res) => {
         const statusCode = res.data.status;
+        console.log(res.data)
         if (statusCode == statusCodes.OK) {
           setLabsData(res.data.message)
           console.log(res.data.message);

@@ -3,18 +3,18 @@ import type { TableProps } from "antd";
 import { useEffect, useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 
-interface BatchField {
+interface BatchFields {
   key: string;
   courseSet: string;
   course: string;
-  teacher: string[];
-  room: string[];
+  teachers: string[];
+  rooms: string[];
 }
 
 interface LabAddTableProps {
-  data: BatchField[];
+  data: BatchFields[];
   batchsize: number;
-  onEditClick?: (record: BatchField[]) => void;
+  onEditClick?: (record: BatchFields[]) => void;
 }
 
 const LabAddTable: React.FC<LabAddTableProps> = ({
@@ -29,9 +29,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     setData(data)
   },[data])
 
-  const handleDelete = (record: BatchField) => {
-    console.log(record)
-    console.log(ldata)
+  const handleDelete = (record: BatchFields) => {
       setData((prevData) =>
         prevData.filter(
           (item) =>
@@ -41,10 +39,9 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
             )
         )
       )
-    console.log(ldata)
 };
 
-  const calculateRowSpan = (data: BatchField[], index: number, key: keyof BatchField) => {
+  const calculateRowSpan = (data: BatchFields[], index: number, key: keyof BatchFields) => {
     if (index === 0 || data[index][key] !== data[index - 1][key]) {
       let span = 1;
       for (let i = index + 1; i < data.length; i++) {
@@ -59,7 +56,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     return 0;
   };
 
-  const columns: TableProps<BatchField>["columns"] = [
+  const columns: TableProps<BatchFields>["columns"] = [
     {
       title: "Course Set",
       dataIndex: "courseSet",
@@ -78,11 +75,11 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     {
       title: "Teachers",
       dataIndex: "teachers",
-      render: (_, { teacher }) => (
+      render: (_, { teachers }) => (
         <>
-          {teacher[0].split(",").map((tag) => (
+          {teachers[0].split(',').map((teacher,tag) => (
             <Tag color="blue" key={tag}>
-              {tag.toUpperCase()}
+              {teacher.toUpperCase()}
             </Tag>
           ))}
         </>
@@ -91,9 +88,9 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     {
       title: "Rooms",
       dataIndex: "rooms",
-      render: (_, { room }) => (
+      render: (_, { rooms }) => (
         <>
-          {room[0].split(",").map((tag) => (
+          {rooms[0].split(",").map((tag) => (
             <Tag color="purple" key={tag}>
               {tag.toUpperCase()}
             </Tag>
@@ -150,7 +147,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
 
   return (
     <div>
-      <Table<BatchField> columns={columns} dataSource={ldata} pagination={false} />
+      <Table<BatchFields> columns={columns} dataSource={ldata} pagination={false} />
     </div>
   );
 };
