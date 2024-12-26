@@ -80,7 +80,7 @@ function suggestTimetable(token, blocks, courses, teachers, rooms, semester, pre
                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: null }];
                     }
                     _loop_1 = function (i) {
-                        var course, teacher, courseResponse, teacherResponse, bestScore, currRoomInfo, maxNonNegativeEntries, _i, roomsInfo_1, roomInfo, roomScore, nonNegativeEntries, feasible, i_1, j, availableSlots, sortedScores, k, index, row, col, bestScoreCopy, preferredRoomInfo, feasible, i_2, j, i_3, j, availableSlots, sortedScores, k, index, row, col, remainingCredits, _f, roomsInfo_2, roomInfo, feasible_1, bestScoreCopyCopy, i_4, j, availableSlots_1, sortedScores_1, k, index, row, col, k, index, row, col;
+                        var course, teacher, courseResponse, teacherResponse, bestScore, currRoomInfo, maxNonNegativeEntries, _i, roomsInfo_1, roomInfo, roomScore, nonNegativeEntries, i_1, j, feasible, i_2, j, availableSlots, sortedScores, k, index, row, col, bestScoreCopy, preferredRoomInfo, feasible, i_3, j, i_4, j, availableSlots, sortedScores, k, index, row, col, remainingCredits, _f, roomsInfo_2, roomInfo, feasible_1, bestScoreCopyCopy, i_5, j, availableSlots_1, sortedScores_1, k, index, row, col, k, index, row, col;
                         return __generator(this, function (_g) {
                             switch (_g.label) {
                                 case 0:
@@ -107,7 +107,14 @@ function suggestTimetable(token, blocks, courses, teachers, rooms, semester, pre
                                             roomInfo = roomsInfo_1[_i];
                                             if (roomInfo) {
                                                 roomScore = (0, common_1.scoreRooms)(roomInfo.timetable);
-                                                nonNegativeEntries = roomScore.flat().filter(function (score) { return score == 0; }).length;
+                                                nonNegativeEntries = 0;
+                                                for (i_1 = 0; i_1 < roomScore.length; i_1++) {
+                                                    for (j = 0; j < roomScore[i_1].length; j++) {
+                                                        if (roomScore[i_1][j] >= 0) {
+                                                            nonNegativeEntries++;
+                                                        }
+                                                    }
+                                                }
                                                 if (nonNegativeEntries > maxNonNegativeEntries) {
                                                     maxNonNegativeEntries = nonNegativeEntries;
                                                     preferredRooms = roomInfo.name;
@@ -125,10 +132,10 @@ function suggestTimetable(token, blocks, courses, teachers, rooms, semester, pre
                                         }
                                         else {
                                             feasible = (0, common_1.scoreRooms)(currRoomInfo.timetable);
-                                            for (i_1 = 0; i_1 < feasible.length; i_1++) {
-                                                for (j = 0; j < feasible[i_1].length; j++) {
-                                                    if (feasible[i_1][j] < 0) {
-                                                        bestScore[i_1][j] = -1;
+                                            for (i_2 = 0; i_2 < feasible.length; i_2++) {
+                                                for (j = 0; j < feasible[i_2].length; j++) {
+                                                    if (feasible[i_2][j] < 0) {
+                                                        bestScore[i_2][j] = -1;
                                                     }
                                                 }
                                                 availableSlots = bestScore.flat().filter(function (score) { return score > 0; }).length;
@@ -162,18 +169,18 @@ function suggestTimetable(token, blocks, courses, teachers, rooms, semester, pre
                                         }
                                         else {
                                             feasible = (0, common_1.scoreRooms)(preferredRoomInfo.timetable);
-                                            for (i_2 = 0; i_2 < feasible.length; i_2++) {
-                                                for (j = 0; j < feasible[i_2].length; j++) {
-                                                    if (feasible[i_2][j] < 0) {
-                                                        bestScore[i_2][j] = -1;
+                                            for (i_3 = 0; i_3 < feasible.length; i_3++) {
+                                                for (j = 0; j < feasible[i_3].length; j++) {
+                                                    if (feasible[i_3][j] < 0) {
+                                                        bestScore[i_3][j] = -1;
                                                     }
                                                 }
                                             }
-                                            for (i_3 = 0; i_3 < timetable.length; i_3++) {
-                                                for (j = 0; j < timetable[i_3].length; j++) {
-                                                    if (timetable[i_3][j] !== '0') {
-                                                        bestScore[i_3][j] = -1;
-                                                        bestScoreCopy[i_3][j] = -1;
+                                            for (i_4 = 0; i_4 < timetable.length; i_4++) {
+                                                for (j = 0; j < timetable[i_4].length; j++) {
+                                                    if (timetable[i_4][j] !== '0') {
+                                                        bestScore[i_4][j] = -1;
+                                                        bestScoreCopy[i_4][j] = -1;
                                                     }
                                                 }
                                             }
@@ -198,10 +205,10 @@ function suggestTimetable(token, blocks, courses, teachers, rooms, semester, pre
                                                         if (roomInfo && roomInfo.name !== preferredRoomInfo.name) {
                                                             feasible_1 = (0, common_1.scoreRooms)(roomInfo.timetable);
                                                             bestScoreCopyCopy = bestScoreCopy;
-                                                            for (i_4 = 0; i_4 < feasible_1.length; i_4++) {
-                                                                for (j = 0; j < feasible_1[i_4].length; j++) {
-                                                                    if (feasible_1[i_4][j] < 0) {
-                                                                        bestScoreCopyCopy[i_4][j] = -1;
+                                                            for (i_5 = 0; i_5 < feasible_1.length; i_5++) {
+                                                                for (j = 0; j < feasible_1[i_5].length; j++) {
+                                                                    if (feasible_1[i_5][j] < 0) {
+                                                                        bestScoreCopyCopy[i_5][j] = -1;
                                                                     }
                                                                 }
                                                             }

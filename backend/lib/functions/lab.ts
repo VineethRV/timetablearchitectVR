@@ -50,7 +50,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                                     score[i][j]=-1
                                 }
                                 else{
-                                    if(score[i][j]!=-1)
+                                    if(score[i][j]>=0)
                                         score[i][j]+=scoreValue[i][j]
                                 }
                             }
@@ -113,7 +113,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
             
             for(let i=0;i<score.length;i++){
                 for(let j=0;j<score[i].length-1;j+=2){
-                    if(score[i][j]==-1 || score[i][j+1]==-1){
+                    if(score[i][j]<0 || score[i][j+1]<0){
                         score[i][j]=-1
                         score[i][j+1]=-1
                     }
