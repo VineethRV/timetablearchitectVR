@@ -64,7 +64,14 @@ export async function suggestTimetable(
                 for (const roomInfo of roomsInfo) {
                     if(roomInfo){
                         const roomScore = scoreRooms(roomInfo.timetable);
-                        const nonNegativeEntries = roomScore.flat().filter(score => score == 0).length;
+                        let nonNegativeEntries = 0;
+                        for (let i = 0; i < roomScore.length; i++) {
+                            for (let j = 0; j < roomScore[i].length; j++) {
+                                if (roomScore[i][j] >= 0) {
+                                    nonNegativeEntries++;
+                                }
+                            }
+                        }
                         if (nonNegativeEntries > maxNonNegativeEntries) {
                             maxNonNegativeEntries = nonNegativeEntries;
                             preferredRooms = roomInfo.name;

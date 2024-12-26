@@ -15,6 +15,7 @@ const { orgRouter } = require("./routes/org.js");
 const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
+const { suggestTimetable } = require("./lib/functions/makeTimetable");
 
 app.use(express.json());
 app.use(
@@ -748,6 +749,24 @@ app.post("/api/getLabRecommendation", async (req, res) => {
     res
       .status(200)
       .json({ status: result.status, timetable: result.timetable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+app.post("/api/suggestTimetable", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { blocks, courses, teachers, rooms, semester, preferredRooms } = req.body;
+  if (!token || !blocks || !courses || !teachers || !rooms || semester === undefined) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token, blocks, courses, teachers, rooms, and semester are required",
+    });
+  }
+
+  try {
+    const result = await suggestTimetable(token, blocks, courses, teachers, rooms, semester, preferredRooms);
+    res.status(200).json({ status: result.status, returnVal: result.returnVal });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
