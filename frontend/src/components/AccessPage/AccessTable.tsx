@@ -39,7 +39,13 @@ interface AccessType {
   level_of_access: "viewer" | "admin" | "editor";
 }
 
-const AccessTable = () => {
+const AccessTable = ({
+  setIsAdmin,
+  adminLoading,
+}: {
+  setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
+  adminLoading: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AccessType[]>([]);
 
@@ -183,9 +189,9 @@ const AccessTable = () => {
           }));
           setData(formattedData);
         } else {
-          toast.error("You are not allowed !!");
+          setIsAdmin(false);
         }
-
+        adminLoading(false);
         setLoading(false);
       });
   }, []);
