@@ -243,7 +243,7 @@ const TeachersTable = ({
 
   // Assigning department colors for consistency
   teachersData?.forEach((teacher) => {
-    if (!deptColors[teacher.department as string]) {
+    if (teacher.department && !deptColors[teacher.department as string]) {
       deptColors[teacher.department as string] =
         colorCombos[cnt % colorCombos.length].backgroundColor;
       cnt++;

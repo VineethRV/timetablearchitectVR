@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "antd";
+import { Button, Tooltip } from "antd";
 import { CiExport, CiImport } from "react-icons/ci";
 import { useEffect, useState } from "react";
 import { Room } from "../../../types/main";
@@ -11,6 +11,7 @@ import RoomsTable from "../../../components/RoomsPage/RoomsTable";
 import Loading from "../../../components/Loading/Loading";
 // @ts-ignore
 import Papa from "papaparse";
+import { FaDownload } from "react-icons/fa6";
 
 function RoomPage() {
   const [roomsData, setRoomsData] = useState<Room[]>([]);
@@ -48,8 +49,10 @@ function RoomPage() {
 
         const validRooms = parsedData.filter((room: any) => room.name);
         const names = validRooms.map((room: any) => room.name);
-        const labs = validRooms.map((room: any) => room.lab == 'TRUE'?true:false);
-        
+        const labs = validRooms.map((room: any) =>
+          room.lab == "TRUE" ? true : false
+        );
+
         try {
           const response = await axios.post(
             `${BACKEND_URL}/rooms/many`,
@@ -106,18 +109,49 @@ function RoomPage() {
     document.body.removeChild(link);
   };
 
+  const downloadCSVTemplate = () => {
+    const header = ["name", "lab"];
+    const rows = [
+      ["Room1", true],
+      ["Room2", false],
+    ];
+
+    const csvContent = [
+      header.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "roomTemplate.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) return <Loading />;
 
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">ClassRooms</h1>
       <div className="flex space-x-3 justify-end py-1">
+        <Tooltip title="Download template">
+          <div
+            onClick={downloadCSVTemplate}
+            className="flex cursor-pointer items-center"
+          >
+            <FaDownload className="h-4 w-4 text-primary" />
+          </div>
+        </Tooltip>
         <Button className="bg-[#F2F2FDFF] text-primary font-bold">
           <CiImport />
           <label htmlFor="import-file" className="cursor-pointer">
             Import
           </label>
         </Button>
+
         <input
           id="import-file"
           type="file"

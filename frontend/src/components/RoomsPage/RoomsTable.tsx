@@ -110,7 +110,7 @@ const RoomsTable = ({
   };
 
   roomsData?.forEach((room) => {
-    if (!deptColors[room.department as string]) {
+    if (room.department && !deptColors[room.department as string]) {
       deptColors[room.department as string] =
         colorCombos[cnt % colorCombos.length].backgroundColor;
       cnt++;
