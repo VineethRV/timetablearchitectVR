@@ -29,7 +29,7 @@ const Signin = () => {
       .then((res) => {
         const status = res.data.status;
 
-        if (status == 200) {
+        if (status === 200) {
           axios
             .get(BACKEND_URL + "/user/check_org", {
               headers: {
@@ -40,46 +40,45 @@ const Signin = () => {
               if (!data.result) {
                 navigate("/onboard");
                 toast.info("Please complete onboarding process");
-              }
-              else {
+              } else {
                 navigate("/dashboard");
                 toast.success("User is already logged in!!");
               }
               setLoading(false);
-            }); 
+            });
         }
-      })
+      });
   }, []);
 
   if (loading) return <Loading />;
 
   return (
-    <>
-      <div className="relative h-screen w-screen overflow-hidden bg-gray-50">
-        <img
-          className="absolute w-[370px] h-[370px] bottom-[-50px] left-[-50px] opacity-80"
-          src={SignInIllus1}
-          alt="Signin1"
-        />
-        <img
-          className="absolute w-[370px] h-[370px] bottom-[-100px] right-[-50px] opacity-80"
-          src={SignInIllus2}
-          alt="Signin2"
-        />
-        <Header />
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{
-            duration: 0.5,
-            ease: "easeInOut",
-          }}
-          className="flex justify-center items-center h-[86vh]"
-        >
-          <SigninFormCard />
-        </motion.div>
-      </div>
-    </>
+    <div className="relative h-screen w-screen overflow-hidden bg-gray-50">
+      {/* Background Images */}
+      <img
+        className="absolute w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] md:w-[370px] md:h-[370px] bottom-[-50px] left-[-50px] opacity-80"
+        src={SignInIllus1}
+        alt="Signin1"
+      />
+      <img
+        className="absolute w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] md:w-[370px] md:h-[370px] bottom-[-100px] right-[-50px] opacity-80"
+        src={SignInIllus2}
+        alt="Signin2"
+      />
+
+      <Header />
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          ease: "easeInOut",
+        }}
+        className="flex justify-center items-center h-[80vh]"
+      >
+        <SigninFormCard />
+      </motion.div>
+    </div>
   );
 };
 

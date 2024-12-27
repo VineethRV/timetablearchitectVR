@@ -50,8 +50,10 @@ const SigninFormCard = () => {
   }
 
   return (
-    <Card className="flex flex-col w-[460px] px-8 rounded-2xl py-3 shadow-lg">
-      <h1 className="font-bold text-3xl text-center">Welcome back 👋</h1>
+    <Card className="flex flex-col w-[95%] max-w-[460px] px-6 sm:px-8 rounded-2xl py-3 shadow-lg">
+      <h1 className="font-bold text-2xl sm:text-3xl text-center">
+        Welcome back 👋
+      </h1>
       <div className="flex flex-col space-y-1 mt-6">
         <h1 className="font-bold text-sm">Email</h1>
         <Input
@@ -74,15 +76,17 @@ const SigninFormCard = () => {
         />
       </div>
       <div className="flex mt-4 justify-between">
-        <div className="flex space-x-2">
+        <div className="flex space-x-2 items-center">
           <Checkbox onClick={() => setKeepLogged(!keepLogged)} />
-          <p className="text-sm font-medium">Keep me logged in</p>
+          <p className="text-xs md:text-sm font-medium">Keep me logged in</p>
         </div>
+        <div className="flex items-center">
         <Link to="/forget-password">
-          <p className="text-[#636AE8FF] font-medium hover:cursor-pointer text-sm">
-            Forget Password ?
+          <p className="text-[#636AE8FF] font-medium hover:cursor-pointer text-xs md:text-sm">
+            Forget Password?
           </p>
         </Link>
+        </div>
       </div>
       <Button
         onClick={signInHandler}
