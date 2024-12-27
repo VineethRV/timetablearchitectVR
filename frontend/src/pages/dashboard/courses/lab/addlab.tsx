@@ -222,29 +222,41 @@ const AddLabPage: React.FC = () => {
     return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0";
   }
 
-    const handleModalSubmit = () => {
-      const courset = formFields.map((batch) => batch.course).join("/");
-    
-      const updatedBatches = formFields.map((batch) => ({
-        ...batch,
-        courseSet: courset, // Set courseSet dynamically as concatenated course names
-      }));
-      setTableData((prevData) => {
-        if (editingRecord) {
-          // If editingRecord exists, update the corresponding record
-          return prevData.map((data) =>
-            data.courseSet === editingRecord[0].courseSet // Match the unique identifier (e.g., `key`)
-              ? { ...data, ...updatedBatches[0] } // Update the matching record
-              : data
-          );
-        }
-        // If no editingRecord, add new records
-        return [...prevData, ...updatedBatches];
-      });
+  const handleModalSubmit = () => {
+    const currentBatches = form.getFieldValue("numberOfBatches");
+    const newFormFields = Array.from({ length: currentBatches || 1 }, (_, index) => ({
+      key: `${index}`,
+      courseSet: "",
+      course: form1.getFieldValue(`course-${index}`),
+      teachers: form1.getFieldValue(`teacher-${index}`),
+      rooms: form1.getFieldValue(`room-${index}`),
+    }));
+  
+    const courset = newFormFields.map((batch) => batch.course).join("/");
+  
+    const updatedBatches = newFormFields.map((batch) => ({
+      ...batch,
+      courseSet: courset,
+    }));
+  
+    setFormFields(newFormFields);
+  
+    setTableData((prevData) => {
+      if (editingRecord) {
+        return prevData
+          .filter((data) => data.courseSet !== editingRecord[0].courseSet) // Remove old batches for the edited courseSet
+          .concat(updatedBatches); // Add the updated batches
+      }
+  
+      // If no editingRecord, add new records
+      return [...prevData, ...updatedBatches];
+    });
+  
     setIsModalOpen(false);
-    setEditingRecord(null)
+    setEditingRecord(null);
     handleCloseModal();
   };
+  
 
   const convertToTimetable=(time:string)=>{
     setButtonStatus1(time.split(";").map((row) => row.split(",").map((value)=>(value==="0"?"Free":value))))
@@ -293,12 +305,10 @@ const getCourseData = (tableData: BatchField[]): { courseSets: string[]; teacher
   const courseData = tableData.reduce(
     (acc, item) => {
       const { courseSet, teachers, rooms } = item;
-      console.log(2)
       // Ensure entries exist for this courseSet
       if (!acc.courseSets.includes(courseSet)) {
         acc.courseSets.push(courseSet);
       }
-        console.log(3)
       if (!acc.teachers[courseSet]) {
         acc.teachers[courseSet] = [];
       }
@@ -308,8 +318,6 @@ const getCourseData = (tableData: BatchField[]): { courseSets: string[]; teacher
           teacherList.push(t.trim());
         });
       });
-      console.log(1)
-      console.log("teacherlsit",teacherList)
       acc.teachers[courseSet].push(...teacherList);
 
       // Add rooms for this courseSet
@@ -364,7 +372,7 @@ const getCourseData = (tableData: BatchField[]): { courseSets: string[]; teacher
         },
       }
     );
-    if (response.data.status === 200) {
+    if (response.data.status === 201) {
       message.success("Added successfully!");
     } else {
       message.error(response.data.message || "Failed to add");

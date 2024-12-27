@@ -77,7 +77,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
       dataIndex: "teachers",
       render: (_, { teachers }) => (
         <>
-          {teachers[0].split(',').map((teacher,tag) => (
+          {teachers.map((teacher,tag) => (
             <Tag color="blue" key={tag}>
               {teacher.toUpperCase()}
             </Tag>

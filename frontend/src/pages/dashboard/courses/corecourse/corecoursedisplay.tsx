@@ -2,8 +2,41 @@ import { Button, ConfigProvider, Input, Select } from "antd";
 import { TbTrash } from "react-icons/tb";
 import { CiExport, CiImport, CiSearch } from "react-icons/ci";
 import CoreTable from "../../../../components/CoursePage/coreTable";
+import { useEffect, useState } from "react";
+import { Course } from "../../../../types/main";
+import axios from "axios";
+import { BACKEND_URL } from "../../../../../config";
+import { statusCodes } from "../../../../types/statusCodes";
+import { toast } from "sonner";
+import Loading from "../../../../components/Loading/Loading";
 
 function page() {
+
+  const [coreData, setCoreData] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios
+      .get(BACKEND_URL + "/Core", {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+
+        if (status == statusCodes.OK) {
+          setCoreData(res.data.message);
+        } else {
+          toast.error("Server error !!");
+        }
+
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <Loading />;
+
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">Core Courses</h1>

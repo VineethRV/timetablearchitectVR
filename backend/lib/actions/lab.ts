@@ -17,7 +17,6 @@ export async function createLab(
 ): Promise<{ status: number; data: Lab | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
-    console.log(name,semester,batches,teachers,rooms,timetables,department)
     if (user?.orgId == null) {
       return {
         status: statusCodes.BAD_REQUEST,
