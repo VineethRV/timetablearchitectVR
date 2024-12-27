@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import RoomsTable from "../../../components/RoomsPage/RoomsTable";
 import Loading from "../../../components/Loading/Loading";
+// @ts-ignore
+import Papa from "papaparse";
 
 function RoomPage() {
   const [roomsData, setRoomsData] = useState<Room[]>([]);
@@ -34,6 +36,76 @@ function RoomPage() {
       });
   }, []);
 
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async function (results: any) {
+        const parsedData = results.data;
+
+        const validRooms = parsedData.filter((room: any) => room.name);
+        const names = validRooms.map((room: any) => room.name);
+        const labs = validRooms.map((room: any) => room.lab == 'TRUE'?true:false);
+        
+        try {
+          const response = await axios.post(
+            `${BACKEND_URL}/rooms/many`,
+            { name: names, lab: labs },
+            {
+              headers: {
+                authorization: localStorage.getItem("token"),
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          if (response.data.status === statusCodes.CREATED) {
+            toast.success("Rooms imported successfully!");
+            setRoomsData((prev) => [...prev, ...validRooms]); // Update the table
+          } else {
+            toast.error("Error importing rooms!");
+          }
+        } catch (error) {
+          console.error(error);
+          toast.error("An error occurred during import.");
+        }
+      },
+      error: function (error: any) {
+        console.error(error);
+        toast.error("Failed to parse the CSV file.");
+      },
+    });
+  };
+
+  const exportToCSV = () => {
+    const header = ["name", "organisation", "department", "lab", "timetable"];
+
+    const rows = roomsData.map((room: Room) => [
+      room.name,
+      room.organisation ?? "",
+      room.department ?? "",
+      room.lab ? "Yes" : "No", // Converting `lab` boolean to "Yes" or "No"
+      room.timetable ?? "",
+    ]);
+
+    const csvContent = [
+      header.join(","),
+      ...rows.map((row) => row.join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", "roomsData.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) return <Loading />;
 
   return (
@@ -42,9 +114,21 @@ function RoomPage() {
       <div className="flex space-x-3 justify-end py-1">
         <Button className="bg-[#F2F2FDFF] text-primary font-bold">
           <CiImport />
-          Import
+          <label htmlFor="import-file" className="cursor-pointer">
+            Import
+          </label>
         </Button>
-        <Button className="bg-primary text-white font-bold">
+        <input
+          id="import-file"
+          type="file"
+          accept=".csv"
+          style={{ display: "none" }}
+          onChange={handleImport}
+        />
+        <Button
+          onClick={exportToCSV}
+          className="bg-primary text-white font-bold"
+        >
           <CiExport />
           Export
         </Button>

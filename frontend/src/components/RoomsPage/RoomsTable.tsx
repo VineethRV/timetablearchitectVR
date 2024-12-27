@@ -70,7 +70,7 @@ const RoomsTable = ({
           case statusCodes.OK:
             setRoomsData((prevRooms) =>
               prevRooms.filter(
-                (t) => t.name !== room.name && t.department !== room.department
+                (t) => t.name !== room.name || t.department !== room.department
               )
             );
             toast.success("Room deleted successfully");
@@ -108,6 +108,14 @@ const RoomsTable = ({
       name: record.name,
     }),
   };
+
+  roomsData?.forEach((room) => {
+    if (!deptColors[room.department as string]) {
+      deptColors[room.department as string] =
+        colorCombos[cnt % colorCombos.length].backgroundColor;
+      cnt++;
+    }
+  });
 
   const columns: TableColumnsType<Room> = [
     {
@@ -216,13 +224,7 @@ const RoomsTable = ({
     });
   }
 
-  roomsData?.forEach((room) => {
-    if (!deptColors[room.department as string]) {
-      deptColors[room.department as string] =
-        colorCombos[cnt % colorCombos.length].backgroundColor;
-      cnt++;
-    }
-  });
+  
 
   const filteredRoomsData = useMemo(() => {
     if (departmentFilter == "Select a department" && isLab == "Labs") {
