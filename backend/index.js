@@ -361,8 +361,9 @@ app.delete("/api/rooms", async (req, res) => {
 // Create a new course
 app.post("/api/courses", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { name, code, semester, department } = req.body;
-  if (!token || !name || !code) {
+  const { name, code,credits, semester, department } = req.body;
+  console.log(name,code,credits,semester,department)
+  if (!token || !name||!credits || !code) {
     return res
       .status(200)
       .json({ status: 400, message: "Token, name, and code are required" });
@@ -373,6 +374,7 @@ app.post("/api/courses", async (req, res) => {
       token,
       name,
       code,
+      credits,
       semester,
       department
     );

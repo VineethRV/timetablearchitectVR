@@ -46,6 +46,7 @@ const AddCoursepage: React.FC = () => {
   function addCourse() {
     const coursename = form.getFieldValue('coursename');
     const coursecode = form.getFieldValue('coursecode');
+    const credits = form.getFieldValue('Hpc');
      const sem = form.getFieldValue('selectSem');
      const dept="Civil Engineering";
     // const credits = form.getFieldValue('credits');
@@ -56,6 +57,7 @@ const AddCoursepage: React.FC = () => {
       {
         name: coursename,
         code: coursecode,
+        credits:credits,
         semester: sem,
         department: dept,
       },
@@ -144,7 +146,7 @@ const AddCoursepage: React.FC = () => {
               className="w-full font-normal"
             />
           </Form.Item>
-          <Form.Item name="hours" label="Hours per week" required>
+          <Form.Item label="Hours per week" name="Hpc" required>
             <InputNumber
               min={0}
               placeholder="Hours per week"

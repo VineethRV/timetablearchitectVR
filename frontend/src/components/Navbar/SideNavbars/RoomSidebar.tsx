@@ -19,7 +19,7 @@ const RoomsSidebar = () => {
   };
 
   return (
-    <Sider className="h-screen bg-white border-r-[0.5px]">
+    <Sider className="h-screen bg-white border-r-[0.5px] font-sans">
       <div className="flex justify-left text-black-bold items-center pt-[20px] pl-[20px] space-x-2 h-[7vh]">
         <FaBuildingUser className="w-[30px] h-[40px]" />
         <span
@@ -31,9 +31,7 @@ const RoomsSidebar = () => {
       </div>
       <Divider />
       <div
-        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4"
-        style={{ fontFamily: "Inter" }}
-      >
+        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4">
         <div
           onClick={() => handleClick("/add")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
@@ -68,9 +66,7 @@ const RoomsSidebar = () => {
       </div>
       <Divider />
       <div
-        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4"
-        style={{ fontFamily: "Inter" }}
-      >
+        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4">
         <div
           onClick={() => handleClick( "/")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${
