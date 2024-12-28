@@ -230,3 +230,9 @@ export async function suggestTimetable(
         return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: null };
     }
 }
+
+// export async function suggestLab(
+
+// ){
+
+// }

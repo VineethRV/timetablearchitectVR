@@ -361,7 +361,7 @@ app.delete("/api/rooms", async (req, res) => {
 // Create a new course
 app.post("/api/courses", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { name, code, semester, department } = req.body;
+  const { name, code, semester,bfactor,credits, department } = req.body;
   if (!token || !name || !code) {
     return res
       .status(200)
@@ -373,6 +373,8 @@ app.post("/api/courses", async (req, res) => {
       token,
       name,
       code,
+      credits,
+      bfactor,
       semester,
       department
     );
@@ -753,7 +755,23 @@ app.post("/api/getLabRecommendation", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+app.post("/api/recommendLab", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { Lteachers, Lrooms, blocks } = req.body;
+  if (!token || !Lteachers || !Lrooms) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token, Lteachers, and Lrooms are required",
+    });
+  }
 
+  try {
+    const result = await labF.recommendLab(token, Lteachers, Lrooms, blocks);
+    res.status(200).json({ status: result.status, timetable: result.timetable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 app.post("/api/suggestTimetable", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { blocks, courses, teachers, rooms, semester, preferredRooms } = req.body;

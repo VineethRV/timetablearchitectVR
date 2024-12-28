@@ -1,3 +1,4 @@
+import { time } from "console";
 import { peekRoom } from "../actions/room";
 import { peekTeacher } from "../actions/teacher";
 import { statusCodes } from "../types/statusCodes";
@@ -69,22 +70,23 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 let {status, room} = await peekRoom(token,lab.rooms[i][k]);
                 if (status == statusCodes.OK && room) {
                     rooms.push(room);
-                let scoreValue = scoreRooms(room.timetable);
-                console.log("RoomT",scoreValue)
-                if(!score){
-                    return {
-                        status: statusCodes.BAD_REQUEST,
-                        timetable: null
+                    let scoreValue = scoreRooms(room.timetable);
+                    console.log("RoomT",scoreValue)
+                    if(!score){
+                        return {
+                            status: statusCodes.BAD_REQUEST,
+                            timetable: null
+                        }
                     }
-                }
-                for (let i = 0; i < scoreValue.length; i++) {
-                    for (let j = 0; j < scoreValue[i].length; j++) {
-                        if (scoreValue[i][j] < 0) {
-                            score[i][j] = -1;
-                        } 
+                    for (let i = 0; i < scoreValue.length; i++) {
+                        for (let j = 0; j < scoreValue[i].length; j++) {
+                            if (scoreValue[i][j] < 0) {
+                                score[i][j] = -1;
+                            } 
+                        }
                     }
-                }
-                } else {
+                } 
+                else {
                     return {
                         status: status,
                         timetable: null
@@ -140,6 +142,119 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                     status: statusCodes.SERVICE_UNAVAILABLE,
                     timetable: convertTableToString(timetable)
                 }
+            }
+        }
+        return {
+            status:statusCodes.OK,
+            timetable:convertTableToString(timetable)
+        }
+    }
+    catch{
+        return {
+            status:statusCodes.INTERNAL_SERVER_ERROR,
+            timetable:null
+        }
+    }
+}
+
+export async function recommendLab(
+token:string,
+Lteachers:string[],
+Lrooms:string[],
+blocks:string|null
+):Promise<{status:number, timetable: string|null}>{
+let timetable:string[][]|null=convertStringToTable(blocks);
+    try{
+        let teachers=[]
+        let score: number[][]=[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]];
+        if (timetable) {
+            for(let j=0;j<timetable.length;j++){
+                for(let k=0;k<timetable[j].length;k++){
+                    if (timetable[j][k] != "0") {
+                        score[j][k] = -1;
+                    } 
+                }
+            }
+        }
+        for(let j=0;j<Lteachers.length;j++){
+            let {status,teacher}=(await peekTeacher(token,Lteachers[j]));
+            if(status==statusCodes.OK && teacher){
+                teachers.push(teacher);
+                let scoreValue = scoreTeachers(teacher.timetable, teacher.labtable);
+                console.log("scoreT",scoreValue)
+                if(score.length==0){
+                    score=scoreValue
+                }
+                else{ 
+                    for(let i=0;i<scoreValue.length;i++){
+                        for(let j=0;j<scoreValue[i].length;j++){
+                            if(scoreValue[i][j]<0){
+                                score[i][j]=-1
+                            }
+                            else{
+                                if(score[i][j]>=0)
+                                    score[i][j]+=scoreValue[i][j]
+                            }
+                        }
+                    }
+                }
+               
+            }
+            let rooms=[]
+            for (let k = 0; k < Lrooms.length; k++) {
+                let {status, room} = await peekRoom(token,Lrooms[k]);
+                if (status == statusCodes.OK && room) {
+                    rooms.push(room);
+                    let scoreValue = scoreRooms(room.timetable);
+                    console.log("RoomT",scoreValue)
+                    if(!score){
+                        return {
+                            status: statusCodes.BAD_REQUEST,
+                            timetable: null
+                        }
+                    }
+                    for (let i = 0; i < scoreValue.length; i++) {
+                        for (let j = 0; j < scoreValue[i].length; j++) {
+                            if (scoreValue[i][j] < 0) {
+                                score[i][j] = -1;
+                            } 
+                        }
+                    }
+                } 
+                else {
+                    return {
+                        status: status,
+                        timetable: null
+                    };
+                }
+            }
+            if(!score){
+                return {
+                    status: statusCodes.BAD_REQUEST,
+                    timetable: null
+                }
+            }
+            if (!timetable) {
+                timetable = Array(score.length).fill(null).map(() => Array(score[0].length).fill("0"));
+            }
+            for (let i = 0; i < timetable.length; i++) {
+                for (let j = 0; j < timetable[i].length; j++) {
+                    if (timetable[i][j] !== "0") {
+                        score[i][j] = -1;
+                    }
+                }
+            }
+            for(let i=0;i<score.length;i++){
+                for(let j=0;j<score[i].length-1;j+=2){
+                    if(score[i][j]<0 || score[i][j+1]<0){
+                        score[i][j]=-1
+                        score[i][j+1]=-1
+                    }
+                }
+            }
+            return {
+                status: statusCodes.OK,
+                timetable: convertTableToString(score.map((row) => row.map((val) => val.toString())))
             }
         }
         return {
