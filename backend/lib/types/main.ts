@@ -40,6 +40,7 @@ export type Course = {
   code: string;
   department: string | null;
   orgId: number;
+  bFactor: number | null;
   semester: number | null;
   credits: number|null;
 };

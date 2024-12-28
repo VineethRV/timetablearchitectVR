@@ -9,6 +9,7 @@ import { convertStringToTable, convertTableToString, scoreRooms, scoreTeachers }
 //test all functions, add handling of rooms to admins,
 //collision handling
 //current function is for non admins.
+let randomFactor=0.1;//introduces some randomness in the allocation of courses to the timetable
 type returnStrcture={
     timetable:string[][]|null,
     roomtable:string[][]|null
@@ -43,6 +44,7 @@ export async function suggestTimetable(
         if(flag==1){
             return {status:statusCodes.INTERNAL_SERVER_ERROR,returnVal:null };
         }
+        let bFactor = Array(6).fill(0);
         // Iterate over the courses
         for (let i = 0; i < courses.length; i++) {
             const course = courses[i];
@@ -100,19 +102,37 @@ export async function suggestTimetable(
                         }
                         const availableSlots = bestScore.flat().filter(score => score > 0).length;
                         if(courseResponse.course?.credits){
+                            //if available slots are less than the credits of the course, return service unavailable
                             if (availableSlots < courseResponse.course?.credits) {
                                 return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal:{timetable: timetable,roomtable:null}  };
                             }
+                            //else, assign the course to the timetable
                             else{
-                                const sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
-                                    .sort((a, b) => b.score - a.score);
-
+                                for(let i=0;i<bestScore.length;i++){
+                                    for(let j=0;j<bestScore[i].length;j++){
+                                        if(bestScore[i][j]>0){
+                                            bestScore[i][j]=(bestScore[i][j]+randomFactor*Math.random())/bFactor[i];
+                                        }
+                                    }
+                                }
                                 for (let k = 0; k < courseResponse.course.credits; k++) {
+                                    const sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
+                                    .sort((a, b) => b.score - a.score);
                                     const { index } = sortedScores[k];
                                     const row = Math.floor(index / bestScore[0].length);
                                     const col = index % bestScore[0].length;
                                     timetable[row][col] = courseResponse.course.name;
                                     roomtable[row][col] = currRoomInfo.name;
+                                    bFactor[row]=bFactor[row]+courseResponse.course.bFactor;
+                                    // bFactor[row]=bFactor[row]+5;
+                                    //prevent allocation on the same day
+                                    for(let i=0;i<bestScore.length;i++){
+                                        if(i==row){
+                                            for(let j=0;j<bestScore[i].length;j++){
+                                                bestScore[i][j]=-1;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

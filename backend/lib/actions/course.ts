@@ -11,6 +11,7 @@ export async function createCourse(
   name: string,
   code: string,
   credits: number|null,
+  bFactor: number|null,
   semester: number | null = null,
   department: string | null = null
 ): Promise<{ status: number; Course: Course | null }> {
@@ -30,6 +31,7 @@ export async function createCourse(
           code: code,
           orgId: user.orgId,
           credits: credits,
+          bFactor:bFactor,
           department: user.department,
           semester: semester,
         };
@@ -149,6 +151,7 @@ export async function updateCourse(
   originalName: string,
   originalDepartment: string | null = null,
   originalSemester: number,
+  bFactor:number|null,
   credits:number|null,
   course: Course
 ): Promise<{ status: number }> {
@@ -185,6 +188,7 @@ export async function updateCourse(
             code: course.code,
             semester: course.semester,
             credits:credits?credits:course.credits,
+            bFactor:bFactor?bFactor:course.bFactor,
             department:
               user.role == "admin" && course.department
                 ? course.department
