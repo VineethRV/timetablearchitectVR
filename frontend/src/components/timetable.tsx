@@ -46,9 +46,9 @@ const Timetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) 
       <Button
         key={colIndex}
         className={`w-20 h-8 m-1 text-sm font-semibold rounded-md ${
-          buttonStatus[rowIndex][colIndex] === "Busy"
-            ? "text-[#F2F2FDFF] bg-[#636AE8FF]"
-            : "text-[#636AE8FF] bg-[#F2F2FDFF]"
+          buttonStatus[rowIndex][colIndex] === "Free"
+            ? "text-[#636AE8FF] bg-[#F2F2FDFF]"
+            : "text-[#F2F2FDFF] bg-[#636AE8FF]"
         }`}
         onClick={() => handleButtonClick(rowIndex, colIndex)}
       >

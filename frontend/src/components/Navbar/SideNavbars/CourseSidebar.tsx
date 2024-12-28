@@ -47,7 +47,7 @@ const CoursesSidebar = () => {
   }, []);
 
   return (
-    <Sider className="h-screen bg-white border-r-[0.5px]">
+    <Sider className="h-screen bg-white border-r-[0.5px] font-sans">
       <div className="flex justify-left text-black-bold items-center pt-[20px] pl-[20px] space-x-2 h-[7vh]">
         <FaBook className="w-[30px] h-[40px]" />
         <span
@@ -59,9 +59,7 @@ const CoursesSidebar = () => {
       </div>
       <Divider />
       <div
-        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4"
-        style={{ fontFamily: "Inter" }}
-      >
+        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4">
         <div
           onClick={() => handleClick1("/electives")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
@@ -112,9 +110,7 @@ const CoursesSidebar = () => {
       </div>
       <Divider />
       <div
-        className="flex flex-col items-left justify-center h-[15vh] space-y-2 font-medium text-[#565E6C] pl-4"
-        style={{ fontFamily: "Inter" }}
-      >
+        className="flex flex-col items-left justify-center h-[15vh] space-y-2 font-medium text-[#565E6C] pl-4">
         <div
           onClick={() => handleClick2("/add")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${
@@ -131,7 +127,7 @@ const CoursesSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick2("/")}
+          onClick={() => handleClick2("")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
             pathname === `/dashboard/courses${selected}`
               ? "text-[#636AE8FF] font-bold"

@@ -1,28 +1,47 @@
 import { Button, Table, Tag, Tooltip } from "antd";
 import type { TableProps } from "antd";
+import { useEffect, useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 
-interface DataType {
+interface BatchFields {
   key: string;
   courseSet: string;
-  Course: string;
+  course: string;
   teachers: string[];
   rooms: string[];
 }
 
 interface LabAddTableProps {
-  data: DataType[];
-  onEditClick?: (record: DataType) => void;
-  onDeleteClick?: (record: DataType) => void;
+  data: BatchFields[];
+  batchsize: number;
+  onEditClick?: (record: BatchFields[]) => void;
 }
 
 const LabAddTable: React.FC<LabAddTableProps> = ({
   data,
-  onEditClick,
-  onDeleteClick,
+  batchsize,
+  onEditClick
 }) => {
   // Helper function to calculate rowSpan
-  const calculateRowSpan = (data: DataType[], index: number, key: keyof DataType) => {
+  const [ldata, setData] = useState(data)
+
+  useEffect(()=>{
+    setData(data)
+  },[data])
+
+  const handleDelete = (record: BatchFields) => {
+      setData((prevData) =>
+        prevData.filter(
+          (item) =>
+            !(
+              parseInt(item.key) >= parseInt(record.key) &&
+              parseInt(item.key) < parseInt(record.key) + batchsize
+            )
+        )
+      )
+};
+
+  const calculateRowSpan = (data: BatchFields[], index: number, key: keyof BatchFields) => {
     if (index === 0 || data[index][key] !== data[index - 1][key]) {
       let span = 1;
       for (let i = index + 1; i < data.length; i++) {
@@ -37,7 +56,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     return 0;
   };
 
-  const columns: TableProps<DataType>["columns"] = [
+  const columns: TableProps<BatchFields>["columns"] = [
     {
       title: "Course Set",
       dataIndex: "courseSet",
@@ -51,16 +70,16 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     },
     {
       title: "Course",
-      dataIndex: "Course",
+      dataIndex: "course",
     },
     {
       title: "Teachers",
       dataIndex: "teachers",
       render: (_, { teachers }) => (
         <>
-          {teachers[0].split(",").map((tag) => (
+          {teachers.map((teacher,tag) => (
             <Tag color="blue" key={tag}>
-              {tag.toUpperCase()}
+              {teacher.toUpperCase()}
             </Tag>
           ))}
         </>
@@ -90,7 +109,13 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
                 type="primary"
                 shape="circle"
                 icon={<MdEdit />}
-                onClick={() => onEditClick && onEditClick(record)}
+                onClick={() => {
+                  const currentKey = parseInt(record.key); 
+                  const recordsToEdit = ldata.filter(
+                    (item) => parseInt(item.key) >= currentKey && parseInt(item.key) < currentKey + batchsize
+                  );
+                  onEditClick && onEditClick(recordsToEdit); 
+                }}
               />
             </Tooltip>
           ),
@@ -110,7 +135,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
                 type="primary"
                 shape="circle"
                 icon={<MdDelete />}
-                onClick={() => onDeleteClick && onDeleteClick(record)}
+                onClick={() => {handleDelete(record)}}
               />
             </Tooltip>
           ),
@@ -122,7 +147,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
 
   return (
     <div>
-      <Table<DataType> columns={columns} dataSource={data} pagination={false} />
+      <Table<BatchFields> columns={columns} dataSource={ldata} pagination={false} />
     </div>
   );
 };

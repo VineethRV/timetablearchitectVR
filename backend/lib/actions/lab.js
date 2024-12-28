@@ -55,7 +55,6 @@ function createLab(JWTtoken, name, semester, batches, teachers, rooms, timetable
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _b.sent(), status_1 = _a.status, user = _a.user;
-                    console.log(name, semester, batches, teachers, rooms, timetables, department);
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,

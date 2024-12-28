@@ -3,22 +3,27 @@ import AccessTable from "../../components/AccessPage/AccessTable";
 
 const { Title } = Typography;
 
-const RequestAccessWrapper = () => {
+const RequestAccessWrapper = ({
+  setIsAdmin,setLoading
+}: {
+  setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   return (
     <div className="pb-4">
-    <Card
-      className="rounded-lg mt-6 shadow-sm py-1"
-      style={{ backgroundColor: "#FFFFFF", border: "1px solid #E6E6FA" }}
-    >
-      <Title level={3} className="text-gray-700">
-        Access Requests
-      </Title>
-      <p className="text-gray-500">
-        Below is a list of users requesting access. Review and take appropriate
-        action.
-      </p>
-      <AccessTable />
-    </Card>
+      <Card
+        className="rounded-lg mt-6 shadow-sm py-1"
+        style={{ backgroundColor: "#FFFFFF", border: "1px solid #E6E6FA" }}
+      >
+        <Title level={3} className="text-gray-700">
+          Access Requests
+        </Title>
+        <p className="text-gray-500">
+          Below is a list of users requesting access. Review and take
+          appropriate action.
+        </p>
+        <AccessTable setIsAdmin={setIsAdmin} adminLoading={setLoading} />
+      </Card>
     </div>
   );
 };

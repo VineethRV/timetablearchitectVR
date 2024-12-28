@@ -12,22 +12,18 @@ import { TbTrash } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { Lab } from "../../types/main";
 
-
-
-
 const LabsTable = ({
   labData,
   setLabsData,
-}: {  
+}: {
   labData: Lab[];
   setLabsData: React.Dispatch<React.SetStateAction<Lab[]>>;
 }) => {
-  // const router= useRouter();
   const navigate = useNavigate();
 
   const handleEditClick = (name: string, department: string) => {
     navigate(
-      `/dashboard/Labs/edit/${encodeURIComponent(
+      `/dashboard/labs/edit/${encodeURIComponent(
         name
       )}/${encodeURIComponent(department)}`
     );
@@ -35,22 +31,27 @@ const LabsTable = ({
 
   const [selectedLabs, setSelectedLabs] = useState<Lab[]>([]);
 
-  const formattedLabData = labData.flatMap((lab) => {
-    const names = lab.name.split(";");
-    const batches=lab.batches?.split(";")
-    const rooms = lab.rooms?.split(";");
-    const teachers = lab.teachers?.split(";");
-
-    return names.map((batch, index) => ({
-      ...lab,
-      name: batch,
-      batches: batches?.[index]|| batches?.[0],
-      rooms: rooms?.[index] || rooms?.[0], // Default to first room if missing
-      teachers: teachers?.[index] || teachers?.[0], 
-      key: `${lab.batches}-${index}`,
-    }));
-  });
-
+  // Format lab data to split values by ';' and display each in separate rows
+  const formatLabData = (labData: Lab[]) => {
+    return labData.flatMap((lab) => {
+      const names = lab.name.split(";");
+      const batches = lab.batches?.split(";") || [];
+      const rooms = lab.rooms?.split(";") || [];
+      const teachers = lab.teachers?.split(";") || [];
+      
+      const maxLength = Math.max(batches.length, rooms.length, teachers.length);
+      
+      // Create rows for each batch, teacher, and room pairing
+      return Array.from({ length: maxLength }, (_, index) => ({
+        key: `${lab.name}-${index}`,  // Unique key for each row
+        name: index===0?lab.name.trim():"",
+        batches: batches[index]?.trim() || "",
+        teachers: teachers[index]?.trim() || "",
+        rooms: rooms[index]?.trim() || "",
+      }));
+    });
+  };
+  const formattedLabData = React.useMemo(() => formatLabData(labData), [labData]);
   // Row Selection logic by ant design
   const rowSelection: TableProps<Lab>["rowSelection"] = {
     onChange: (_: React.Key[], selectedRows: Lab[]) => {
@@ -62,6 +63,7 @@ const LabsTable = ({
     }),
   };
 
+  // Function to delete a single lab
   function deleteSingleLab(Lab: Lab) {
     const Labs = [Lab];
     const res = axios
@@ -93,72 +95,88 @@ const LabsTable = ({
     });
   }
 
-
-
-const columns: TableColumnsType<Lab> = [
+  // Columns configuration for the table
+  const columns: TableColumnsType<Lab> = [
     {
       title: "BatchSet",
       dataIndex: "name",
-      render: (value, row,index) => {
-        // Calculate row span
-        const rowSpan = index === 0 || labData[index - 1].name !== value
-          ? labData.filter((item: { name: any; }) => item.name === value).length
-          : 0;
+      key: "name",
+      render: (text: string, record: any, index: number) => {
+        // Check if the current cell is empty and merge with the previous non-empty cell
+        if (text === "") {
+          for (let i = index - 1; i >= 0; i--) {
+            if (formattedLabData[i].name !== "") {
+              return {
+                children: null, // Ensure the cell doesn't show anything
+                props: {
+                  rowSpan: 0, // Merge the current cell with the previous cell
+                },
+              };
+            }
+          }
+        }
+    
+        // For non-empty cells, calculate the rowSpan
+        let rowSpan = 1;
+        for (let i = index + 1; i < formattedLabData.length; i++) {
+          if (formattedLabData[i].name === "") {
+            rowSpan++;
+          } else {
+            break;
+          }
+        }
+    
         return {
-          children: value,
+          children: text, 
           props: {
-            rowSpan: rowSpan,
+            rowSpan, 
           },
         };
       },
     },
     {
-      title: "Courses",
-      dataIndex: "batches",
-    }, {
       title: "Teachers",
       dataIndex: "teachers",
+      key: "teachers",
       render: (_, { teachers }) => (
         <>
-          {teachers?.split(',').map((tag) => {
-            const color = 'blue'
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
+          {teachers?.split(",").map((tag) => (
+            <Tag color="blue" key={tag}>
+              {tag.toUpperCase()}
+            </Tag>
+          ))}
         </>
-      )
+      ),
     },
     {
       title: "Rooms",
       dataIndex: "rooms",
+      key: "rooms",
       render: (_, { rooms }) => (
         <>
-          {rooms?.split(",").map((tag:any) => {
-            const color = 'purple'
-            return (
-              <Tag color={color} key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
-            );
-          })}
+          {rooms?.split(",").map((tag) => (
+            <Tag color="purple" key={tag}>
+              {tag.toUpperCase()}
+            </Tag>
+          ))}
         </>
-      ) 
+      ),
     },
-    {
-      title: "",
-      render: (record) => {
-        return (
-          <Tooltip title="Edit">
-            <Button type="primary" 
+   {
+  title: "",
+  render: (record) => {
+    return (
+        <Tooltip title="Edit">
+          <Button
+            type="primary"
             onClick={() => deleteSingleLab(record)}
-            shape="circle" icon={<MdEdit />} />
-          </Tooltip>
-        );
-      },
-    },
+            shape="circle"
+            icon={<MdEdit />}
+          />
+        </Tooltip>
+    );
+    }
+  },
     {
       title: "",
       render: (record) => {
@@ -176,36 +194,38 @@ const columns: TableColumnsType<Lab> = [
       },
     },
   ];
-// function handling deleting the Labs logic
-function deleteLabsHandler(Labs: Lab[]) {
-  if (selectedLabs.length == 0) {
-    toast.info("Select Labs to delete !!");
-    return;
-  }
-  const res = axios
-    .delete(BACKEND_URL + "/labs", {
-      data: { Labs },
-      headers: { Authorization: localStorage.getItem("token") },
-    })
-    .then((res) => {
-      const statusCode = res.status;
-      switch (statusCode) {
-        case statusCodes.OK:
-          setSelectedLabs([]);
-          toast.success("Labs deleted successfully");
-          break;
-        case statusCodes.BAD_REQUEST:
-          toast.error("Invalid request");
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Server error");
-      }
-    });
 
-  toast.promise(res, {
-    loading: "Deleting Labs ...",
-  });
-}
+  // Function to handle deleting multiple labs
+  function deleteLabsHandler(Labs: Lab[]) {
+    if (selectedLabs.length == 0) {
+      toast.info("Select Labs to delete !!");
+      return;
+    }
+    const res = axios
+      .delete(BACKEND_URL + "/labs", {
+        data: { Labs },
+        headers: { Authorization: localStorage.getItem("token") },
+      })
+      .then((res) => {
+        const statusCode = res.status;
+        switch (statusCode) {
+          case statusCodes.OK:
+            setSelectedLabs([]);
+            toast.success("Labs deleted successfully");
+            break;
+          case statusCodes.BAD_REQUEST:
+            toast.error("Invalid request");
+            break;
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            toast.error("Server error");
+        }
+      });
+
+    toast.promise(res, {
+      loading: "Deleting Labs ...",
+    });
+  }
+
   return (
     <div>
       <div className="flex space-x-8 justify-between py-4">
@@ -214,8 +234,6 @@ function deleteLabsHandler(Labs: Lab[]) {
           addonBefore={<CiSearch />}
           placeholder="LabSet"
         />
-
-        {/* this config to set background color of the selectors | did as specified in antd docs */}
         <ConfigProvider
           theme={{
             components: {
@@ -224,8 +242,7 @@ function deleteLabsHandler(Labs: Lab[]) {
               },
             },
           }}
-        >
-        </ConfigProvider>
+        />
         <div className="flex space-x-2">
           <Button
             onClick={() => deleteLabsHandler(selectedLabs)}

@@ -1,9 +1,11 @@
+"use client"
 import { Layout, Card, Row, Col } from "antd";
 import { TbLayoutDashboard } from "react-icons/tb";
 import { FiBarChart2 } from "react-icons/fi";
 import CapacityCard from "../../components/AdminPanelComp/CapacityCard";
 import RequestAccessWrapper from "../../components/AdminPanelComp/RequestAccessWrap";
-
+import { useState } from "react";
+import Loading from '../../components/Loading/Loading'
 const { Header, Content } = Layout;
 
 const stats = [
@@ -13,6 +15,11 @@ const stats = [
 ];
 
 const AdminPanel = () => {
+  const [isAdmin,setIsAdmin] = useState(true);
+  const [loading,setLoading] = useState(false);
+
+  if(loading) return <Loading/>
+
   return (
     <Layout className="bg-slate-50 overflow-scroll h-full w-full overflow-x-hidden">
       {/* Header Section */}
@@ -45,7 +52,7 @@ const AdminPanel = () => {
           ))}
         </Row>
         <CapacityCard/>
-        <RequestAccessWrapper/>
+       {isAdmin?<RequestAccessWrapper  setLoading={setLoading} setIsAdmin={setIsAdmin}/>:<></>} 
       </Content>
     </Layout>
   );

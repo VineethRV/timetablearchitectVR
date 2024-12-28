@@ -6,6 +6,9 @@ export default {
       colors: {
         primary: "#636AE8FF",
       },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+      },
     },
   },
   plugins: [],
