@@ -37,6 +37,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRecommendations = getRecommendations;
+exports.recommendLab = recommendLab;
 var room_1 = require("../actions/room");
 var teacher_1 = require("../actions/teacher");
 var statusCodes_1 = require("../types/statusCodes");
@@ -50,23 +51,31 @@ var common_1 = require("./common");
 //if a collision occurs it returns alloted timetable till the collisiion occured and status code 503(Servie unavailable)
 function getRecommendations(token, lab, blocks) {
     return __awaiter(this, void 0, void 0, function () {
-        var timetable, _loop_1, i, state_1, _a;
+        var timetable, labAllocated, _loop_1, i, state_1, _a;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     timetable = (0, common_1.convertStringToTable)(blocks);
+                    labAllocated = [false, false, false, false, false, false];
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 6, , 7]);
                     _loop_1 = function (i) {
-                        var teachers, score, j, k, j, _c, status_1, teacher, scoreValue, i_1, j_1, rooms, k, _d, status_2, room, scoreValue, i_2, j, i_3, j, i_4, j, maxSum, maxSumIndices, i_5, j, sum;
+                        var teachers, score, j, k, k, j, _c, status_1, teacher, scoreValue, i_1, j_1, rooms, k, _d, status_2, room, scoreValue, i_2, j, i_3, j, maxSum, maxSumIndices, i_4, j, sum;
                         return __generator(this, function (_e) {
                             switch (_e.label) {
                                 case 0:
                                     teachers = [];
                                     score = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+                                    //block places in score where timetable is already alloted
                                     if (timetable) {
                                         for (j = 0; j < timetable.length; j++) {
+                                            if (labAllocated[j]) {
+                                                for (k = 0; k < timetable[j].length; k++) {
+                                                    score[j][k] = -1;
+                                                }
+                                                continue;
+                                            }
                                             for (k = 0; k < timetable[j].length; k++) {
                                                 if (timetable[j][k] != "0") {
                                                     score[j][k] = -1;
@@ -96,7 +105,7 @@ function getRecommendations(token, lab, blocks) {
                                                         score[i_1][j_1] = -1;
                                                     }
                                                     else {
-                                                        if (score[i_1][j_1] != -1)
+                                                        if (score[i_1][j_1] >= 0)
                                                             score[i_1][j_1] += scoreValue[i_1][j_1];
                                                     }
                                                 }
@@ -162,35 +171,30 @@ function getRecommendations(token, lab, blocks) {
                                     if (!timetable) {
                                         timetable = Array(score.length).fill(null).map(function () { return Array(score[0].length).fill("0"); });
                                     }
-                                    for (i_3 = 0; i_3 < timetable.length; i_3++) {
-                                        for (j = 0; j < timetable[i_3].length; j++) {
-                                            if (timetable[i_3][j] !== "0") {
+                                    //group 2 periods together
+                                    for (i_3 = 0; i_3 < score.length; i_3++) {
+                                        for (j = 0; j < score[i_3].length - 1; j += 2) {
+                                            if (score[i_3][j] < 0 || score[i_3][j + 1] < 0) {
                                                 score[i_3][j] = -1;
-                                            }
-                                        }
-                                    }
-                                    for (i_4 = 0; i_4 < score.length; i_4++) {
-                                        for (j = 0; j < score[i_4].length - 1; j += 2) {
-                                            if (score[i_4][j] == -1 || score[i_4][j + 1] == -1) {
-                                                score[i_4][j] = -1;
-                                                score[i_4][j + 1] = -1;
+                                                score[i_3][j + 1] = -1;
                                             }
                                         }
                                     }
                                     maxSum = -1;
                                     maxSumIndices = { i: -1, j: -1 };
-                                    for (i_5 = 0; i_5 < score.length; i_5++) {
-                                        for (j = 0; j < score[i_5].length - 1; j += 2) {
-                                            sum = score[i_5][j] + score[i_5][j + 1];
+                                    for (i_4 = 0; i_4 < score.length; i_4++) {
+                                        for (j = 0; j < score[i_4].length - 1; j += 2) {
+                                            sum = score[i_4][j] + score[i_4][j + 1];
                                             if (sum > maxSum) {
                                                 maxSum = sum;
-                                                maxSumIndices = { i: i_5, j: j };
+                                                maxSumIndices = { i: i_4, j: j };
                                             }
                                         }
                                     }
                                     if (maxSumIndices.i !== -1 && maxSumIndices.j !== -1) {
                                         timetable[maxSumIndices.i][maxSumIndices.j] = lab.courses[i];
                                         timetable[maxSumIndices.i][maxSumIndices.j + 1] = lab.courses[i];
+                                        labAllocated[maxSumIndices.i] = true;
                                     }
                                     else {
                                         return [2 /*return*/, { value: {
@@ -226,6 +230,138 @@ function getRecommendations(token, lab, blocks) {
                             timetable: null
                         }];
                 case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+function recommendLab(token, Lteachers, Lrooms, blocks) {
+    return __awaiter(this, void 0, void 0, function () {
+        var timetable, teachers, score_1, j, k, j, _a, status_3, teacher, scoreValue, i, j_2, rooms, k, _b, status_4, room, scoreValue, i, j_3, i, j_4, i, j_5, _c;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    timetable = (0, common_1.convertStringToTable)(blocks);
+                    _d.label = 1;
+                case 1:
+                    _d.trys.push([1, 10, , 11]);
+                    teachers = [];
+                    score_1 = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+                    if (timetable) {
+                        for (j = 0; j < timetable.length; j++) {
+                            for (k = 0; k < timetable[j].length; k++) {
+                                if (timetable[j][k] != "0") {
+                                    score_1[j][k] = -1;
+                                }
+                            }
+                        }
+                    }
+                    j = 0;
+                    _d.label = 2;
+                case 2:
+                    if (!(j < Lteachers.length)) return [3 /*break*/, 9];
+                    return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, Lteachers[j])];
+                case 3:
+                    _a = (_d.sent()), status_3 = _a.status, teacher = _a.teacher;
+                    if (status_3 == statusCodes_1.statusCodes.OK && teacher) {
+                        teachers.push(teacher);
+                        scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
+                        console.log("scoreT", scoreValue);
+                        if (score_1.length == 0) {
+                            score_1 = scoreValue;
+                        }
+                        else {
+                            for (i = 0; i < scoreValue.length; i++) {
+                                for (j_2 = 0; j_2 < scoreValue[i].length; j_2++) {
+                                    if (scoreValue[i][j_2] < 0) {
+                                        score_1[i][j_2] = -1;
+                                    }
+                                    else {
+                                        if (score_1[i][j_2] >= 0)
+                                            score_1[i][j_2] += scoreValue[i][j_2];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    rooms = [];
+                    k = 0;
+                    _d.label = 4;
+                case 4:
+                    if (!(k < Lrooms.length)) return [3 /*break*/, 7];
+                    return [4 /*yield*/, (0, room_1.peekRoom)(token, Lrooms[k])];
+                case 5:
+                    _b = _d.sent(), status_4 = _b.status, room = _b.room;
+                    if (status_4 == statusCodes_1.statusCodes.OK && room) {
+                        rooms.push(room);
+                        scoreValue = (0, common_1.scoreRooms)(room.timetable);
+                        console.log("RoomT", scoreValue);
+                        if (!score_1) {
+                            return [2 /*return*/, {
+                                    status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                    timetable: null
+                                }];
+                        }
+                        for (i = 0; i < scoreValue.length; i++) {
+                            for (j_3 = 0; j_3 < scoreValue[i].length; j_3++) {
+                                if (scoreValue[i][j_3] < 0) {
+                                    score_1[i][j_3] = -1;
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        return [2 /*return*/, {
+                                status: status_4,
+                                timetable: null
+                            }];
+                    }
+                    _d.label = 6;
+                case 6:
+                    k++;
+                    return [3 /*break*/, 4];
+                case 7:
+                    if (!score_1) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                timetable: null
+                            }];
+                    }
+                    if (!timetable) {
+                        timetable = Array(score_1.length).fill(null).map(function () { return Array(score_1[0].length).fill("0"); });
+                    }
+                    for (i = 0; i < timetable.length; i++) {
+                        for (j_4 = 0; j_4 < timetable[i].length; j_4++) {
+                            if (timetable[i][j_4] !== "0") {
+                                score_1[i][j_4] = -1;
+                            }
+                        }
+                    }
+                    for (i = 0; i < score_1.length; i++) {
+                        for (j_5 = 0; j_5 < score_1[i].length - 1; j_5 += 2) {
+                            if (score_1[i][j_5] < 0 || score_1[i][j_5 + 1] < 0) {
+                                score_1[i][j_5] = -1;
+                                score_1[i][j_5 + 1] = -1;
+                            }
+                        }
+                    }
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            timetable: (0, common_1.convertTableToString)(score_1.map(function (row) { return row.map(function (val) { return val.toString(); }); }))
+                        }];
+                case 8:
+                    j++;
+                    return [3 /*break*/, 2];
+                case 9: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.OK,
+                        timetable: (0, common_1.convertTableToString)(timetable)
+                    }];
+                case 10:
+                    _c = _d.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            timetable: null
+                        }];
+                case 11: return [2 /*return*/];
             }
         });
     });
