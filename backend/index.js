@@ -16,7 +16,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { suggestTimetable } = require("./lib/functions/makeTimetable");
-
+const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
   cors({
@@ -792,7 +792,7 @@ app.get("/api/teacherPercentage", async (req, res) => {
   }
 
   try {
-    const result = await teacher.getTeacherPercentage(token);
+    const result = await panel.getTeacherPercentage(token);
     res.status(200).json({ status: result.status, percentage: result.percentage });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });

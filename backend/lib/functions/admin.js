@@ -37,6 +37,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTeacherPercentage = getTeacherPercentage;
+exports.getRoomPercentage = getRoomPercentage;
+exports.getLabPercentage = getLabPercentage;
 var auth_1 = require("../actions/auth");
 var statusCodes_1 = require("../types/statusCodes");
 var client_1 = require("@prisma/client");
@@ -105,6 +107,160 @@ function getTeacherPercentage(token) {
                         });
                     });
                     percentage = (filledPeriods_2 / totalPeriods_2) * 100;
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            percentage: percentage,
+                        }];
+                case 5: return [3 /*break*/, 7];
+                case 6: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.FORBIDDEN,
+                        percentage: 0
+                    }];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getRoomPercentage(token) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status, user, rooms, totalPeriods_3, filledPeriods_3, percentage, rooms, totalPeriods_4, filledPeriods_4, percentage;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, (0, auth_1.getPosition)(token)];
+                case 1:
+                    _a = _b.sent(), status = _a.status, user = _a.user;
+                    if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 6];
+                    if (!(user.role == 'admin')) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.room.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                lab: false
+                            },
+                            select: {
+                                timetable: true
+                            },
+                        })];
+                case 2:
+                    rooms = _b.sent();
+                    totalPeriods_3 = 0;
+                    filledPeriods_3 = 0;
+                    rooms.forEach(function (room) {
+                        var timetable = (0, common_1.convertStringToTable)(room.timetable);
+                        timetable.forEach(function (day) {
+                            day.forEach(function (period) {
+                                totalPeriods_3++;
+                                if (period != '0')
+                                    filledPeriods_3++;
+                            });
+                        });
+                    });
+                    percentage = (filledPeriods_3 / totalPeriods_3) * 100;
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            percentage: percentage,
+                        }];
+                case 3: return [4 /*yield*/, prisma.room.findMany({
+                        where: {
+                            orgId: user.orgId,
+                            department: user.department,
+                            lab: false
+                        },
+                        select: {
+                            timetable: true
+                        },
+                    })];
+                case 4:
+                    rooms = _b.sent();
+                    totalPeriods_4 = 0;
+                    filledPeriods_4 = 0;
+                    rooms.forEach(function (room) {
+                        var timetable = (0, common_1.convertStringToTable)(room.timetable);
+                        timetable.forEach(function (day) {
+                            day.forEach(function (period) {
+                                totalPeriods_4++;
+                                if (period != '0')
+                                    filledPeriods_4++;
+                            });
+                        });
+                    });
+                    percentage = (filledPeriods_4 / totalPeriods_4) * 100;
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            percentage: percentage,
+                        }];
+                case 5: return [3 /*break*/, 7];
+                case 6: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.FORBIDDEN,
+                        percentage: 0
+                    }];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getLabPercentage(token) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status, user, labs, totalPeriods_5, filledPeriods_5, percentage, labs, totalPeriods_6, filledPeriods_6, percentage;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, (0, auth_1.getPosition)(token)];
+                case 1:
+                    _a = _b.sent(), status = _a.status, user = _a.user;
+                    if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 6];
+                    if (!(user.role == 'admin')) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.room.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                lab: true
+                            },
+                            select: {
+                                timetable: true
+                            },
+                        })];
+                case 2:
+                    labs = _b.sent();
+                    totalPeriods_5 = 0;
+                    filledPeriods_5 = 0;
+                    labs.forEach(function (lab) {
+                        var timetable = (0, common_1.convertStringToTable)(lab.timetable);
+                        timetable.forEach(function (day) {
+                            day.forEach(function (period) {
+                                totalPeriods_5++;
+                                if (period != '0')
+                                    filledPeriods_5++;
+                            });
+                        });
+                    });
+                    percentage = (filledPeriods_5 / totalPeriods_5) * 100;
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            percentage: percentage,
+                        }];
+                case 3: return [4 /*yield*/, prisma.room.findMany({
+                        where: {
+                            orgId: user.orgId,
+                            department: user.department,
+                            lab: true
+                        },
+                        select: {
+                            timetable: true
+                        },
+                    })];
+                case 4:
+                    labs = _b.sent();
+                    totalPeriods_6 = 0;
+                    filledPeriods_6 = 0;
+                    labs.forEach(function (lab) {
+                        var timetable = (0, common_1.convertStringToTable)(lab.timetable);
+                        timetable.forEach(function (day) {
+                            day.forEach(function (period) {
+                                totalPeriods_6++;
+                                if (period != '0')
+                                    filledPeriods_6++;
+                            });
+                        });
+                    });
+                    percentage = (filledPeriods_6 / totalPeriods_6) * 100;
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
                             percentage: percentage,
