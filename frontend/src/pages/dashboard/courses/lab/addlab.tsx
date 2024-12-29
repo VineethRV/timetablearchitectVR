@@ -490,8 +490,6 @@ const AddLabPage: React.FC = () => {
                           style={{ flex: "1 1 30%" }}
                         >
                           <Select
-                            maxTagCount={2}
-                            mode="tags"
                             placeholder="Enter Room Details"
                             onChange={(val) =>
                               handleBatchChange(index, "rooms", val.join(","))

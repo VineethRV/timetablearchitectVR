@@ -154,8 +154,6 @@ export async function updateCourse(
   originalSemester: number,
   course: Course
 ): Promise<{ status: number }> {
-  console.log(3)
-  console.log(4)
   try {
     const { user, status } = await auth.getPosition(JWTtoken);
     if (user?.orgId == null)

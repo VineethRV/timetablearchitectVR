@@ -16,10 +16,10 @@ import { DEPARTMENTS_OPTIONS } from "../../../info";
 interface CoreType {
   key: React.Key;
   name: string;
-  code:string;
+  code: string;
   credits: number;
-  hoursperweek:number;
-  bfactor:number;
+  hoursperweek: number;
+  bfactor: number;
 }
 
 const colorCombos: Record<string, string>[] = [
@@ -37,8 +37,6 @@ const colorCombos: Record<string, string>[] = [
 const deptColors: Record<string, string> = {};
 let cnt = 0;
 
-
-
 const rowSelection: TableProps<CoreType>["rowSelection"] = {
   onChange: (selectedRowKeys: React.Key[], selectedRows: CoreType[]) => {
     console.log(
@@ -53,8 +51,7 @@ const rowSelection: TableProps<CoreType>["rowSelection"] = {
   }),
 };
 
-
-const CoreTable= ({
+const CoreTable = ({
   CoreData,
   setCoreData,
 }: {
@@ -72,117 +69,128 @@ const CoreTable= ({
     }
   });
 
+  const handleEditClick = (name: string, department: string) => {
+    navigate(
+      `/dashboard/courses/core-courses/edit/${encodeURIComponent(
+        name
+      )}/${encodeURIComponent(department)}`
+    );
+  };
+
   const columns: TableColumnsType<CoreType> = [
     {
-        title: "Course Name",
-        dataIndex: "name",
+      title: "Course Name",
+      dataIndex: "name",
+    },
+    {
+      title: "Course code ",
+      dataIndex: "code",
+    },
+    {
+      title: "Hours per week",
+      dataIndex: "credits",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      render: (dept: string) => {
+        return (
+          <h1
+            style={{
+              backgroundColor: deptColors[dept],
+              color: colorCombos.find(
+                (combo) => combo.backgroundColor === deptColors[dept]
+              )?.textColor,
+            }}
+            className="text-xs opacity-85 font-semibold w-fit px-2.5 py-0.5 rounded-xl"
+          >
+            {dept}
+          </h1>
+        );
       },
-      {
-        title: "Course code ",
-        dataIndex: "code",
+    },
+    {
+      title: "Difficulty Rating ",
+      dataIndex: "bfactor",
+    },
+    {
+      title: "",
+      render: (record) => {
+        return (
+          <Tooltip title="Edit">
+            <Button
+              type="primary"
+              onClick={() => handleEditClick(record.name, record.department)}
+              shape="circle"
+              icon={<MdEdit />}
+            />
+          </Tooltip>
+        );
       },
-      {
-        title: "Hours per week",
-        dataIndex: "credits",
+    },
+    {
+      title: "",
+      render: () => {
+        return (
+          <Tooltip title="Delete">
+            <Button
+              className="bg-red-400 "
+              type="primary"
+              shape="circle"
+              icon={<MdDelete />}
+            />
+          </Tooltip>
+        );
       },
-      {
-        title: "Department",
-        dataIndex: "department",
-        render: (dept: string) => {
-          return (
-            <h1
-              style={{
-                backgroundColor: deptColors[dept],
-                color: colorCombos.find(
-                  (combo) => combo.backgroundColor === deptColors[dept]
-                )?.textColor,
-              }}
-              className="text-xs opacity-85 font-semibold w-fit px-2.5 py-0.5 rounded-xl"
-            >
-              {dept}
-            </h1>
-          );
+    },
+  ];
+
+  function deleteCoreHandler() {
+    if (selectedCore.length == 0) {
+      toast.info("Select Core to delete !!");
+      return;
+    }
+    const res = axios
+      .delete(BACKEND_URL + "/courses", {
+        data: {
+          courseCode: selectedCore,
         },
-      },
-      {
-        title: "Difficulty Rating ",
-        dataIndex: "bfactor",
-      },
-  {
-    title: "",
-    render: () => {
-      return (
-        <Tooltip title="Edit">
-          <Button type="primary" shape="circle" icon={<MdEdit />} />
-        </Tooltip>
-      );
-    },
-  },
-  {
-    title: "",
-    render: () => {
-      return (
-        <Tooltip title="Delete">
-          <Button
-            className="bg-red-400 "
-            type="primary"
-            shape="circle"
-            icon={<MdDelete />}
-          />
-        </Tooltip>
-      );
-    },
-  },
-];
-
-function deleteCoreHandler() {
-  if (selectedCore.length == 0) {
-    toast.info("Select Core to delete !!");
-    return;
-  }
-  const res = axios
-    .delete(BACKEND_URL + "/courses", {
-      data: {
-        Core: selectedCore,
-      },
-      headers: {
-        Authorization: localStorage.getItem("token"),
-      },
-    })
-    .then((res) => {
-      const statusCode = res.status;
-      switch (statusCode) {
-        case statusCodes.OK:
-          setCoreData((Core) => {
-            const newCore = Core.filter((t) => {
-              for (let i = 0; i < selectedCore.length; i++) {
-                if (selectedCore[i].name == t.name) return false;
-              }
-              return true;
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        const statusCode = res.status;
+        switch (statusCode) {
+          case statusCodes.OK:
+            setCoreData((Core) => {
+              const newCore = Core.filter((t) => {
+                for (let i = 0; i < selectedCore.length; i++) {
+                  if (selectedCore[i].name == t.name) return false;
+                }
+                return true;
+              });
+              return newCore;
             });
-            return newCore;
-          });
-          setSelectedCore([]);
-          toast.success("Core deleted successfully");
-          break;
-        case statusCodes.BAD_REQUEST:
-          toast.error("Invalid request");
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Server error");
-      }
-    });
+            setSelectedCore([]);
+            toast.success("Core deleted successfully");
+            break;
+          case statusCodes.BAD_REQUEST:
+            toast.error("Invalid request");
+            break;
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            toast.error("Server error");
+        }
+      });
 
-  toast.promise(res, {
-    loading: "Deleting Core ...",
-  });
-}
-function clearFilters() {;
-}
+    toast.promise(res, {
+      loading: "Deleting Core ...",
+    });
+  }
 
   return (
     <div>
-   <div className="flex space-x-3 justify-end py-1">
+      <div className="flex space-x-3 justify-end py-1">
         <Button className="bg-[#F2F2FDFF] text-primary font-bold">
           <CiImport />
           Import
@@ -199,7 +207,6 @@ function clearFilters() {;
           placeholder="Course"
         />
 
-        {/* this config to set background color of the selectors | did as specified in antd docs */}
         <ConfigProvider
           theme={{
             components: {
@@ -220,8 +227,12 @@ function clearFilters() {;
           </div>
         </ConfigProvider>
         <div className="flex space-x-2">
-          <Button className="bg-red-500 text-white font-bold">
-            <TbTrash />Delete
+          <Button
+            onClick={deleteCoreHandler}
+            className="bg-red-500 text-white font-bold"
+          >
+            <TbTrash />
+            Delete
           </Button>
           <Button>Clear filters</Button>
         </div>

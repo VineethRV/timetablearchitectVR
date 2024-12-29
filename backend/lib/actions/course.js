@@ -204,20 +204,16 @@ function updateCourse(JWTtoken_1, originalName_1) {
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    console.log(3);
-                    console.log(4);
-                    _b.label = 1;
-                case 1:
-                    _b.trys.push([1, 7, , 8]);
+                    _b.trys.push([0, 6, , 7]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
-                case 2:
+                case 1:
                     _a = _b.sent(), user = _a.user, status_3 = _a.status;
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                             }];
-                    if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 6];
-                    if (!(user && user.role != "viewer")) return [3 /*break*/, 5];
+                    if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 5];
+                    if (!(user && user.role != "viewer")) return [3 /*break*/, 4];
                     return [4 /*yield*/, prisma.course.findFirst({
                             where: {
                                 orgId: user.orgId,
@@ -228,7 +224,7 @@ function updateCourse(JWTtoken_1, originalName_1) {
                                 semester: originalSemester,
                             },
                         })];
-                case 3:
+                case 2:
                     existingCourse = _b.sent();
                     if (!existingCourse) {
                         return [2 /*return*/, {
@@ -250,24 +246,24 @@ function updateCourse(JWTtoken_1, originalName_1) {
                                     : user.department,
                             },
                         })];
-                case 4:
+                case 3:
                     _b.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
                         }];
-                case 5: return [2 /*return*/, {
+                case 4: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN,
                     }];
-                case 6: return [2 /*return*/, {
+                case 5: return [2 /*return*/, {
                         status: status_3,
                     }];
-                case 7:
+                case 6:
                     e_3 = _b.sent();
                     console.error(e_3);
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                         }];
-                case 8: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     });

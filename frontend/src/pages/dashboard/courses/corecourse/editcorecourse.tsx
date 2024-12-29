@@ -4,7 +4,6 @@ import {
   Button,
   Form,
   Input,
-  Select,
   Tooltip,
   Upload,
   InputNumber,
@@ -17,7 +16,6 @@ import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Loading from "../../../../components/Loading/Loading";
-import { Course } from "../../../../types/main";
 import RoomOptions from "../../../../components/general/roomoption";
 const formItemLayout = {
   labelCol: {
