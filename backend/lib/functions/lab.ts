@@ -19,14 +19,21 @@ export type getRecommendationsLab={
 //if a collision occurs it returns alloted timetable till the collisiion occured and status code 503(Servie unavailable)
 export async function getRecommendations(token:string,lab:getRecommendationsLab,blocks:string|null): Promise<{status:number, timetable: string|null}> {
     let timetable:string[][]|null=convertStringToTable(blocks);
-    //iterate through each course, and each teacher and room
+    let labAllocated:boolean[]=[false,false,false,false,false,false]
     try{
+        //iterate through each course
         for(let i=0;i<lab.courses.length;i++){
-            //get every teacher and room
             let teachers=[]
             let score: number[][]=[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]];
+            //block places in score where timetable is already alloted
             if (timetable) {
                 for(let j=0;j<timetable.length;j++){
+                    if(labAllocated[j]){
+                        for(let k=0;k<timetable[j].length;k++){
+                            score[j][k] = -1;
+                        }
+                        continue;
+                    }
                     for(let k=0;k<timetable[j].length;k++){
                         if (timetable[j][k] != "0") {
                             score[j][k] = -1;
@@ -35,10 +42,13 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 }
             }
             console.log("timetable",timetable)
+            //iterate through every teacher
             for(let j=0;j<lab.teachers[i].length;j++){
                 let {status,teacher}=(await peekTeacher(token,lab.teachers[i][j]));
                 if(status==statusCodes.OK && teacher){
                     teachers.push(teacher);
+                    
+                    //find intersection between teacher and scoreValue, and also score the valid slots
                     let scoreValue = scoreTeachers(teacher.timetable, teacher.labtable);
                     console.log("scoreT",scoreValue)
                     if(score.length==0){
@@ -65,6 +75,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                         timetable:null
                     }
             }
+            //iterate through each room and find the valid intersections
             let rooms=[]
             for (let k = 0; k < lab.rooms[i].length; k++) {
                 let {status, room} = await peekRoom(token,lab.rooms[i][k]);
@@ -105,14 +116,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
             if (!timetable) {
                 timetable = Array(score.length).fill(null).map(() => Array(score[0].length).fill("0"));
             }
-            for (let i = 0; i < timetable.length; i++) {
-                for (let j = 0; j < timetable[i].length; j++) {
-                    if (timetable[i][j] !== "0") {
-                        score[i][j] = -1;
-                    }
-                }
-            }
-            
+            //group 2 periods together
             for(let i=0;i<score.length;i++){
                 for(let j=0;j<score[i].length-1;j+=2){
                     if(score[i][j]<0 || score[i][j+1]<0){
@@ -136,6 +140,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
             if (maxSumIndices.i !== -1 && maxSumIndices.j !== -1) {
                 timetable[maxSumIndices.i][maxSumIndices.j] = lab.courses[i];
                 timetable[maxSumIndices.i][maxSumIndices.j + 1] = lab.courses[i];
+                labAllocated[maxSumIndices.i]=true;
             }
             else{
                 return {
@@ -157,13 +162,14 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
     }
 }
 
+
 export async function recommendLab(
 token:string,
 Lteachers:string[],
 Lrooms:string[],
 blocks:string|null
 ):Promise<{status:number, timetable: string|null}>{
-let timetable:string[][]|null=convertStringToTable(blocks);
+    let timetable:string[][]|null=convertStringToTable(blocks);
     try{
         let teachers=[]
         let score: number[][]=[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]];
