@@ -42,9 +42,14 @@ var room_1 = require("../actions/room");
 var teacher_1 = require("../actions/teacher");
 var statusCodes_1 = require("../types/statusCodes");
 var common_1 = require("./common");
+// add one more dimemtion of rooms in return val toadd handling of subjects if the room is not specified explicitly
+//test all functions, add handling of rooms to admins,
+//collision handling
+//current function is for non admins.
+var randomFactor = 0.1; //introduces some randomness in the allocation of courses to the timetable
 function suggestTimetable(token, block, courses, teachers, rooms, semester, preferredRooms) {
     return __awaiter(this, void 0, void 0, function () {
-        var blocks, timetable, roomtable, departmentRoomsResponse, flag_1, roomsInfo, _loop_1, i, state_1, error_1;
+        var blocks, timetable, roomtable, departmentRoomsResponse, flag_1, roomsInfo, bFactor, _loop_1, i, state_1, error_1;
         var _this = this;
         var _a, _b, _c, _d;
         return __generator(this, function (_e) {
@@ -80,8 +85,9 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                     if (flag_1 == 1) {
                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: null }];
                     }
+                    bFactor = Array(6).fill(1);
                     _loop_1 = function (i) {
-                        var course, teacher, courseResponse, teacherResponse, bestScore, currRoomInfo, maxNonNegativeEntries, _i, roomsInfo_1, roomInfo, roomScore, nonNegativeEntries, i_1, j, feasible, i_2, j, availableSlots, sortedScores, k, index, row, col, bestScoreCopy, preferredRoomInfo, feasible, i_3, j, i_4, j, availableSlots, sortedScores, k, index, row, col, remainingCredits, _f, roomsInfo_2, roomInfo, feasible_1, bestScoreCopyCopy, i_5, j, availableSlots_1, sortedScores_1, k, index, row, col, k, index, row, col;
+                        var course, teacher, courseResponse, teacherResponse, bestScore, currRoomInfo, maxNonNegativeEntries, _i, roomsInfo_1, roomInfo, roomScore, nonNegativeEntries, i_1, j, feasible, i_2, j, availableSlots, i_3, j, k, sortedScores, index, row, col, j, bestScoreCopy, preferredRoomInfo, feasible, i_4, j, i_5, j, availableSlots, i_6, k, sortedScores, index, row, col, i_7, remainingCredits, _f, roomsInfo_2, roomInfo, feasible_1, bestScoreCopyCopy, i_8, j, availableSlots_1, i_9, sortedScores, k, index, row, col, i_10, k, sortedScores, index, row, col, i_11;
                         return __generator(this, function (_g) {
                             switch (_g.label) {
                                 case 0:
@@ -101,7 +107,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                     }
                                     bestScore = (0, common_1.scoreTeachers)(teacherResponse.teacher.timetable, teacherResponse.teacher.labtable);
                                     currRoomInfo = null;
-                                    //create a default room.
+                                    //create a preffered room if not given.
                                     if (!preferredRooms) {
                                         maxNonNegativeEntries = -1;
                                         for (_i = 0, roomsInfo_1 = roomsInfo; _i < roomsInfo_1.length; _i++) {
@@ -125,125 +131,165 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                     }
                                     // Retrieve room details
                                     //check if specified room is a department name or room name
-                                    //following if statement checks if the specified room is a room (if yes, code is allowed inside)
+                                    //following if statement checks if there is a specified room  (if yes, code is allowed inside)
                                     if (roomsInfo && rooms[i] != '0') {
                                         currRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === rooms[i]; });
+                                        //if specified room not found
                                         if (!currRoomInfo) {
                                             return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
                                         }
-                                        else {
-                                            feasible = (0, common_1.scoreRooms)(currRoomInfo.timetable);
-                                            for (i_2 = 0; i_2 < feasible.length; i_2++) {
-                                                for (j = 0; j < feasible[i_2].length; j++) {
-                                                    if (feasible[i_2][j] < 0) {
-                                                        bestScore[i_2][j] = -1;
-                                                    }
-                                                }
-                                                availableSlots = bestScore.flat().filter(function (score) { return score > 0; }).length;
-                                                if ((_a = courseResponse.course) === null || _a === void 0 ? void 0 : _a.credits) {
-                                                    if (availableSlots < ((_b = courseResponse.course) === null || _b === void 0 ? void 0 : _b.credits)) {
-                                                        return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } } }];
-                                                    }
-                                                    else {
-                                                        sortedScores = bestScore.flat().map(function (score, index) { return ({ score: score, index: index }); })
-                                                            .sort(function (a, b) { return b.score - a.score; });
-                                                        for (k = 0; k < courseResponse.course.credits; k++) {
-                                                            index = sortedScores[k].index;
-                                                            row = Math.floor(index / bestScore[0].length);
-                                                            col = index % bestScore[0].length;
-                                                            timetable[row][col] = courseResponse.course.name;
-                                                            roomtable[row][col] = currRoomInfo.name;
-                                                        }
-                                                    }
-                                                }
-                                                else {
-                                                    return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else {
-                                        bestScoreCopy = bestScore;
-                                        preferredRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === preferredRooms; });
-                                        if (!preferredRoomInfo) {
-                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
-                                        }
-                                        else {
-                                            feasible = (0, common_1.scoreRooms)(preferredRoomInfo.timetable);
-                                            for (i_3 = 0; i_3 < feasible.length; i_3++) {
-                                                for (j = 0; j < feasible[i_3].length; j++) {
-                                                    if (feasible[i_3][j] < 0) {
-                                                        bestScore[i_3][j] = -1;
-                                                    }
-                                                }
-                                            }
-                                            for (i_4 = 0; i_4 < timetable.length; i_4++) {
-                                                for (j = 0; j < timetable[i_4].length; j++) {
-                                                    if (timetable[i_4][j] !== '0') {
-                                                        bestScore[i_4][j] = -1;
-                                                        bestScoreCopy[i_4][j] = -1;
-                                                    }
+                                        feasible = (0, common_1.scoreRooms)(currRoomInfo.timetable);
+                                        for (i_2 = 0; i_2 < feasible.length; i_2++) {
+                                            for (j = 0; j < feasible[i_2].length; j++) {
+                                                if (feasible[i_2][j] < 0) {
+                                                    bestScore[i_2][j] = -1;
                                                 }
                                             }
                                             availableSlots = bestScore.flat().filter(function (score) { return score > 0; }).length;
-                                            sortedScores = bestScore.flat().map(function (score, index) { return ({ score: score, index: index }); })
-                                                .sort(function (a, b) { return b.score - a.score; });
-                                            if ((_c = courseResponse.course) === null || _c === void 0 ? void 0 : _c.credits) {
-                                                if (availableSlots < ((_d = courseResponse.course) === null || _d === void 0 ? void 0 : _d.credits)) {
-                                                    for (k = 0; k < availableSlots; k++) {
-                                                        index = sortedScores[k].index;
-                                                        row = Math.floor(index / bestScore[0].length);
-                                                        col = index % bestScore[0].length;
-                                                        timetable[row][col] = courseResponse.course.name;
-                                                        roomtable[row][col] = preferredRoomInfo.name;
-                                                        bestScoreCopy[row][col] = -1;
-                                                    }
-                                                    remainingCredits = courseResponse.course.credits - availableSlots;
-                                                    for (_f = 0, roomsInfo_2 = roomsInfo; _f < roomsInfo_2.length; _f++) {
-                                                        roomInfo = roomsInfo_2[_f];
-                                                        if (remainingCredits <= 0)
-                                                            break;
-                                                        if (roomInfo && roomInfo.name !== preferredRoomInfo.name) {
-                                                            feasible_1 = (0, common_1.scoreRooms)(roomInfo.timetable);
-                                                            bestScoreCopyCopy = bestScoreCopy;
-                                                            for (i_5 = 0; i_5 < feasible_1.length; i_5++) {
-                                                                for (j = 0; j < feasible_1[i_5].length; j++) {
-                                                                    if (feasible_1[i_5][j] < 0) {
-                                                                        bestScoreCopyCopy[i_5][j] = -1;
-                                                                    }
-                                                                }
-                                                            }
-                                                            availableSlots_1 = bestScoreCopyCopy.flat().filter(function (score) { return score > 0; }).length;
-                                                            if (availableSlots_1 >= remainingCredits) {
-                                                                sortedScores_1 = bestScoreCopyCopy.flat().map(function (score, index) { return ({ score: score, index: index }); })
-                                                                    .sort(function (a, b) { return b.score - a.score; });
-                                                                for (k = 0; k < remainingCredits; k++) {
-                                                                    index = sortedScores_1[k].index;
-                                                                    row = Math.floor(index / bestScoreCopyCopy[0].length);
-                                                                    col = index % bestScoreCopyCopy[0].length;
-                                                                    timetable[row][col] = courseResponse.course.name;
-                                                                    roomtable[row][col] = roomInfo.name;
-                                                                }
-                                                                remainingCredits = 0;
+                                            if ((_a = courseResponse.course) === null || _a === void 0 ? void 0 : _a.credits) {
+                                                //if available slots are less than the credits of the course, return service unavailable
+                                                if (availableSlots < ((_b = courseResponse.course) === null || _b === void 0 ? void 0 : _b.credits)) {
+                                                    return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } } }];
+                                                }
+                                                //else, assign the course to the timetable
+                                                else {
+                                                    //introcude randomness and also divide by bfactor value
+                                                    for (i_3 = 0; i_3 < bestScore.length; i_3++) {
+                                                        for (j = 0; j < bestScore[i_3].length; j++) {
+                                                            if (bestScore[i_3][j] > 0) {
+                                                                bestScore[i_3][j] = (bestScore[i_3][j] + randomFactor * Math.random()) / bFactor[i_3];
                                                             }
                                                         }
                                                     }
-                                                    if (remainingCredits > 0)
-                                                        return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } } }];
-                                                }
-                                                else {
+                                                    //allot the course
                                                     for (k = 0; k < courseResponse.course.credits; k++) {
+                                                        sortedScores = bestScore.flat().map(function (score, index) { return ({ score: score, index: index }); })
+                                                            .sort(function (a, b) { return b.score - a.score; });
                                                         index = sortedScores[k].index;
                                                         row = Math.floor(index / bestScore[0].length);
                                                         col = index % bestScore[0].length;
                                                         timetable[row][col] = courseResponse.course.name;
-                                                        roomtable[row][col] = preferredRoomInfo.name;
+                                                        roomtable[row][col] = currRoomInfo.name;
+                                                        bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
+                                                        //prevent allocation on the same day
+                                                        for (j = 0; j < bestScore[i_2].length; j++) {
+                                                            bestScore[row][j] = -1;
+                                                        }
                                                     }
                                                 }
                                             }
                                             else {
                                                 return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
                                             }
+                                        }
+                                    }
+                                    //if not specified room
+                                    else {
+                                        bestScoreCopy = bestScore;
+                                        preferredRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === preferredRooms; });
+                                        if (!preferredRoomInfo) {
+                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
+                                        }
+                                        feasible = (0, common_1.scoreRooms)(preferredRoomInfo.timetable);
+                                        for (i_4 = 0; i_4 < feasible.length; i_4++) {
+                                            for (j = 0; j < feasible[i_4].length; j++) {
+                                                if (feasible[i_4][j] < 0) {
+                                                    bestScore[i_4][j] = -1;
+                                                }
+                                            }
+                                        }
+                                        ///make sure bestScore and bestScore copy dont allocate when other course are alloted
+                                        for (i_5 = 0; i_5 < timetable.length; i_5++) {
+                                            for (j = 0; j < timetable[i_5].length; j++) {
+                                                if (timetable[i_5][j] !== '0') {
+                                                    bestScore[i_5][j] = -1;
+                                                    bestScoreCopy[i_5][j] = -1;
+                                                }
+                                            }
+                                        }
+                                        availableSlots = 0;
+                                        for (i_6 = 0; i_6 < bestScore.length; i_6++) {
+                                            if (bestScore[i_6].some(function (score) { return score > 0; })) {
+                                                availableSlots++;
+                                            }
+                                        }
+                                        if ((_c = courseResponse.course) === null || _c === void 0 ? void 0 : _c.credits) {
+                                            //of available slots are leseer than credits, then iterate through all rooms in an attempt to find all possible intersections
+                                            if (availableSlots < ((_d = courseResponse.course) === null || _d === void 0 ? void 0 : _d.credits)) {
+                                                //allot whatevers possible in the preffered room
+                                                for (k = 0; k < availableSlots; k++) {
+                                                    sortedScores = bestScore.flat().map(function (score, index) { return ({ score: score, index: index }); })
+                                                        .sort(function (a, b) { return b.score - a.score; });
+                                                    index = sortedScores[k].index;
+                                                    row = Math.floor(index / bestScore[0].length);
+                                                    col = index % bestScore[0].length;
+                                                    timetable[row][col] = courseResponse.course.name;
+                                                    roomtable[row][col] = preferredRoomInfo.name;
+                                                    for (i_7 = 0; i_7 < bestScore[row].length; i_7++) {
+                                                        bestScoreCopy[row][i_7] = -1;
+                                                    }
+                                                }
+                                                remainingCredits = courseResponse.course.credits - availableSlots;
+                                                for (_f = 0, roomsInfo_2 = roomsInfo; _f < roomsInfo_2.length; _f++) {
+                                                    roomInfo = roomsInfo_2[_f];
+                                                    if (remainingCredits <= 0)
+                                                        break;
+                                                    //if room isnt same as prefereed room
+                                                    if (roomInfo && roomInfo.name !== preferredRoomInfo.name) {
+                                                        feasible_1 = (0, common_1.scoreRooms)(roomInfo.timetable);
+                                                        bestScoreCopyCopy = bestScoreCopy;
+                                                        for (i_8 = 0; i_8 < feasible_1.length; i_8++) {
+                                                            for (j = 0; j < feasible_1[i_8].length; j++) {
+                                                                if (feasible_1[i_8][j] < 0) {
+                                                                    bestScoreCopyCopy[i_8][j] = -1;
+                                                                }
+                                                            }
+                                                        }
+                                                        availableSlots_1 = 0;
+                                                        for (i_9 = 0; i_9 < bestScore.length; i_9++) {
+                                                            if (bestScoreCopyCopy[i_9].some(function (score) { return score > 0; })) {
+                                                                availableSlots_1++;
+                                                            }
+                                                        }
+                                                        if (availableSlots_1 >= remainingCredits) {
+                                                            sortedScores = bestScoreCopyCopy.flat().map(function (score, index) { return ({ score: score, index: index }); })
+                                                                .sort(function (a, b) { return b.score - a.score; });
+                                                            for (k = 0; k < remainingCredits; k++) {
+                                                                index = sortedScores[k].index;
+                                                                row = Math.floor(index / bestScoreCopyCopy[0].length);
+                                                                col = index % bestScoreCopyCopy[0].length;
+                                                                timetable[row][col] = courseResponse.course.name;
+                                                                roomtable[row][col] = roomInfo.name;
+                                                                for (i_10 = 0; i_10 < bestScoreCopyCopy[row].length; i_10++) {
+                                                                    bestScoreCopyCopy[row][i_10] = -1;
+                                                                }
+                                                            }
+                                                            remainingCredits = 0;
+                                                        }
+                                                    }
+                                                }
+                                                if (remainingCredits > 0)
+                                                    return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } } }];
+                                            }
+                                            //if available slots are greater than the credits allot the timetable
+                                            else {
+                                                for (k = 0; k < courseResponse.course.credits; k++) {
+                                                    sortedScores = bestScore.flat().map(function (score, index) { return ({ score: score, index: index }); })
+                                                        .sort(function (a, b) { return b.score - a.score; });
+                                                    index = sortedScores[k].index;
+                                                    row = Math.floor(index / bestScore[0].length);
+                                                    col = index % bestScore[0].length;
+                                                    timetable[row][col] = courseResponse.course.name;
+                                                    roomtable[row][col] = preferredRoomInfo.name;
+                                                    for (i_11 = 0; i_11 < bestScore[row].length; i_11++) {
+                                                        bestScore[row][i_11] = -1;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        //if credits not availabe return 0
+                                        else {
+                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
                                         }
                                     }
                                     return [2 /*return*/];
@@ -272,3 +318,6 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
         });
     });
 }
+// export async function suggestLab(
+// ){
+// }
