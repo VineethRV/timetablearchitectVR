@@ -46,8 +46,8 @@ var client_1 = require("@prisma/client");
 var statusCodes_1 = require("../types/statusCodes");
 var prisma = new client_1.PrismaClient();
 // For creating Courses by editors and admins
-function createCourse(JWTtoken_1, name_1, code_1, credits_1) {
-    return __awaiter(this, arguments, void 0, function (JWTtoken, name, code, credits, semester, department) {
+function createCourse(JWTtoken_1, name_1, code_1, credits_1, bFactor_1) {
+    return __awaiter(this, arguments, void 0, function (JWTtoken, name, code, credits, bFactor, semester, department) {
         var _a, status_1, user, Course, duplicates, newCourse, e_1;
         if (semester === void 0) { semester = null; }
         if (department === void 0) { department = null; }
@@ -55,6 +55,7 @@ function createCourse(JWTtoken_1, name_1, code_1, credits_1) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 6, , 7]);
+                    console.log(name, code, credits, bFactor, semester, department);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _b.sent(), status_1 = _a.status, user = _a.user;
@@ -70,6 +71,7 @@ function createCourse(JWTtoken_1, name_1, code_1, credits_1) {
                         code: code,
                         orgId: user.orgId,
                         credits: credits,
+                        bFactor: bFactor,
                         department: user.department,
                         semester: semester,
                     };
@@ -197,7 +199,7 @@ function deleteCourse(JWTtoken_1, courseCode_1, semester_1) {
     });
 }
 function updateCourse(JWTtoken_1, originalName_1) {
-    return __awaiter(this, arguments, void 0, function (JWTtoken, originalName, originalDepartment, originalSemester, credits, course) {
+    return __awaiter(this, arguments, void 0, function (JWTtoken, originalName, originalDepartment, originalSemester, bFactor, credits, course) {
         var _a, user, status_3, existingCourse, e_3;
         if (originalDepartment === void 0) { originalDepartment = null; }
         return __generator(this, function (_b) {
@@ -239,6 +241,7 @@ function updateCourse(JWTtoken_1, originalName_1) {
                                 code: course.code,
                                 semester: course.semester,
                                 credits: credits ? credits : course.credits,
+                                bFactor: bFactor ? bFactor : course.bFactor,
                                 department: user.role == "admin" && course.department
                                     ? course.department
                                     : user.department,

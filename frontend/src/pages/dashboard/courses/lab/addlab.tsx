@@ -97,7 +97,6 @@ const AddLabPage: React.FC = () => {
   };
 
   const handleEditBatch = (records: BatchField[]) => {
-    // Update formFields dynamically with the edited records
     setFormFields((prevFields) => {
       return prevFields.map((batch, index) => {
         const updatedBatch = records[index];
@@ -106,7 +105,6 @@ const AddLabPage: React.FC = () => {
           ...batch,
           courseSet: updatedBatch.courseSet,
           course: updatedBatch.course,
-          // Split teachers string into individual tags and trim spaces
           teachers: updatedBatch.teachers
             .flatMap((teacher) => teacher.split(",").map((t) => t.trim())),
           rooms: updatedBatch.rooms,
@@ -129,12 +127,12 @@ const AddLabPage: React.FC = () => {
   
       const status = response.status;
       if (status === 200) {
-        return response.data.message.department; // Returns the department if status is 200
+        return response.data.message.department; 
       }
-      return ""; // Return an empty string if the status is not 200
+      return ""; 
     } catch (error) {
       console.log(error);
-      return ""; // Return an empty string in case of an error
+      return ""; 
     }
   };
   
@@ -185,7 +183,7 @@ const AddLabPage: React.FC = () => {
         },
       });
       if (response.data.status === 200) {
-        setElectiveOptions(response.data.message); // Assuming `message` contains the array of electives
+        setElectiveOptions(response.data.message); 
       } else {
         message.error(response.data.message || "Failed to fetch electives.");
       }
@@ -202,7 +200,7 @@ const AddLabPage: React.FC = () => {
           authorization: localStorage.getItem("token"),
         },
       });
-      setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+      setRoomOptions(response.data.message.map((item: any) => item.name));
     } catch (error) {
       console.error("Failed to fetch rooms:", error);
       message.error("Error fetching room data.");
@@ -244,11 +242,10 @@ const AddLabPage: React.FC = () => {
     setTableData((prevData) => {
       if (editingRecord) {
         return prevData
-          .filter((data) => data.courseSet !== editingRecord[0].courseSet) // Remove old batches for the edited courseSet
-          .concat(updatedBatches); // Add the updated batches
+          .filter((data) => data.courseSet !== editingRecord[0].courseSet) 
+          .concat(updatedBatches);
       }
   
-      // If no editingRecord, add new records
       return [...prevData, ...updatedBatches];
     });
   
@@ -301,11 +298,9 @@ const AddLabPage: React.FC = () => {
   };
  
 const getCourseData = (tableData: BatchField[]): { courseSets: string[]; teachers: string[][]; rooms: string[][] } => {
-  // Reduce the tableData into a single record
   const courseData = tableData.reduce(
     (acc, item) => {
       const { courseSet, teachers, rooms } = item;
-      // Ensure entries exist for this courseSet
       if (!acc.courseSets.includes(courseSet)) {
         acc.courseSets.push(courseSet);
       }
@@ -320,7 +315,6 @@ const getCourseData = (tableData: BatchField[]): { courseSets: string[]; teacher
       });
       acc.teachers[courseSet].push(...teacherList);
 
-      // Add rooms for this courseSet
       if (!acc.rooms[courseSet]) {
         acc.rooms[courseSet] = [];
       }
@@ -329,13 +323,12 @@ const getCourseData = (tableData: BatchField[]): { courseSets: string[]; teacher
       return acc;
     },
     {
-      courseSets: [] as string[], // List of unique courseSets
-      teachers: {} as Record<string, string[]>, // Teachers grouped by courseSet
-      rooms: {} as Record<string, string[]> // Rooms grouped by courseSet
+      courseSets: [] as string[], 
+      teachers: {} as Record<string, string[]>, 
+      rooms: {} as Record<string, string[]>
     }
   );
 
-  // Convert teachers and rooms to lists of arrays
   const teachers = Object.values(courseData.teachers);
   const rooms = Object.values(courseData.rooms);
 
