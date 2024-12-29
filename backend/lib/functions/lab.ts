@@ -72,7 +72,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 else
                     return {
                         status:status,
-                        timetable:null
+                        timetable:"teacher error"
                     }
             }
             //iterate through each room and find the valid intersections
@@ -100,7 +100,7 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 else {
                     return {
                         status: status,
-                        timetable: null
+                        timetable: "Room error"
                     };
                 }
             }
@@ -218,7 +218,7 @@ blocks:string|null
                             status: statusCodes.BAD_REQUEST,
                             timetable: null
                         }
-                    }
+                    }   
                     for (let i = 0; i < scoreValue.length; i++) {
                         for (let j = 0; j < scoreValue[i].length; j++) {
                             if (scoreValue[i][j] < 0) {
@@ -227,7 +227,7 @@ blocks:string|null
                         }
                     }
                 } 
-                else {
+                else {  
                     return {
                         status: status,
                         timetable: null
