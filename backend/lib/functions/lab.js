@@ -115,7 +115,7 @@ function getRecommendations(token, lab, blocks) {
                                     else
                                         return [2 /*return*/, { value: {
                                                     status: status_1,
-                                                    timetable: null
+                                                    timetable: "teacher error"
                                                 } }];
                                     _e.label = 3;
                                 case 3:
@@ -151,7 +151,7 @@ function getRecommendations(token, lab, blocks) {
                                     else {
                                         return [2 /*return*/, { value: {
                                                     status: status_2,
-                                                    timetable: null
+                                                    timetable: "Room error"
                                                 } }];
                                     }
                                     _e.label = 7;

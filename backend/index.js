@@ -784,6 +784,20 @@ app.post("/api/suggestTimetable", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+// Get teacher percentage
+app.get("/api/teacherPercentage", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await teacher.getTeacherPercentage(token);
+    res.status(200).json({ status: result.status, percentage: result.percentage });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 
 app.get("/health", (_, res) => {
   return res.json({
