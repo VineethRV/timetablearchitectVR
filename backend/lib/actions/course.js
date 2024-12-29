@@ -55,7 +55,6 @@ function createCourse(JWTtoken_1, name_1, code_1, credits_1, bFactor_1) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 6, , 7]);
-                    console.log(name, code, credits, bFactor, semester, department);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _b.sent(), status_1 = _a.status, user = _a.user;
@@ -199,22 +198,26 @@ function deleteCourse(JWTtoken_1, courseCode_1, semester_1) {
     });
 }
 function updateCourse(JWTtoken_1, originalName_1) {
-    return __awaiter(this, arguments, void 0, function (JWTtoken, originalName, originalDepartment, originalSemester, bFactor, credits, course) {
+    return __awaiter(this, arguments, void 0, function (JWTtoken, originalName, originalDepartment, originalSemester, course) {
         var _a, user, status_3, existingCourse, e_3;
         if (originalDepartment === void 0) { originalDepartment = null; }
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 6, , 7]);
-                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                    console.log(3);
+                    console.log(4);
+                    _b.label = 1;
                 case 1:
+                    _b.trys.push([1, 7, , 8]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 2:
                     _a = _b.sent(), user = _a.user, status_3 = _a.status;
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                             }];
-                    if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 5];
-                    if (!(user && user.role != "viewer")) return [3 /*break*/, 4];
+                    if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 6];
+                    if (!(user && user.role != "viewer")) return [3 /*break*/, 5];
                     return [4 /*yield*/, prisma.course.findFirst({
                             where: {
                                 orgId: user.orgId,
@@ -225,7 +228,7 @@ function updateCourse(JWTtoken_1, originalName_1) {
                                 semester: originalSemester,
                             },
                         })];
-                case 2:
+                case 3:
                     existingCourse = _b.sent();
                     if (!existingCourse) {
                         return [2 /*return*/, {
@@ -240,31 +243,31 @@ function updateCourse(JWTtoken_1, originalName_1) {
                                 name: course.name,
                                 code: course.code,
                                 semester: course.semester,
-                                credits: credits ? credits : course.credits,
-                                bFactor: bFactor ? bFactor : course.bFactor,
+                                credits: course.credits,
+                                bFactor: course.bFactor,
                                 department: user.role == "admin" && course.department
                                     ? course.department
                                     : user.department,
                             },
                         })];
-                case 3:
+                case 4:
                     _b.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
                         }];
-                case 4: return [2 /*return*/, {
+                case 5: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN,
                     }];
-                case 5: return [2 /*return*/, {
+                case 6: return [2 /*return*/, {
                         status: status_3,
                     }];
-                case 6:
+                case 7:
                     e_3 = _b.sent();
                     console.error(e_3);
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                         }];
-                case 7: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });

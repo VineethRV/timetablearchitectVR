@@ -28,6 +28,7 @@ import Onboard from "./pages/register";
 import Access from "./pages/dashboard/admin/access";
 import ForgetOTP from "./pages/ForgetPassword";
 import VerifyComponent from "./pages/VerifyEmail";
+import EditCoursepage from "./pages/dashboard/courses/corecourse/editcorecourse";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
               path="/dashboard/courses/core-courses"
               element={<Corecourse />}
             />
+            <Route path="/dashboard/courses/core-courses/edit/:oldname/:department" element={<EditCoursepage/>}/>
             <Route
               path="/dashboard/courses/core-courses/add"
               element={<AddCoursepage />}

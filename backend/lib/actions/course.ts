@@ -2,6 +2,7 @@ import * as auth from "./auth";
 import { PrismaClient } from "@prisma/client";
 import { statusCodes } from "../types/statusCodes";
 import { Course } from "../types/main";
+import { createDiffieHellman } from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +17,6 @@ export async function createCourse(
   department: string | null = null
 ): Promise<{ status: number; Course: Course | null }> {
   try {
-    console.log(name,code,credits,bFactor,semester,department)
     const { status, user } = await auth.getPosition(JWTtoken);
     if (user?.orgId == null)
       return {
@@ -152,10 +152,10 @@ export async function updateCourse(
   originalName: string,
   originalDepartment: string | null = null,
   originalSemester: number,
-  bFactor:number|null,
-  credits:number|null,
   course: Course
 ): Promise<{ status: number }> {
+  console.log(3)
+  console.log(4)
   try {
     const { user, status } = await auth.getPosition(JWTtoken);
     if (user?.orgId == null)
@@ -188,8 +188,8 @@ export async function updateCourse(
             name: course.name,
             code: course.code,
             semester: course.semester,
-            credits:credits?credits:course.credits,
-            bFactor:bFactor?bFactor:course.bFactor,
+            credits:course.credits,
+            bFactor:course.bFactor,
             department:
               user.role == "admin" && course.department
                 ? course.department
