@@ -4,20 +4,19 @@ import {
   Button,
   Form,
   Input,
-  Select,
   Tooltip,
   Upload,
   InputNumber,
 } from "antd";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import { semesterOptions } from "../../../../components/semester/semester";
-import RoomOptions from "../../../../components/general/roomoption";
+import { useNavigate, useParams } from "react-router-dom";
 import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import Loading from "../../../../components/Loading/Loading";
+import RoomOptions from "../../../../components/general/roomoption";
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -29,70 +28,92 @@ const formItemLayout = {
   },
 };
 
-const AddCoursepage: React.FC = () => {
+const EditCoursepage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+    const [loading, setLoading] = useState(true);
+  const semester=5;
+  const { oldname, department } = useParams();
   function clearFields() {
     form.setFieldValue('coursename', "");
     form.setFieldValue('coursecode', "");
     form.setFieldValue('selectSem', "");
-    form.setFieldValue('hours',"");
+    form.setFieldValue('Hpc',"");
     form.setFieldValue('bfactor',"");
-    form.setFieldsValue({rooms:null});
+    form.setFieldsValue({Courses:null});
   }
 
-  const [department, setDepartment] = useState(""); // State for department
+  useEffect(() => {
+    if(oldname && department){
+    fetchCourseDetails(oldname,department);
+    }
+  }, [oldname,department]);
+  
+  const rewriteUrl = (newName: string, department: string) => {
+    navigate(
+      `/dashboard/courses/core-courses/edit/${encodeURIComponent(
+        newName
+      )}/${encodeURIComponent(department)}`
+    );
+  };
 
-  const fetchdept = async () => {
-    try {
-      const response = await axios.post(
-        BACKEND_URL + "/getPosition",
-        {},
+  const fetchCourseDetails = async (name: string, department: string | null) => {
+    axios
+      .post(
+        BACKEND_URL + "/courses/peek",
+        {
+          name: name,
+          semester:semester,
+          department: department,
+        },
         {
           headers: {
             authorization: localStorage.getItem("token"),
           },
         }
-      );
-      console.log(response.status, response.data);
-      if (response.status === 200) {
-        setDepartment(response.data.message.department); // Set the department
-      } else {
-        setDepartment(""); // Reset to empty string if not successful
-      }
-    } catch (error) {
-      console.log(error);
-      setDepartment(""); // Reset to empty string in case of error
-    }
+      )
+      .then((res) => {
+        const status = res.data.status;
+        switch (status) {
+          case statusCodes.OK:
+            form.setFieldsValue({
+              coursename: res.data.message.name,
+              coursecode: res.data.message.code,
+              Hpc: res.data.message.credits,
+              bfactor: res.data.message.bFactor,
+            });
+            toast.success("Course details fetched successfully!");
+            break;
+          default:
+            toast.error("Failed to fetch Course details!");
+        }
+
+        setLoading(false);
+      });
   };
 
-  useEffect(() => {
-    fetchdept();
-    console.log(department) // Fetch department on component mount
-  }, []);
-  
-  
-  function addCourse() {
+
+  const handleSubmit = async () => {
     const coursename = form.getFieldValue('coursename');
     const coursecode = form.getFieldValue('coursecode');
     const credits = form.getFieldValue('Hpc');
-     const sem = form.getFieldValue('selectSem');
-     const dept=department;
-     console.log(dept)
-    // const credits = form.getFieldValue('credits');
-    // const hours = form.getFieldValue('hours');
-    const bfactor = form.getFieldValue('bfactor');
-    const promise = axios.post(
+    const bfactor=form.getFieldValue("bfactor");
+    const CoreData= {
+      name:coursename,
+      code:coursecode,
+      department:department||"",
+      bFactor: bfactor,
+      credits: credits,
+      semester: semester,
+    };
+
+    const promise = axios.put(
       BACKEND_URL + "/courses",
       {
-        name: coursename,
-        code: coursecode,
-        semester: sem,
-        bfactor: bfactor,
-        credits:credits,
-        department: dept,
-        
+        originalName: oldname,
+        originalDepartment: department,
+        originalSemester:semester,
+        course: CoreData
       },
       {
         headers: {
@@ -100,33 +121,31 @@ const AddCoursepage: React.FC = () => {
         },
       }
     );
-
     toast.promise(promise, {
-      loading: "Creating Course...",
+      loading: "Updating Course...",
       success: (res) => {
         const statusCode = res.status;
-        console.log("message",res.status);
         switch (statusCode) {
           case statusCodes.OK:
-            clearFields();
-            return "Course added successfully!";
+            console.log(res.data)
+            rewriteUrl(coursename,department||"");
+            return "Course Updated successfully!";
           case statusCodes.BAD_REQUEST:
-            return "Course already exists!";
-          case statusCodes.UNAUTHORIZED:
-            return "You are not authorized!";
+            return "Course Not Found!";
+          case statusCodes.FORBIDDEN:
+            return "Cannot Update Course!";
           case statusCodes.INTERNAL_SERVER_ERROR:
-            return "Internal server error";
-          default:
-            return "Unexpected status code";
+            return "Internal server error!";
         }
       },
-      error: (error: { response: { data: any; }; message: any; }) => {
+      error: (error) => {
         console.error("Error:", error.response?.data || error.message);
-        return "Failed to create course. Please try again!";
+        return "Failed to update Course. Please try again!";
       },
     });
-  }
+  };
 
+  if (loading) return <Loading />;
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
@@ -165,13 +184,6 @@ const AddCoursepage: React.FC = () => {
           <Form.Item name="coursecode" label="Course Code" required>
             <Input placeholder="Course Code" className="font-normal" />
           </Form.Item>
-          <Form.Item label="Semester" name="selectSem" required>
-            <Select
-              placeholder="Select a semester"
-              options={semesterOptions}
-              className="font-normal"
-            />
-          </Form.Item>
           <Form.Item label="Hours per week" name="Hpc" required>
             <InputNumber
               min={0}
@@ -179,21 +191,21 @@ const AddCoursepage: React.FC = () => {
               className="w-full font-normal"
             />
           </Form.Item>
-          <Form.Item name="rooms"
+          <Form.Item name="Courses"
             label={
               <span className="inline-flex items-center">
-                Any particular room to be used?
-                <Tooltip title="Select one or more rooms to indicate specific room preferences for this session.">
+                Any particular Course to be used?
+                <Tooltip title="Select one or more Courses to indicate specific Course preferences for this session.">
                   <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
                 </Tooltip>
               </span>
             }
           >
-            <Form.Item name="rooms" >
+            <Form.Item name="Courses" >
   <RoomOptions
     multiple={true}
-    value={form.getFieldValue("rooms")} 
-    onChange={(value) => form.setFieldsValue({ rooms: value })} 
+    value={form.getFieldValue("Courses")} 
+    onChange={(value) => form.setFieldsValue({ Courses: value })} 
   />
 </Form.Item>
           </Form.Item>
@@ -212,7 +224,7 @@ const AddCoursepage: React.FC = () => {
                 </Button>
               </Form.Item>
               <Form.Item>
-                <Button onClick={addCourse} className="bg-primary text-[#FFFFFF]">
+                <Button onClick={handleSubmit} className="bg-primary text-[#FFFFFF]">
                   Submit
                 </Button>
               </Form.Item>
@@ -224,4 +236,4 @@ const AddCoursepage: React.FC = () => {
   );
 };
 
-export default AddCoursepage;
+export default EditCoursepage;

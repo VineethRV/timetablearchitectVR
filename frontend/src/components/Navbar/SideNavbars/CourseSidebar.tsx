@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 import { Divider, Layout, Select } from "antd";
 import {
   FaBasketShopping,
@@ -8,10 +7,8 @@ import {
   FaCirclePlus,
   FaPenToSquare,
 } from "react-icons/fa6";
-import { useNavigate } from "react-router-dom";
-
+import { useNavigate, useLocation } from "react-router-dom";
 import { semesterOptions } from "../../../components/semester/semester";
-import { useLocation } from "react-router-dom";
 
 const { Sider } = Layout;
 
@@ -19,6 +16,7 @@ const CoursesSidebar = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [selected, setSelected] = useState("/core-courses");
+  const [selectedSemester, setSelectedSemester] = useState<number | undefined>(undefined);
 
   const isCoreCourseSelected =
     pathname === "/dashboard/courses/core-courses" ||
@@ -38,13 +36,23 @@ const CoursesSidebar = () => {
   const handleClick2 = (url: string) => {
     navigate(`/dashboard/courses${selected}${url}`);
   };
+
   useEffect(() => {
     let path = window.location.pathname;
-
     path = path.replace(/^\/dashboard\/courses/, "").replace(/\/add$/, "");
-
     setSelected(path || "/");
+
+    // Fetch semester value from localStorage
+    const storedSemester = localStorage.getItem("semester");
+    if (storedSemester) {
+      setSelectedSemester(Number(storedSemester)); // Convert to number and set as selected
+    }
   }, []);
+
+  const handleSemesterChange = (value: number) => {
+    setSelectedSemester(value);
+    localStorage.setItem("semester", value.toString()); // Update localStorage
+  };
 
   return (
     <Sider className="h-screen bg-white border-r-[0.5px] font-sans">
@@ -58,8 +66,7 @@ const CoursesSidebar = () => {
         </span>
       </div>
       <Divider />
-      <div
-        className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4">
+      <div className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4">
         <div
           onClick={() => handleClick1("/electives")}
           className={`flex relative space-x-2 p-2 cursor-pointer ${
@@ -106,11 +113,13 @@ const CoursesSidebar = () => {
           placeholder="Select a semester"
           options={semesterOptions}
           className="font-normal"
+          value={selectedSemester} // Default value from localStorage
+          onChange={handleSemesterChange} // Update state and localStorage on change
+          style={{ width: "80%" }}
         />
       </div>
       <Divider />
-      <div
-        className="flex flex-col items-left justify-center h-[15vh] space-y-2 font-medium text-[#565E6C] pl-4">
+      <div className="flex flex-col items-left justify-center h-[15vh] space-y-2 font-medium text-[#565E6C] pl-4">
         <div
           onClick={() => handleClick2("/add")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${

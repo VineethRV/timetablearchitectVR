@@ -361,8 +361,7 @@ app.delete("/api/rooms", async (req, res) => {
 // Create a new course
 app.post("/api/courses", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const { name, code, semester,bfactor,credits, department } = req.body;
-  console.log(name, code, semester,bfactor,credits, department)
+  const { name, code, semester,bfactor,credits, department } = req.body
   if (!token || !name || !code) {
     return res
       .status(200)
@@ -432,7 +431,6 @@ app.put("/api/courses", async (req, res) => {
         "Token, original name, original semester, and course data are required",
     });
   }
-
   try {
     const result = await course.updateCourse(
       token,
