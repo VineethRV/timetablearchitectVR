@@ -526,7 +526,6 @@ app.post("/api/electives/peek", async (req, res) => {
 app.get("/api/electives", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { semester, department } = req.query;
-  console.log("Hi",semester,department)
   if (!token || semester === undefined) {
     return res
       .status(200)
@@ -777,7 +776,7 @@ app.post("/api/suggestTimetable", async (req, res) => {
       message: "Token, blocks, courses, teachers, rooms, and semester are required",
     });
   }
-
+  console.log(blocks, courses, teachers, rooms, semester, preferredRooms)
   try {
     const result = await suggestTimetable(token, blocks, courses, teachers, rooms, semester, preferredRooms);
     res.status(200).json({ status: result.status, returnVal: result.returnVal });

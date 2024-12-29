@@ -177,7 +177,7 @@ const AddLabPage: React.FC = () => {
         courseSet: "",
         course: form1.getFieldValue(`course-${index}`),
         teachers: form1.getFieldValue(`teacher-${index}`),
-        rooms: form1.getFieldValue(`room-${index}`),
+        rooms: [form1.getFieldValue(`room-${index}`)],
       })
     );
 
@@ -195,9 +195,8 @@ const AddLabPage: React.FC = () => {
       ...batch,
       courseSet: courset,
     }));
-
+    console.log(updatedBatches)
     setFormFields(newFormFields);
-
     setTableData((prevData) => {
       if (editingRecord) {
         return prevData
@@ -231,6 +230,7 @@ const AddLabPage: React.FC = () => {
         message.error("Please ensure all fields are filled!");
         return;
       }
+      console.log(courseSets,teachers,rooms,convertTableToString(buttonStatus))
       const response = await axios.post(
         BACKEND_URL + "/getLabRecommendation",
         {
@@ -245,7 +245,7 @@ const AddLabPage: React.FC = () => {
           },
         }
       );
-
+      console.log(response.status,response.data)
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
@@ -266,14 +266,14 @@ const AddLabPage: React.FC = () => {
   ): { courseSets: string[]; teachers: string[][]; rooms: string[][] } => {
     // Reduce the tableData into a single record
     const courseData = tableData.reduce(
-      (acc, item) => {
+      (lab, item) => {
         const { courseSet, teachers, rooms } = item;
         // Ensure entries exist for this courseSet
-        if (!acc.courseSets.includes(courseSet)) {
-          acc.courseSets.push(courseSet);
+        if (!lab.courseSets.includes(courseSet)) {
+          lab.courseSets.push(courseSet);
         }
-        if (!acc.teachers[courseSet]) {
-          acc.teachers[courseSet] = [];
+        if (!lab.teachers[courseSet]) {
+          lab.teachers[courseSet] = [];
         }
         const teacherList: string[] = [];
         teachers.forEach((teacher) => {
@@ -281,15 +281,14 @@ const AddLabPage: React.FC = () => {
             teacherList.push(t.trim());
           });
         });
-        acc.teachers[courseSet].push(...teacherList);
-
+        lab.teachers[courseSet].push(...teacherList);
         // Add rooms for this courseSet
-        if (!acc.rooms[courseSet]) {
-          acc.rooms[courseSet] = [];
+        if (!lab.rooms[courseSet]) {
+          lab.rooms[courseSet] = [];
         }
-        acc.rooms[courseSet].push(...rooms);
+        lab.rooms[courseSet].push(...rooms);
 
-        return acc;
+        return lab;
       },
       {
         courseSets: [] as string[], // List of unique courseSets

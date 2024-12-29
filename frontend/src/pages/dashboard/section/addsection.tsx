@@ -16,6 +16,7 @@ import { CiImport } from "react-icons/ci";
 import {useNavigate } from "react-router-dom";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import SectionAddTable from "../../../components/SectionPage/sectionaddtable";
+import { convertTableToString } from "../../../utils/main";
 //import { DEPARTMENTS_OPTIONS } from "@/info";
 //import { createRoom } from "@/lib/actions/room";
 //import { toast } from "sonner";
@@ -74,34 +75,11 @@ const AddSectionPage: React.FC = () => {
     setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
   }
 
-//   function addClassRoom() {
-//     const className = form.getFieldValue('className');
-//     const lab = form.getFieldValue('lab')
-//     const dept = form.getFieldValue('department')
-//     // lab -> 1 is Yes 2 is No
-
-   /* const res = createRoom(localStorage.getItem('token') || "", className, lab == 1, buttonStatus, dept).then((res) => {
-      const statusCode = res.status;
-
-      switch (statusCode) {
-        case statusCodes.CREATED:
-          toast.success("Added room successfully !!");
-          clearFields();
-          break;
-        case statusCodes.BAD_REQUEST:
-          toast.error("You are not authorized");
-          clearFields();
-          break;
-        case statusCodes.INTERNAL_SERVER_ERROR:
-          toast.error("Server error");
-          break;
-      }
-    })
-
-    toast.promise(res, {
-      loading: "Adding room ...."
-    })
-  }*/
+  function getRecommendation()
+  {
+    const block=convertTableToString(buttonStatus),
+    
+  }
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
@@ -143,8 +121,8 @@ const AddSectionPage: React.FC = () => {
           <label>
             <div>
               <span className="inline-flex items-center space-x-10">
-                Lab Courses for the Batch
-                <Tooltip title="Click on Add to add the lab courses applicable for the batch">
+                Courses for the Batch
+                <Tooltip title="Click on Add to add the courses applicable for the batch">
                   <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
                 </Tooltip>
               </span>
