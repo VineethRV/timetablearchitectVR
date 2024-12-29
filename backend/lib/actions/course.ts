@@ -16,6 +16,7 @@ export async function createCourse(
   department: string | null = null
 ): Promise<{ status: number; Course: Course | null }> {
   try {
+    console.log(name,code,credits,bFactor,semester,department)
     const { status, user } = await auth.getPosition(JWTtoken);
     if (user?.orgId == null)
       return {

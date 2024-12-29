@@ -1,6 +1,3 @@
-import { Button, ConfigProvider, Input, Select } from "antd";
-import { TbTrash } from "react-icons/tb";
-import { CiExport, CiImport, CiSearch } from "react-icons/ci";
 import CoreTable from "../../../../components/CoursePage/coreTable";
 import { useEffect, useState } from "react";
 import { Course } from "../../../../types/main";
@@ -70,7 +67,7 @@ function page() {
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">Core Courses</h1>
-      <CoreTable CoreData={coreData}/>
+      <CoreTable CoreData={coreData} setCoreData={setCoreData}/>
 
     </div>
   );

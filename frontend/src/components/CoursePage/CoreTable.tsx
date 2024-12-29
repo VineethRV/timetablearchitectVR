@@ -11,6 +11,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 import { CiExport, CiImport, CiSearch } from "react-icons/ci";
 import { TbTrash } from "react-icons/tb";
+import { DEPARTMENTS_OPTIONS } from "../../../info";
 
 interface CoreType {
   key: React.Key;
@@ -20,6 +21,21 @@ interface CoreType {
   hoursperweek:number;
   bfactor:number;
 }
+
+const colorCombos: Record<string, string>[] = [
+  { textColor: "#FFFFFF", backgroundColor: "#000000" },
+  { textColor: "#333333", backgroundColor: "#FFFBCC" },
+  { textColor: "#1D3557", backgroundColor: "#A8DADC" },
+  { textColor: "#F2F2F2", backgroundColor: "#00796B" },
+  { textColor: "#FFFFFF", backgroundColor: "#283593" },
+  { textColor: "#FFFFFF", backgroundColor: "#2C3E50" },
+  { textColor: "#000000", backgroundColor: "#F2F2F2" },
+  { textColor: "#F2F2F2", backgroundColor: "#424242" },
+  { textColor: "#000000", backgroundColor: "#F4E04D" },
+  { textColor: "#2F4858", backgroundColor: "#F8B400" },
+];
+const deptColors: Record<string, string> = {};
+let cnt = 0;
 
 
 
@@ -37,6 +53,7 @@ const rowSelection: TableProps<CoreType>["rowSelection"] = {
   }),
 };
 
+
 const CoreTable= ({
   CoreData,
   setCoreData,
@@ -46,6 +63,15 @@ const CoreTable= ({
 }) => {
   const navigate = useNavigate();
   const [selectedCore, setSelectedCore] = useState<Course[]>([]);
+
+  CoreData?.forEach((core) => {
+    if (core.department && !deptColors[core.department as string]) {
+      deptColors[core.department as string] =
+        colorCombos[cnt % colorCombos.length].backgroundColor;
+      cnt++;
+    }
+  });
+
   const columns: TableColumnsType<CoreType> = [
     {
         title: "Course Name",
@@ -62,6 +88,21 @@ const CoreTable= ({
       {
         title: "Department",
         dataIndex: "department",
+        render: (dept: string) => {
+          return (
+            <h1
+              style={{
+                backgroundColor: deptColors[dept],
+                color: colorCombos.find(
+                  (combo) => combo.backgroundColor === deptColors[dept]
+                )?.textColor,
+              }}
+              className="text-xs opacity-85 font-semibold w-fit px-2.5 py-0.5 rounded-xl"
+            >
+              {dept}
+            </h1>
+          );
+        },
       },
       {
         title: "Difficulty Rating ",
@@ -174,7 +215,7 @@ function clearFilters() {;
               style={{ width: 120 }}
               options={[]}
             />
-            <Select defaultValue="Number of credits" options={[]} />
+            <Select defaultValue="Departments" options={DEPARTMENTS_OPTIONS} />
             <Select defaultValue="Hours per week" options={[]} />
           </div>
         </ConfigProvider>

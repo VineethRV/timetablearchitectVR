@@ -17,6 +17,7 @@ import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
+import { useEffect, useState } from "react";
 const formItemLayout = {
   labelCol: {
     xs: { span: 24 },
@@ -42,24 +43,57 @@ const AddCoursepage: React.FC = () => {
     form.setFieldsValue({rooms:null});
   }
 
+  const [department, setDepartment] = useState(""); // State for department
+
+  const fetchdept = async () => {
+    try {
+      const response = await axios.post(
+        BACKEND_URL + "/getPosition",
+        {},
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
+      console.log(response.status, response.data);
+      if (response.status === 200) {
+        setDepartment(response.data.message.department); // Set the department
+      } else {
+        setDepartment(""); // Reset to empty string if not successful
+      }
+    } catch (error) {
+      console.log(error);
+      setDepartment(""); // Reset to empty string in case of error
+    }
+  };
+
+  useEffect(() => {
+    fetchdept();
+    console.log(department) // Fetch department on component mount
+  }, []);
+  
   
   function addCourse() {
     const coursename = form.getFieldValue('coursename');
     const coursecode = form.getFieldValue('coursecode');
     const credits = form.getFieldValue('Hpc');
      const sem = form.getFieldValue('selectSem');
-     const dept="Civil Engineering";
+     const dept=department;
+     console.log(dept)
     // const credits = form.getFieldValue('credits');
     // const hours = form.getFieldValue('hours');
-    // const bfactor = form.getFieldValue('bfactor');
+    const bfactor = form.getFieldValue('bfactor');
     const promise = axios.post(
       BACKEND_URL + "/courses",
       {
         name: coursename,
         code: coursecode,
-        credits:credits,
         semester: sem,
+        bfactor: bfactor,
+        credits:credits,
         department: dept,
+        
       },
       {
         headers: {
@@ -72,7 +106,7 @@ const AddCoursepage: React.FC = () => {
       loading: "Creating Course...",
       success: (res) => {
         const statusCode = res.status;
-        console.log(res.data.message);
+        console.log("message",res.status);
         switch (statusCode) {
           case statusCodes.OK:
             clearFields();
@@ -166,8 +200,8 @@ const AddCoursepage: React.FC = () => {
             <Form.Item name="rooms" >
   <RoomOptions
     multiple={true}
-    value={form.getFieldValue("rooms")} // Controlled value from the form
-    onChange={(value) => form.setFieldsValue({ rooms: value })} // Update form value on change
+    value={form.getFieldValue("rooms")} 
+    onChange={(value) => form.setFieldsValue({ rooms: value })} 
   />
 </Form.Item>
           </Form.Item>

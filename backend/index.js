@@ -362,6 +362,7 @@ app.delete("/api/rooms", async (req, res) => {
 app.post("/api/courses", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { name, code, semester,bfactor,credits, department } = req.body;
+  console.log(name, code, semester,bfactor,credits, department)
   if (!token || !name || !code) {
     return res
       .status(200)
