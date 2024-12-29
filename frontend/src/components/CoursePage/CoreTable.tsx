@@ -1,57 +1,67 @@
 "use client";
-import React from "react";
-import { Button, Table, Tooltip } from "antd";
+import React, { useState } from "react";
+import { Button, ConfigProvider, Input, Select, Table, Tooltip } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
 import { MdDelete, MdEdit } from "react-icons/md";
+import { Course } from "../../types/main";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { statusCodes } from "../../types/statusCodes";
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
+import { CiExport, CiImport, CiSearch } from "react-icons/ci";
+import { TbTrash } from "react-icons/tb";
 
 interface CoreType {
   key: React.Key;
   name: string;
-  coursecode:string;
+  code:string;
   credits: number;
   hoursperweek:number;
   bfactor:number;
 }
 
-const data: CoreType[] = [
-  { key: "1", name: "Data Structures", coursecode: "CS201", credits: 4, hoursperweek: 3, bfactor: 1.5 },
-  { key: "2", name: "Algorithms", coursecode: "CS202", credits: 4, hoursperweek: 3, bfactor: 1.5 },
-  { key: "3", name: "Operating Systems", coursecode: "CS301", credits: 4, hoursperweek: 4, bfactor: 1.6 },
-  { key: "4", name: "Computer Networks", coursecode: "CS302", credits: 4, hoursperweek: 3, bfactor: 1.4 },
-  { key: "5", name: "Database Management Systems", coursecode: "CS303", credits: 4, hoursperweek: 3, bfactor: 1.5 },
-  { key: "6", name: "Compiler Design", coursecode: "CS304", credits: 4, hoursperweek: 3, bfactor: 1.6 },
-  { key: "7", name: "Artificial Intelligence", coursecode: "CS401", credits: 3, hoursperweek: 3, bfactor: 1.7 },
-  { key: "8", name: "Machine Learning", coursecode: "CS402", credits: 3, hoursperweek: 4, bfactor: 1.8 },
-  { key: "9", name: "Software Engineering", coursecode: "CS403", credits: 3, hoursperweek: 3, bfactor: 1.4 },
-  { key: "10", name: "Cloud Computing", coursecode: "CS404", credits: 3, hoursperweek: 3, bfactor: 1.6 },
-  { key: "11", name: "Cybersecurity", coursecode: "CS405", credits: 3, hoursperweek: 3, bfactor: 1.5 },
-  { key: "12", name: "Big Data Analytics", coursecode: "CS406", credits: 3, hoursperweek: 4, bfactor: 1.7 },
-  { key: "13", name: "Distributed Systems", coursecode: "CS407", credits: 4, hoursperweek: 4, bfactor: 1.6 },
-  { key: "14", name: "Computer Graphics", coursecode: "CS408", credits: 3, hoursperweek: 3, bfactor: 1.4 },
-  { key: "15", name: "Human-Computer Interaction", coursecode: "CS409", credits: 3, hoursperweek: 3, bfactor: 1.3 },
-  { key: "16", name: "Internet of Things", coursecode: "CS410", credits: 3, hoursperweek: 3, bfactor: 1.5 },
-  { key: "17", name: "Blockchain Technology", coursecode: "CS411", credits: 3, hoursperweek: 3, bfactor: 1.7 },
-  { key: "18", name: "Parallel Computing", coursecode: "CS412", credits: 4, hoursperweek: 4, bfactor: 1.8 },
-  { key: "19", name: "Natural Language Processing", coursecode: "CS413", credits: 3, hoursperweek: 4, bfactor: 1.6 },
-  { key: "20", name: "Robotics", coursecode: "CS414", credits: 3, hoursperweek: 3, bfactor: 1.5 },
-];
 
-const columns: TableColumnsType<CoreType> = [
+
+const rowSelection: TableProps<CoreType>["rowSelection"] = {
+  onChange: (selectedRowKeys: React.Key[], selectedRows: CoreType[]) => {
+    console.log(
+      `selectedRowKeys: ${selectedRowKeys}`,
+      "selectedRows: ",
+      selectedRows
+    );
+  },
+  getCheckboxProps: (record: CoreType) => ({
+    disabled: record.name === "Disabled User",
+    name: record.name,
+  }),
+};
+
+const CoreTable= ({
+  CoreData,
+  setCoreData,
+}: {
+  CoreData: Course[];
+  setCoreData: React.Dispatch<React.SetStateAction<Course[]>>;
+}) => {
+  const navigate = useNavigate();
+  const [selectedCore, setSelectedCore] = useState<Course[]>([]);
+  const columns: TableColumnsType<CoreType> = [
     {
         title: "Course Name",
         dataIndex: "name",
       },
       {
         title: "Course code ",
-        dataIndex: "coursecode",
+        dataIndex: "code",
       },
       {
-        title: "Number of Credits ",
+        title: "Hours per week",
         dataIndex: "credits",
       },
       {
-        title: "Hours per week ",
-        dataIndex: "hoursperweek",
+        title: "Department",
+        dataIndex: "department",
       },
       {
         title: "Difficulty Rating ",
@@ -84,31 +94,105 @@ const columns: TableColumnsType<CoreType> = [
   },
 ];
 
-const rowSelection: TableProps<CoreType>["rowSelection"] = {
-  onChange: (selectedRowKeys: React.Key[], selectedRows: CoreType[]) => {
-    console.log(
-      `selectedRowKeys: ${selectedRowKeys}`,
-      "selectedRows: ",
-      selectedRows
-    );
-  },
-  getCheckboxProps: (record: CoreType) => ({
-    disabled: record.name === "Disabled User",
-    name: record.name,
-  }),
-};
+function deleteCoreHandler() {
+  if (selectedCore.length == 0) {
+    toast.info("Select Core to delete !!");
+    return;
+  }
+  const res = axios
+    .delete(BACKEND_URL + "/courses", {
+      data: {
+        Core: selectedCore,
+      },
+      headers: {
+        Authorization: localStorage.getItem("token"),
+      },
+    })
+    .then((res) => {
+      const statusCode = res.status;
+      switch (statusCode) {
+        case statusCodes.OK:
+          setCoreData((Core) => {
+            const newCore = Core.filter((t) => {
+              for (let i = 0; i < selectedCore.length; i++) {
+                if (selectedCore[i].name == t.name) return false;
+              }
+              return true;
+            });
+            return newCore;
+          });
+          setSelectedCore([]);
+          toast.success("Core deleted successfully");
+          break;
+        case statusCodes.BAD_REQUEST:
+          toast.error("Invalid request");
+          break;
+        case statusCodes.INTERNAL_SERVER_ERROR:
+          toast.error("Server error");
+      }
+    });
 
-const RoomsTable: React.FC = () => {
+  toast.promise(res, {
+    loading: "Deleting Core ...",
+  });
+}
+function clearFilters() {;
+}
+
   return (
     <div>
+   <div className="flex space-x-3 justify-end py-1">
+        <Button className="bg-[#F2F2FDFF] text-primary font-bold">
+          <CiImport />
+          Import
+        </Button>
+        <Button className="bg-primary text-white font-bold">
+          <CiExport />
+          Export
+        </Button>
+      </div>
+      <div className="flex space-x-8 justify-between py-4">
+        <Input
+          className="w-fit"
+          addonBefore={<CiSearch />}
+          placeholder="Course"
+        />
+
+        {/* this config to set background color of the selectors | did as specified in antd docs */}
+        <ConfigProvider
+          theme={{
+            components: {
+              Select: {
+                selectorBg: "#F3F4F6FF",
+              },
+            },
+          }}
+        >
+          <div className="flex space-x-3">
+            <Select
+              defaultValue="Sort By"
+              style={{ width: 120 }}
+              options={[]}
+            />
+            <Select defaultValue="Number of credits" options={[]} />
+            <Select defaultValue="Hours per week" options={[]} />
+          </div>
+        </ConfigProvider>
+        <div className="flex space-x-2">
+          <Button className="bg-red-500 text-white font-bold">
+            <TbTrash />Delete
+          </Button>
+          <Button>Clear filters</Button>
+        </div>
+      </div>
       <Table<CoreType>
         rowSelection={{ type: "checkbox", ...rowSelection }}
         columns={columns}
-        dataSource={data}
+        dataSource={CoreData}
         pagination={{ pageSize: 5 }}
       />
     </div>
   );
 };
 
-export default RoomsTable;
+export default CoreTable;
