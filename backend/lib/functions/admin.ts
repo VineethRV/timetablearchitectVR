@@ -17,7 +17,8 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 orgId: user.orgId,
                 },
                 select: {
-                    timetable:true
+                    timetable:true,
+                    labtable:true
                 },
             })
             let totalPeriods = 0;
@@ -28,6 +29,12 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 timetable.forEach((day) => {
                     day.forEach((period) => {
                         totalPeriods++;
+                        if (period!='0') filledPeriods++;
+                    });
+                });
+                const labtable = convertStringToTable(teacher.timetable);
+                labtable.forEach((day) => {
+                    day.forEach((period) => {
                         if (period!='0') filledPeriods++;
                     });
                 });
@@ -59,6 +66,12 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 timetable.forEach((day) => {
                     day.forEach((period) => {
                         totalPeriods++;
+                        if (period!='0') filledPeriods++;
+                    });
+                });
+                const labtable = convertStringToTable(teacher.timetable);
+                labtable.forEach((day) => {
+                    day.forEach((period) => {
                         if (period!='0') filledPeriods++;
                     });
                 });

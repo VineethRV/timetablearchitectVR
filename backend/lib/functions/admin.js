@@ -52,15 +52,19 @@ function getTeacherPercentage(token) {
                 case 0: return [4 /*yield*/, (0, auth_1.getPosition)(token)];
                 case 1:
                     _a = _b.sent(), status = _a.status, user = _a.user;
+                    console.log("token recieved\n");
                     if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 6];
+                    console.log("status ok\n");
                     if (!(user.role == 'admin')) return [3 /*break*/, 3];
+                    console.log("admin\n");
                     return [4 /*yield*/, prisma.teacher
                             .findMany({
                             where: {
                                 orgId: user.orgId,
                             },
                             select: {
-                                timetable: true
+                                timetable: true,
+                                labtable: true
                             },
                         })];
                 case 2:
@@ -72,6 +76,13 @@ function getTeacherPercentage(token) {
                         timetable.forEach(function (day) {
                             day.forEach(function (period) {
                                 totalPeriods_1++;
+                                if (period != '0')
+                                    filledPeriods_1++;
+                            });
+                        });
+                        var labtable = (0, common_1.convertStringToTable)(teacher.timetable);
+                        labtable.forEach(function (day) {
+                            day.forEach(function (period) {
                                 if (period != '0')
                                     filledPeriods_1++;
                             });
@@ -101,6 +112,13 @@ function getTeacherPercentage(token) {
                         timetable.forEach(function (day) {
                             day.forEach(function (period) {
                                 totalPeriods_2++;
+                                if (period != '0')
+                                    filledPeriods_2++;
+                            });
+                        });
+                        var labtable = (0, common_1.convertStringToTable)(teacher.timetable);
+                        labtable.forEach(function (day) {
+                            day.forEach(function (period) {
                                 if (period != '0')
                                     filledPeriods_2++;
                             });
