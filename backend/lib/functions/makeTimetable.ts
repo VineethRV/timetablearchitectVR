@@ -106,38 +106,40 @@ export async function suggestTimetable(
                         if(feasible[i][j]<0){
                             bestScore[i][j]=-1;
                         }
+                    } 
+                    let availableSlots = 0;
+                    for (let i = 0; i < bestScore.length; i++) {
+                        if (bestScore[i].some(score => score > 0)) {
+                            availableSlots++;
+                        }
                     }
-                    const availableSlots = bestScore.flat().filter(score => score > 0).length;
                     if(courseResponse.course?.credits){
+                        //introcude randomness and also divide by bfactor value
+                        for(let i=0;i<bestScore.length;i++){
+                            for(let j=0;j<bestScore[i].length;j++){
+                                if(bestScore[i][j]>0){
+                                    bestScore[i][j]=(bestScore[i][j]+randomFactor*Math.random())/bFactor[i];
+                                }
+                            }
+                        }
+                        //allot the course
+                        for (let k = 0; k < Math.min(courseResponse.course.credits, availableSlots); k++) {
+                            const sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
+                            .sort((a, b) => b.score - a.score);
+                            const { index } = sortedScores[k];
+                            const row = Math.floor(index / bestScore[0].length);
+                            const col = index % bestScore[0].length;
+                            timetable[row][col] = courseResponse.course.name;
+                            roomtable[row][col] = currRoomInfo.name;
+                            bFactor[row]=bFactor[row]+courseResponse.course.bFactor;
+                            //prevent allocation on the same day
+                            for(let j=0;j<bestScore[i].length;j++){
+                                bestScore[row][j]=-1;
+                            }
+                        }
                         //if available slots are less than the credits of the course, return service unavailable
                         if (availableSlots < courseResponse.course?.credits) {
                             return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal:{timetable: timetable,roomtable:null}  };
-                        }
-                        //else, assign the course to the timetable
-                        else{
-                            //introcude randomness and also divide by bfactor value
-                            for(let i=0;i<bestScore.length;i++){
-                                for(let j=0;j<bestScore[i].length;j++){
-                                    if(bestScore[i][j]>0){
-                                        bestScore[i][j]=(bestScore[i][j]+randomFactor*Math.random())/bFactor[i];
-                                    }
-                                }
-                            }
-                            //allot the course
-                            for (let k = 0; k < courseResponse.course.credits; k++) {
-                                const sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
-                                .sort((a, b) => b.score - a.score);
-                                const { index } = sortedScores[k];
-                                const row = Math.floor(index / bestScore[0].length);
-                                const col = index % bestScore[0].length;
-                                timetable[row][col] = courseResponse.course.name;
-                                roomtable[row][col] = currRoomInfo.name;
-                                bFactor[row]=bFactor[row]+courseResponse.course.bFactor;
-                                //prevent allocation on the same day
-                                for(let j=0;j<bestScore[i].length;j++){
-                                    bestScore[row][j]=-1;
-                                }
-                            }
                         }
                     }
                     else{
@@ -149,7 +151,7 @@ export async function suggestTimetable(
             //if not specified room
             else{
                 //bestScore is used to keep intersections and scores of preffered room, while the copy is used to allocate alternate rooms, if bestScore is not full
-                let bestScoreCopy=bestScore
+                let bestScoreCopy=bestScore;
                 const preferredRoomInfo = roomsInfo.find(room => room?.name === preferredRooms);
                 if (!preferredRoomInfo) {
                     return { status: statusCodes.BAD_REQUEST, returnVal: null };

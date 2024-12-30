@@ -143,10 +143,113 @@ export async function getRecommendations(token:string,lab:getRecommendationsLab,
                 labAllocated[maxSumIndices.i]=true;
             }
             else{
-                return {
-                    status: statusCodes.SERVICE_UNAVAILABLE,
-                    timetable: convertTableToString(timetable)
+                let score: number[][] = Array(6).fill(0).map(() => Array(6).fill(0));
+                for (let t = 0; t < teachers.length; t++) {
+                    let teacherScore = scoreTeachers(teachers[t].timetable, teachers[t].labtable);
+                    for (let i = 0; i < teacherScore.length; i++) {
+                        for (let j = 0; j < teacherScore[i].length; j++) {
+                            if (teacherScore[i][j] < 0) {
+                                score[i][j] = -1;
+                            }
+                            else if(score[i][j]>=0){
+                                score[i][j] += teacherScore[i][j];
+                            }
+                        }
+                    }
                 }
+                for (let r = 0; r < rooms.length; r++) {
+                    let roomScore = scoreRooms(rooms[r].timetable);
+                    for (let i = 0; i < roomScore.length; i++) {
+                        for (let j = 0; j < roomScore[i].length; j++) {
+                            if (roomScore[i][j] < 0) {
+                                score[i][j] = -1;
+                            }
+                        }
+                    }
+                }
+                let alloted =false;
+                for (let day = 0; day < score.length && !alloted; day++) {
+                    for (let period = 0; period < score[day].length && !alloted; period+=2) {
+                        if (score[day][period] >= 0 && blocks && blocks[day][period] == "0") {
+                            //this means that a lab was allocated there, which has a possiblity of being shifted
+                            let courseIndex = lab.courses.indexOf(timetable[day][period]);
+                            if (courseIndex !== -1) {
+                                let subScore: number[][] = Array(6).fill(0).map(() => Array(6).fill(0));
+                                let subTeachers = lab.teachers[courseIndex];
+                                let subRooms = lab.rooms[courseIndex];
+
+                                for (let t = 0; t < subTeachers.length; t++) {
+                                    let { status, teacher } = await peekTeacher(token, subTeachers[t]);
+                                    if (status == statusCodes.OK && teacher) {
+                                        let teacherScore = scoreTeachers(teacher.timetable, teacher.labtable);
+                                        for (let i = 0; i < teacherScore.length; i++) {
+                                            for (let j = 0; j < teacherScore[i].length; j++) {
+                                                if (teacherScore[i][j] < 0) {
+                                                    subScore[i][j] = -1;
+                                                } else if (subScore[i][j] >= 0) {
+                                                    subScore[i][j] += teacherScore[i][j];
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                for (let r = 0; r < subRooms.length; r++) {
+                                    let { status, room } = await peekRoom(token, subRooms[r]);
+                                    if (status == statusCodes.OK && room) {
+                                        let roomScore = scoreRooms(room.timetable);
+                                        for (let i = 0; i < roomScore.length; i++) {
+                                            for (let j = 0; j < roomScore[i].length; j++) {
+                                                if (roomScore[i][j] < 0) {
+                                                    subScore[i][j] = -1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                for (let i = 0; i < subScore.length; i++) {
+                                    if (labAllocated[i]) {
+                                        for (let j = 0; j < subScore[i].length; j++) {
+                                            subScore[i][j] = -1;
+                                        }
+                                    } else {
+                                        for (let j = 0; j < subScore[i].length; j++) {
+                                            if (subScore[i][j] >= 0 && timetable && timetable[i][j] !== "0") {
+                                                subScore[i][j] = -1;
+                                            }
+                                        }
+                                    }
+                                }
+                                let maxSubScore = -1;
+                                let maxSubScoreIndices = { i: -1, j: -1 };
+
+                                for (let i = 0; i < subScore.length; i++) {
+                                    for (let j = 0; j < subScore[i].length - 1; j += 2) {
+                                        let sum = subScore[i][j] + subScore[i][j + 1];
+                                        if (sum > maxSubScore) {
+                                            maxSubScore = sum;
+                                            maxSubScoreIndices = { i, j };
+                                        }
+                                    }
+                                }
+
+                                if (maxSubScoreIndices.i !== -1 && maxSubScoreIndices.j !== -1) {
+                                    timetable[maxSubScoreIndices.i][maxSubScoreIndices.j] = lab.courses[courseIndex];
+                                    timetable[maxSubScoreIndices.i][maxSubScoreIndices.j + 1] = lab.courses[courseIndex];
+                                    labAllocated[maxSubScoreIndices.i] = true;
+                                    alloted=true;
+                                    timetable[day][period+1]=lab.courses[i];
+                                    timetable[day][period]=lab.courses[i];
+                                }
+                            }
+                        }
+                    }
+                }
+                if(!alloted)
+                    return {
+                        status: statusCodes.SERVICE_UNAVAILABLE,
+                        timetable: convertTableToString(timetable)
+                    }
             }
         }
         return {
