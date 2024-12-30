@@ -77,7 +77,7 @@ const AddSectionPage: React.FC = () => {
 
   function getRecommendation()
   {
-    const block=convertTableToString(buttonStatus),
+    const block=convertTableToString(buttonStatus)
     
   }
 
