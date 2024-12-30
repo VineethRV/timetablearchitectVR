@@ -29,6 +29,7 @@ import Access from "./pages/dashboard/admin/access";
 import ForgetOTP from "./pages/ForgetPassword";
 import VerifyComponent from "./pages/VerifyEmail";
 import EditCoursepage from "./pages/dashboard/courses/corecourse/editcorecourse";
+import { ChatBot } from "./components/ChatBot/ChatBot";
 
 function App() {
   return (
@@ -93,6 +94,7 @@ function App() {
         </Route>
       </Routes>
       <Toaster />
+      <ChatBot/>
     </BrowserRouter>
   );
 }
