@@ -15,6 +15,7 @@ const { orgRouter } = require("./routes/org.js");
 const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
+const { chatRouter } = require('./routes/chatbot.js')
 const { suggestTimetable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/org", orgRouter);
 app.use("/api/leader",leaderRouter);
+app.use('/api/chatbot',chatRouter)
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
