@@ -220,7 +220,54 @@ const AddSectionPage: React.FC = () => {
   };
 
   const handleSubmit=()=>{
-
+      const name=form.getFieldValue("className");
+      const batch=form.getFieldValue("classBatch");
+      const courses=tableData.map((item)=>item.course)
+      const teachers=tableData.map((item)=>item.teacher)
+      const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
+      const semester=Number(localStorage.getItem("semester"))
+      const defaultRooms=form.getFieldValue("Room")
+      const timetable= convertTableToString(buttonStatus1)
+      const promise= axios.post(
+        BACKEND_URL+"/saveTimetable",
+        { 
+          name:name,
+          batch:batch,
+          courses:courses,
+          teachers:teachers,
+          rooms:rooms,
+          defaultRooms:defaultRooms,
+          semester:semester,
+          timetable:timetable
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          }
+        }
+      );
+      toast.promise(promise, {
+        loading: "Saving timetable...",
+        success: (res) => {
+          const statusCode = res.status;
+          switch (statusCode) {
+            case statusCodes.OK:
+              form.resetFields();
+              SetshowTT(false)
+              return "Saved timetable!!"
+            case statusCodes.UNAUTHORIZED:
+              return "You are not authorized!";
+            case statusCodes.INTERNAL_SERVER_ERROR:
+              return "Internal server error";
+            default:
+              return "Failed to save timetable";
+          }
+        },
+        error: (error) => {
+          console.error("Error:", error.response?.data || error.message);
+          return "Failed to save timetable. Please try again!";
+        },
+      });
   }
 
 
@@ -230,7 +277,7 @@ const AddSectionPage: React.FC = () => {
       title: "Are you sure?",
       content: "Do you want to save the generated timetable?",
       onOk: () => {
-        handleSubmit(); // Call the submit function
+        handleSubmit();
         message.success("Timetable saved successfully!");
       },
       onCancel: () => {

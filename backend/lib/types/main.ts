@@ -72,9 +72,13 @@ export type Section={
   batch : number;
   courses: string[];
   teachers: string[];
-  electives: string[]|null;
-  labs: string[]|null;
-  rooms:string[]|null;
+  rooms: string[];
+  electives: string|null;
+  labs: string|null;
+  defaultRoom: string|null;
+  semester: number;
+  orgId:number;
+  timeTable:string;
 }
 
 export type OTP_TYPE = {

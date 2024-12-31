@@ -37,11 +37,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.suggestTimetable = suggestTimetable;
+exports.saveTimetable = saveTimetable;
 var course_1 = require("../actions/course");
+var client_1 = require("@prisma/client");
+var auth = require("../actions/auth");
 var room_1 = require("../actions/room");
 var teacher_1 = require("../actions/teacher");
 var statusCodes_1 = require("../types/statusCodes");
 var common_1 = require("./common");
+var prisma = new client_1.PrismaClient();
 // add one more dimemtion of rooms in return val toadd handling of subjects if the room is not specified explicitly
 //test all functions, add handling of rooms to admins,
 //collision handling
@@ -136,8 +140,6 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                         console.log("\npreffered room selecgted: ", preferredRooms);
                                     }
                                     // Retrieve room details
-                                    //check if specified room is a department name or room name
-                                    console.log(1234);
                                     //following if statement checks if there is a specified room  (if yes, code is allowed inside)
                                     if (roomsInfo && rooms.length > i && rooms[i] != '0') {
                                         console.log("\nspecific room: ", rooms[i]);
@@ -328,6 +330,78 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                     error_1 = _e.sent();
                     return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: null }];
                 case 8: return [2 /*return*/];
+            }
+        });
+    });
+}
+function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, electives, labs, semester, defaultRooms, timetable) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_1, user, Section, duplicates, newCourse, e_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 6, , 7]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _b.sent(), status_1 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null)
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                            }];
+                    if (!(status_1 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 5];
+                    if (!(user && user.role != "viewer")) return [3 /*break*/, 4];
+                    Section = {
+                        name: name,
+                        batch: batch,
+                        orgId: user.orgId,
+                        courses: courses,
+                        teachers: teachers,
+                        rooms: rooms,
+                        electives: electives,
+                        labs: labs,
+                        defaultRoom: defaultRooms,
+                        semester: semester,
+                        timeTable: timetable
+                    };
+                    return [4 /*yield*/, prisma.section.findFirst({
+                            where: {
+                                orgId: Section.orgId,
+                                name: name,
+                                batch: batch
+                            },
+                        })];
+                case 2:
+                    duplicates = _b.sent();
+                    if (duplicates) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                            }];
+                    }
+                    return [4 /*yield*/, prisma.section.create({
+                            data: Section,
+                        })];
+                case 3:
+                    newCourse = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                        }];
+                case 4: 
+                // If role is viewer
+                return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.FORBIDDEN
+                    }];
+                case 5: 
+                // If status is not OK
+                return [2 /*return*/, {
+                        status: status_1,
+                    }];
+                case 6:
+                    e_1 = _b.sent();
+                    console.error(e_1);
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR
+                        }];
+                case 7: return [2 /*return*/];
             }
         });
     });
