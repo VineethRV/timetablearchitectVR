@@ -770,7 +770,7 @@ app.post("/api/recommendLab", async (req, res) => {
 app.post("/api/suggestTimetable", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { blocks, courses, teachers, rooms, semester, preferredRooms } = req.body;
-  if (!token || !blocks || !courses || !teachers || !rooms || semester === undefined) {
+  if (!token || !blocks || !courses || !teachers || semester === undefined) {
     return res.status(200).json({
       status: 400,
       message: "Token, blocks, courses, teachers, rooms, and semester are required",

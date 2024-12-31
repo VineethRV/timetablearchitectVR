@@ -3,16 +3,37 @@ import { Button, Table, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 import { MdDelete, MdEdit } from 'react-icons/md';
 
-interface DataType {
+export interface courseList
+{
   key: string;
-  subject: string;
-  teacher: string;
+  course:string;
+  teacher:string;
 }
 
-const columns: TableProps<DataType>['columns'] = [
+
+const SectionAddTable= (
+  {
+    sectionData,
+    setSectionsData,
+    onEditClick,
+  }: {
+    sectionData: courseList[];
+    setSectionsData: React.Dispatch<React.SetStateAction<courseList[]>>;
+    onEditClick: (record: courseList) => void;
+  }
+) => {
+
+
+  const handleDeleteClick = (record: courseList) => {
+    const updatedData = sectionData.filter(item => item.key !== record.key);
+    setSectionsData(updatedData);
+  };
+
+  
+const columns: TableProps<courseList>['columns'] = [
   {
     title: 'Subject',
-    dataIndex: 'subject',
+    dataIndex: 'course',
   },
   {
     title: 'Teacher',
@@ -20,12 +41,12 @@ const columns: TableProps<DataType>['columns'] = [
   },
   {
     title: "",
-    render: () => {
+    render: (record) => {
       return (
         <Tooltip title="Edit">
           <Button
             type="primary"
-           // onClick={() => handleEditClick(record.name, record.department)}
+            onClick={() => onEditClick(record)}
             shape="circle"
             icon={<MdEdit />}
           />
@@ -35,14 +56,14 @@ const columns: TableProps<DataType>['columns'] = [
   },
   {
     title: "",
-    render: () => {
+    render: (record) => {
       return (
         <Tooltip title="Delete">
           <Button
             className="bg-red-400"
             type="primary"
             shape="circle"
-            //onClick={() => handleDeleteClick(record)}
+            onClick={() => handleDeleteClick(record)}
             icon={<MdDelete />}
           />
         </Tooltip>
@@ -51,23 +72,9 @@ const columns: TableProps<DataType>['columns'] = [
   }
 ];
 
-const data: DataType[] = [
-  {
-    key: '1',
-    subject: 'ADLD',
-    teacher: 'Raj',
-  },
-  {
-    key: '2',
-    subject: 'OS',
-    teacher: 'Rahul',
-  },
-];
-
-const SectionAddTable: React.FC = () => {
 return(
 <div>
-<Table<DataType> columns={columns} dataSource={data} pagination={false}/>
+<Table<courseList> columns={columns} dataSource={sectionData} pagination={false}/>
 </div>
 );};
 

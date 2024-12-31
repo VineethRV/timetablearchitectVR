@@ -53,6 +53,7 @@ export async function suggestTimetable(
         // Iterate over the courses
         for (let i = 0; i < courses.length; i++) {
             const course = courses[i];
+            console.log(course)
             const teacher = teachers[i];
 
             // Retrieve course details
@@ -93,7 +94,7 @@ export async function suggestTimetable(
             //check if specified room is a department name or room name
 
             //following if statement checks if there is a specified room  (if yes, code is allowed inside)
-            if(roomsInfo && rooms[i]!='0'){
+            if(roomsInfo&& rooms.length<i && rooms[i]!='0'){
                 currRoomInfo = roomsInfo.find(room => room?.name === rooms[i]);
                 //if specified room not found
                 if (!currRoomInfo) {
@@ -179,6 +180,7 @@ export async function suggestTimetable(
                         availableSlots++;
                     }
                 }
+                console.log(availableSlots)
                 if (courseResponse.course?.credits) {
                     //of available slots are leseer than credits, then iterate through all rooms in an attempt to find all possible intersections
                     if (availableSlots < courseResponse.course?.credits) {
