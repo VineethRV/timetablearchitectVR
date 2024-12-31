@@ -421,9 +421,14 @@ function peekTeacher(token_1, name_1) {
                         })];
                 case 2:
                     teacher = _c.sent();
+                    if (teacher)
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.OK,
+                                teacher: teacher,
+                            }];
                     return [2 /*return*/, {
-                            status: statusCodes_1.statusCodes.OK,
-                            teacher: teacher,
+                            status: statusCodes_1.statusCodes.NOT_FOUND,
+                            teacher: null
                         }];
                 case 3: 
                 //else
