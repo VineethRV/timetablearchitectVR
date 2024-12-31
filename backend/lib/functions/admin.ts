@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 export async function getTeacherPercentage(token:string):Promise<{status:number,percentage:number, rank:string[],score:number[]}>{
     let {status,user}=await getPosition(token)
-    let rank: string[] = [];
+    let rank: string[] = new Array(10).fill("");
     let rankScore: number[] = new Array(10).fill(0);
     console.log("token recieved\n")
     if(status==statusCodes.OK && user?.orgId){

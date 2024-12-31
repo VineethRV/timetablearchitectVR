@@ -52,7 +52,7 @@ function getTeacherPercentage(token) {
                 case 0: return [4 /*yield*/, (0, auth_1.getPosition)(token)];
                 case 1:
                     _a = _b.sent(), status = _a.status, user = _a.user;
-                    rank = [];
+                    rank = new Array(10).fill("");
                     rankScore = new Array(10).fill(0);
                     console.log("token recieved\n");
                     if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 6];
