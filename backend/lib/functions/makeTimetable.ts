@@ -98,14 +98,13 @@ export async function suggestTimetable(
             }
             // Retrieve room details
             //following if statement checks if there is a specified room  (if yes, code is allowed inside)
-            if(roomsInfo&& rooms.length>i && rooms[i]!='0'){
+            if(roomsInfo && rooms[i]!='0'){
                 console.log("\nspecific room: ",rooms[i])
                 currRoomInfo = roomsInfo.find(room => room?.name === rooms[i]);
                 //if specified room not found
                 if (!currRoomInfo) {
                     return { status: statusCodes.BAD_REQUEST, returnVal:null  };
                 }
-                
                 let feasible=scoreRooms(currRoomInfo.timetable);
                 for(let i=0;i<feasible.length;i++){
                     for(let j=0;j<feasible[i].length;j++){

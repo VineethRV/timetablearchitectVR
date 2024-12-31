@@ -15,6 +15,7 @@ const { orgRouter } = require("./routes/org.js");
 const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
+const { chatRouter } = require('./routes/chatbot.js')
 const { suggestTimetable, saveTimetable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
@@ -28,6 +29,7 @@ app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/org", orgRouter);
 app.use("/api/leader",leaderRouter);
+app.use('/api/chatbot',chatRouter)
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
@@ -787,7 +789,7 @@ app.post("/api/saveTimetable",async (req,res)=>{
 app.post("/api/suggestTimetable", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { blocks, courses, teachers, rooms, semester, preferredRooms } = req.body;
-  if (!token || !blocks || !courses || !teachers  || semester === undefined) {
+  if (!token || !blocks || !courses || !rooms || !teachers  || semester === undefined) {
     return res.status(200).json({
       status: 400,
       message: "Token, blocks, courses, teachers, rooms, and semester are required",
@@ -811,7 +813,7 @@ app.get("/api/teacherPercentage", async (req, res) => {
 
   try {
     const result = await panel.getTeacherPercentage(token);
-    res.status(200).json({ status: result.status, percentage: result.percentage });
+    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -826,7 +828,7 @@ app.get("/api/roomPercentage", async (req, res) => {
 
   try {
     const result = await panel.getRoomPercentage(token);
-    res.status(200).json({ status: result.status, percentage: result.percentage });
+    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -841,7 +843,7 @@ app.get("/api/labPercentage", async (req, res) => {
 
   try {
     const result = await panel.getLabPercentage(token);
-    res.status(200).json({ status: result.status, percentage: result.percentage });
+    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

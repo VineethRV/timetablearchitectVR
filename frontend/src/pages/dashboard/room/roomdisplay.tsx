@@ -138,12 +138,12 @@ function RoomPage() {
       <h1 className="text-3xl font-bold text-primary mt-2">ClassRooms</h1>
       <div className="flex space-x-3 justify-end py-1">
         <Tooltip title="Download template">
-          <div
+          <Button
             onClick={downloadCSVTemplate}
-            className="flex cursor-pointer items-center"
+            className="flex cursor-pointer bg-[#F2F2FDFF] items-center"
           >
-            <FaDownload className="h-4 w-4 text-primary" />
-          </div>
+            <FaDownload size={14} className="text-primary" />
+          </Button>
         </Tooltip>
         <Button className="bg-[#F2F2FDFF] text-primary font-bold">
           <CiImport />

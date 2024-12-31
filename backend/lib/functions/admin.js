@@ -46,12 +46,14 @@ var common_1 = require("./common");
 var prisma = new client_1.PrismaClient();
 function getTeacherPercentage(token) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, status, user, teachers, totalPeriods_1, filledPeriods_1, percentage, teachers, totalPeriods_2, filledPeriods_2, percentage;
+        var _a, status, user, rank, rankScore, teachers, totalPeriods_1, filledPeriods_1, percentage, teachers, totalPeriods_2, filledPeriods_2, percentage;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0: return [4 /*yield*/, (0, auth_1.getPosition)(token)];
                 case 1:
                     _a = _b.sent(), status = _a.status, user = _a.user;
+                    rank = new Array(10).fill("");
+                    rankScore = new Array(10).fill(0);
                     console.log("token recieved\n");
                     if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 6];
                     console.log("status ok\n");
@@ -63,6 +65,7 @@ function getTeacherPercentage(token) {
                                 orgId: user.orgId,
                             },
                             select: {
+                                name: true,
                                 timetable: true,
                                 labtable: true
                             },
@@ -72,26 +75,41 @@ function getTeacherPercentage(token) {
                     totalPeriods_1 = 0;
                     filledPeriods_1 = 0;
                     teachers.forEach(function (teacher) {
+                        var score = 0;
                         var timetable = (0, common_1.convertStringToTable)(teacher.timetable);
                         timetable.forEach(function (day) {
                             day.forEach(function (period) {
                                 totalPeriods_1++;
                                 if (period != '0')
-                                    filledPeriods_1++;
+                                    score++;
                             });
                         });
                         var labtable = (0, common_1.convertStringToTable)(teacher.timetable);
                         labtable.forEach(function (day) {
                             day.forEach(function (period) {
                                 if (period != '0')
-                                    filledPeriods_1++;
+                                    score++;
                             });
                         });
+                        if ((36 - score) > rankScore[9]) {
+                            for (var i = 0; i < 10; i++) {
+                                if ((36 - score) > rankScore[i]) {
+                                    rankScore.splice(i, 0, 36 - score);
+                                    rank.splice(i, 0, teacher.name);
+                                    rankScore.pop();
+                                    rank.pop();
+                                    break;
+                                }
+                            }
+                        }
+                        filledPeriods_1 += score;
                     });
                     percentage = (filledPeriods_1 / totalPeriods_1) * 100;
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
                             percentage: percentage,
+                            rank: rank,
+                            score: rankScore
                         }];
                 case 3: return [4 /*yield*/, prisma.teacher
                         .findMany({
@@ -100,7 +118,9 @@ function getTeacherPercentage(token) {
                             department: user.department,
                         },
                         select: {
-                            timetable: true
+                            name: true,
+                            timetable: true,
+                            labtable: true
                         },
                     })];
                 case 4:
@@ -108,31 +128,48 @@ function getTeacherPercentage(token) {
                     totalPeriods_2 = 0;
                     filledPeriods_2 = 0;
                     teachers.forEach(function (teacher) {
+                        var score = 0;
                         var timetable = (0, common_1.convertStringToTable)(teacher.timetable);
                         timetable.forEach(function (day) {
                             day.forEach(function (period) {
                                 totalPeriods_2++;
                                 if (period != '0')
-                                    filledPeriods_2++;
+                                    score++;
                             });
                         });
                         var labtable = (0, common_1.convertStringToTable)(teacher.timetable);
                         labtable.forEach(function (day) {
                             day.forEach(function (period) {
                                 if (period != '0')
-                                    filledPeriods_2++;
+                                    score++;
                             });
                         });
+                        if ((36 - score) > rankScore[9]) {
+                            for (var i = 0; i < 10; i++) {
+                                if ((36 - score) > rankScore[i]) {
+                                    rankScore.splice(i, 0, 36 - score);
+                                    rank.splice(i, 0, teacher.name);
+                                    rankScore.pop();
+                                    rank.pop();
+                                    break;
+                                }
+                            }
+                        }
+                        filledPeriods_2 += score;
                     });
                     percentage = (filledPeriods_2 / totalPeriods_2) * 100;
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
                             percentage: percentage,
+                            rank: rank,
+                            score: rankScore
                         }];
                 case 5: return [3 /*break*/, 7];
                 case 6: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN,
-                        percentage: 0
+                        percentage: 0,
+                        rank: rank,
+                        score: rankScore
                     }];
                 case 7: return [2 /*return*/];
             }

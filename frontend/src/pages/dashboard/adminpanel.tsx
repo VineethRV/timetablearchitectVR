@@ -3,12 +3,73 @@ import { TbLayoutDashboard } from "react-icons/tb";
 import { FiBarChart2 } from "react-icons/fi";
 import CapacityCard from "../../components/AdminPanelComp/CapacityCard";
 import RequestAccessWrapper from "../../components/AdminPanelComp/RequestAccessWrap";
+import { GridDisplay } from "../../components/TopComponents/GridDisplay";
 const { Header, Content } = Layout;
 
 const stats = [
   { title: "Sections formed", number: 54 },
   { title: "Core courses allocated", number: 12 },
   { title: "Allotted labs", number: 84 },
+];
+
+const sampleTeachers = [
+  {
+    id: 1,
+    name: "John Doe",
+    email: "john.doe@example.com",
+    department: "Computer Science"
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    email: "jane.smith@example.com",
+    department: "Mathematics"
+  },
+  {
+    id: 3,
+    name: "Robert Johnson",
+    email: "robert.j@example.com",
+    department: "Physics"
+  },
+  {
+    id: 4,
+    name: "Robert Johnson",
+    email: "robert.j@example.com",
+    department: "Physics"
+  },
+  {
+    id: 5,
+    name: "Robert Johnson",
+    email: "robert.j@example.com",
+    department: "Physics"
+  },
+  {
+    id: 6,
+    name: "Robert Johnson",
+    email: "robert.j@example.com",
+    department: "Physics"
+  }
+];
+
+const sampleRooms = [
+  {
+    id: 1,
+    name: "Room 101",
+    department: "Computer Science",
+    lab: true
+  },
+  {
+    id: 2,
+    name: "Room 202",
+    department: "Physics",
+    lab: false
+  },
+  {
+    id: 3,
+    name: "Room 303",
+    department: "Mathematics",
+    lab: true
+  }
 ];
 
 const AdminPanel = () => {
@@ -47,6 +108,7 @@ const AdminPanel = () => {
         </Row>
         <CapacityCard />
         <RequestAccessWrapper />
+        <GridDisplay teachers={sampleTeachers} rooms={sampleRooms} />
       </Content>
     </Layout>
   );
