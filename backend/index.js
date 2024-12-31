@@ -16,7 +16,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { suggestTimetable } = require("./lib/functions/makeTimetable");
-
+const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
   cors({
@@ -780,6 +780,50 @@ app.post("/api/suggestTimetable", async (req, res) => {
   try {
     const result = await suggestTimetable(token, blocks, courses, teachers, rooms, semester, preferredRooms);
     res.status(200).json({ status: result.status, returnVal: result.returnVal });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+// Get teacher percentage
+app.get("/api/teacherPercentage", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await panel.getTeacherPercentage(token);
+    res.status(200).json({ status: result.status, percentage: result.percentage });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Get room percentage
+app.get("/api/roomPercentage", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await panel.getRoomPercentage(token);
+    res.status(200).json({ status: result.status, percentage: result.percentage });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+// Get lab percentage
+app.get("/api/labPercentage", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await panel.getLabPercentage(token);
+    res.status(200).json({ status: result.status, percentage: result.percentage });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

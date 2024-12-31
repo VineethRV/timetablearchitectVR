@@ -3,12 +3,7 @@ import AccessTable from "../../components/AccessPage/AccessTable";
 
 const { Title } = Typography;
 
-const RequestAccessWrapper = ({
-  setIsAdmin,setLoading
-}: {
-  setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
+const RequestAccessWrapper = () => {
   return (
     <div className="pb-4">
       <Card
@@ -22,7 +17,7 @@ const RequestAccessWrapper = ({
           Below is a list of users requesting access. Review and take
           appropriate action.
         </p>
-        <AccessTable setIsAdmin={setIsAdmin} adminLoading={setLoading} />
+        <AccessTable />
       </Card>
     </div>
   );

@@ -365,10 +365,15 @@ export async function peekTeacher(
           timetable: true,
         },
       });
-      return {
-        status: statusCodes.OK,
-        teacher: teacher,
-      };
+      if(teacher)
+        return {
+          status: statusCodes.OK,
+          teacher: teacher,
+        };
+      return{
+        status:statusCodes.NOT_FOUND,
+        teacher:null
+      }
     }
     //else
     return {
