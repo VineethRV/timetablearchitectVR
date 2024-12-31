@@ -8,6 +8,7 @@ export interface courseList
   key: string;
   course:string;
   teacher:string;
+  room:string;
 }
 
 
@@ -32,12 +33,16 @@ const SectionAddTable= (
   
 const columns: TableProps<courseList>['columns'] = [
   {
-    title: 'Subject',
+    title: 'Course',
     dataIndex: 'course',
   },
   {
     title: 'Teacher',
     dataIndex: 'teacher'
+  },
+  {
+    title: 'Room',
+    dataIndex: 'room'
   },
   {
     title: "",

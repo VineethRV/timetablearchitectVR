@@ -118,3 +118,17 @@ model AccessRequest {
   orgId        Int
   level        String
 }
+
+model Section{
+  id     Int          @id @default(autoincrement())
+  name   String
+  batch  Int
+  Courses String[]
+  Teachers String[]
+  Rooms String[]
+  Elective String?
+  Lab String?
+  defaultRoom String?
+  Block String
+  TimeTable String
+}
