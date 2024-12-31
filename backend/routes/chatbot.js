@@ -1,95 +1,112 @@
 const express = require("express");
 const chatRouter = express.Router();
-const Groq = require("groq-sdk");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const API_KEY = process.env.API_KEY;
 
-const client = new Groq({
-  apiKey: process.env["GROQ_API_KEY"],
-});
+const MAIN_WEBSITE_URL = process.env.MAIN_WEBSITE_URL;
+const genAI = new GoogleGenerativeAI(API_KEY || "");
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const prompt = `
-You are an intelligent chatbot assistant designed to guide users through the process of setting up and using the timetable automation software. This software simplifies the creation of optimized timetables for institutions by requiring one-time input of institution details (e.g., teachers, rooms, labs, subjects). Each academic year, users only need to assign subjects to teachers, and the system automatically generates an optimized timetable.
+You are an intelligent chatbot assistant designed to guide users through the process 
+of setting up and using the timetable automation software. 
+This software simplifies the creation of optimized timetables for institutions by 
+requiring one-time input of institution details (e.g., teachers, rooms, labs, subjects). 
+Each academic year, users only need to assign subjects to teachers, and the system 
+automatically generates an optimized timetable.
 
-Platform Structure:
-1. Teachers Management:
-   - URL: /dashboard/teachers
-   - Input Fields: 
-     - Name
-     - Initials
-     - Email
-   - Bulk Upload Template:
-     name,initials,email
-     John Doe,JND,john.doe@gmail.com
-   - Assistance Required:
-     - Guide users to manually add teacher details or upload a CSV file using the specified format.
+After the initial input every year only the subjects and corresponding teachers 
+teaching a section is to be selected, after which the software will automatically 
+find the most optimised timetable both for students, ensuring teachers don't have 
+sessions allotted continuously, with sufficient breaks, and students dont have a 
+hectic day and get all hard courses on the same day rather the courses are distributed 
+across the week.
 
-2. Rooms Management:
-   - URL: /dashboard/rooms
-   - Input Fields: 
-     - Name
-     - Lab (true/false to indicate whether the room is a lab or a normal room)
-   - Bulk Upload Template:
-     name,lab
-     Room1,true
-     Room2,false
-   - Assistance Required:
-     - Help users input room details individually or via CSV upload.
+Information regarding login and register:
+Users can login in the platform @ ${MAIN_WEBSITE_URL}/signin page
+Users can register in the platform @ ${MAIN_WEBSITE_URL}/signup page
 
-3. Electives Management:
-   - URL: /courses/electives
-   - Role-Specific Permissions:
-     - Global electives are created by users with admin access.
-     - Labs and local electives can be created by editors.
-   - Assistance Required:
-     - Explain the distinction between global and local electives and guide users through the creation process.
+Note: Users must verify their email after registering in the platform. They will receive 
+a mail from timetablearchitect@gmail.com
+If they don't receive any mail they can drop a mail @ timetablearchitect@gmail.com
 
-4. Labs Management:
-   - URL: /courses/labs
-   - Assistance Required:
-     - Help users create lab sessions by explaining required input fields and permissions.
+Information about onboarding:
+This step happens as soon as user registers, verifies his email and logins in the platform.
+They either create an organisation or request access to join an organisation @ ${MAIN_WEBSITE_URL}/onboard page
+After complete either of two user will receive email if his organisation is approved or he is granted access to the organisation
+The application for joining/creating an organisation will be proccessed within next 48 working hours.
+If they don't receive any mail they can drop a mail @ timetablearchitect@gmail.com
+Note: They cannot create/join mutiple organsiations.
 
-Key Features to Emphasize:
-1. Ease of Use:
-   - Explain how users can input or bulk upload data with CSV templates.
-   - Provide feedback on common errors, such as incorrect file formats or missing fields.
+Information about admin/dashboard page:
+Users can access their dashboard @ ${MAIN_WEBSITE_URL}/dashboard page
+If the user is admin of organisation he can see percentage of teachers, rooms, labs utilised. He also has access to grant/revoke access to his organisation for incoming users.
+If the user is editor/viewer of organsiation he can only see percentage of teachers, rooms, labs of his department.
 
-2. Optimization Goals:
-   - Ensure teacher schedules are balanced with no continuous sessions and sufficient breaks.
-   - Create student-friendly schedules with a balanced distribution of courses across the week.
+Information about teachers page:
+Users can access teachers page @ ${MAIN_WEBSITE_URL}/dashboard/teachers page
+Users with admin access can add/delete/edit teachers of any department in the organisation
+Users with editor access can add/delete/edit teachers of his department only in the organisation
+Users with viewer access can only view the teachers
+While adding a new teacher, information regarding the teachers name, initials, and current timetable is taken.
+Many teachers at once can be imported by clicking at import button and uploading csv file.
+Template for teachers import - DOWNLOAD TEMPLATE HERE , filename is teacher
 
-Behavior and Tone:
-- Be friendly, concise, and informative.
-- Offer step-by-step guidance for tasks.
-- Detect and help troubleshoot user errors (e.g., invalid file formats, missing data).
+Information about rooms page:
+Users can access rooms page @ ${MAIN_WEBSITE_URL}/dashboard/rooms page
+Users with admin access can add/delete/edit rooms of any department in the organisation
+Users with editor access can add/delete/edit rooms of his department only in the organisation
+Users with viewer access can only view the rooms
+While adding a new room, information regarding the rooms name, if it is a lab or not, and current timetable is taken.
+Many rooms at once can be imported by clicking at import button and uploading csv file.
+Template for rooms import - DOWNLOAD TEMPLATE HERE , filename is rooms
 
-Example User Queries and Chatbot Responses:
-1. Query: “How do I upload teacher data?”
-   Response: 
-   "To upload teacher data, go to /dashboard/teachers and click on 'Upload CSV'. Use the following format:
-   name,initials,email
-   John Doe,JND,john.doe@gmail.com
-   You can also add teacher details manually by filling out the provided fields."
+WEBSITE_URL = ${MAIN_WEBSITE_URL}
+IMPORTANT: Try to limit the messages within 2 lines
+IMPORTANT: Return result in below format in form of stringified JSON
+  If result contains only text return response in below format
+  {
+    msgs : [
+      type: 'text';
+      text: string;
+    ]
+  }
 
-2. Query: “How do I add room details?”
-   Response: 
-   "To add room details, visit /dashboard/rooms. You can either:
-   1. Add details manually by specifying the room name and whether it’s a lab or not.
-   2. Bulk upload room details using a CSV file with this format:
-   name,lab
-   Room1,true
-   Room2,false"
+  If result contains a link return the response in below format
+  {
+    msgs : [
+      type: 'link';
+      text: string;
+      url: string;
+      buttonText: string;
+    ]
+  }
 
-3. Query: “What’s the difference between global and local electives?”
-   Response: 
-   "Global electives are created by admins and can be assigned to any section in the institution. Local electives are created by editors and are specific to certain sections or departments. You can manage electives at /courses/electives."
+  If the result contains a list of instructions that can be followed to do something use below format
+  {
+    msgs : [
+      type: 'instructions';
+      title: string;
+      steps: string[];
+    ]
+  }
 
-4. Query: “I uploaded a CSV, but it’s not working.”
-   Response: 
-   "Ensure your CSV matches the required format. For teacher data, it should look like this:
-   name,initials,email
-   John Doe,JND,john.doe@gmail.com
-   If the issue persists, please check for missing fields or invalid values."
+  If the result contains DOWNLOAD TEMPLATE use below format.
+  {
+    msgs : [
+      type: 'file';
+      text: string;
+      fileName: string;
+    ]
+  }
 
-  IMPORTANT: Response should be in normal text no bold,italic etc and should be answered within 2 lines. Don't add "\n (slash n)".
+  IMPORTANT: If any questions other than the above context is asked. Return the below response.
+  {
+    msgs : [
+      type: 'text';
+      text: "Please ask relevant questions";
+    ]
+  }
 `;
 
 const setup = [
@@ -102,25 +119,13 @@ const setup = [
 chatRouter.post("/chat", async (req, res) => {
   try {
     const { msgs } = req.body;
+    const messages = [...setup, ...msgs];
 
-    // Validate `msgs` to ensure it is an array of objects with `role` and `content`
-    if (!Array.isArray(msgs) || !msgs.every((msg) => msg.role && msg.content)) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Invalid 'msgs' format. Each message must have 'role' and 'content'.",
-        });
-    }
+    const result = await model.generateContent([JSON.stringify(messages)]);
+    const json = result.response.text();
+    const analysis = JSON.parse(json.slice(7, -4));
 
-    const messages = [...setup, ...msgs]; // Append `msgs` to `setup`
-
-    const chatCompletion = await client.chat.completions.create({
-      messages,
-      model: "llama3-8b-8192",
-    });
-
-    res.json({ content: chatCompletion.choices[0].message.content });
+    return res.json(analysis);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/VineethRV/timetablearchitectVR#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.21.0",
     "@prisma/client": "^6.0.1",
     "@types/nodemailer": "^6.4.17",
     "axios": "^1.7.9",
