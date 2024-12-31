@@ -92,6 +92,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                             switch (_g.label) {
                                 case 0:
                                     course = courses[i];
+                                    console.log(course);
                                     teacher = teachers[i];
                                     return [4 /*yield*/, (0, course_1.peekCourse)(token, course, semester)];
                                 case 1:
@@ -132,7 +133,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                     // Retrieve room details
                                     //check if specified room is a department name or room name
                                     //following if statement checks if there is a specified room  (if yes, code is allowed inside)
-                                    if (roomsInfo && rooms[i] != '0') {
+                                    if (roomsInfo && rooms.length < i && rooms[i] != '0') {
                                         currRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === rooms[i]; });
                                         //if specified room not found
                                         if (!currRoomInfo) {
@@ -213,6 +214,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                 availableSlots++;
                                             }
                                         }
+                                        console.log(availableSlots);
                                         if ((_c = courseResponse.course) === null || _c === void 0 ? void 0 : _c.credits) {
                                             //of available slots are leseer than credits, then iterate through all rooms in an attempt to find all possible intersections
                                             if (availableSlots < ((_d = courseResponse.course) === null || _d === void 0 ? void 0 : _d.credits)) {

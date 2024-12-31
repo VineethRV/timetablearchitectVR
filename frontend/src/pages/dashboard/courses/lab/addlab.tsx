@@ -39,6 +39,16 @@ interface BatchField {
   teachers: string[];
   rooms: string[];
 }
+export const convertToTimetable = (setButtonStatus1:(value: React.SetStateAction<string[][]>) => void,time: string) => {
+  setButtonStatus1(
+    time
+      .split(";")
+      .map((row) =>
+        row.split(",").map((value) => (value === "0" ? "Free" : value))
+      )
+  );
+};
+
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +59,7 @@ const AddLabPage: React.FC = () => {
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
-  const semester = 5;
+  const semester = Number(localStorage.getItem("semester"));
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
@@ -213,16 +223,6 @@ const AddLabPage: React.FC = () => {
     handleCloseModal();
   };
 
-  const convertToTimetable = (time: string) => {
-    setButtonStatus1(
-      time
-        .split(";")
-        .map((row) =>
-          row.split(",").map((value) => (value === "0" ? "Free" : value))
-        )
-    );
-  };
-
   const getRecommendation = async () => {
     try {
       const { courseSets, teachers, rooms } = getCourseData(tableData);
@@ -249,7 +249,7 @@ const AddLabPage: React.FC = () => {
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
-        convertToTimetable(response.data.timetable);
+        convertToTimetable(setButtonStatus1,response.data.timetable);
       } else {
         message.error(
           response.data.message || "Failed to fetch recommendations."

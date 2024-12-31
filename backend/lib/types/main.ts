@@ -67,6 +67,16 @@ export type Elective = {
   timetable: string | null;
 };
 
+export type Section={
+  name: string;
+  batch : number;
+  courses: string[];
+  teachers: string[];
+  electives: string[]|null;
+  labs: string[]|null;
+  rooms:string[]|null;
+}
+
 export type OTP_TYPE = {
   otp: number;
   email: string;

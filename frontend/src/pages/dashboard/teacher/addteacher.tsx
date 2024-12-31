@@ -23,6 +23,12 @@ const formItemLayout = {
   },
 };
 
+export function buttonConvert(buttonStatus: string[][]): string[][] {
+  return buttonStatus.map((row) =>
+    row.map((status) => (status === "Free" ? "0" : "1"))
+  );
+}
+
 const AddTeacherpage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -38,11 +44,6 @@ const AddTeacherpage = () => {
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
-  const buttonConvert=()=>{
-      return buttonStatus.map((row) =>
-        row.map((status) => (status === "Free" ? "0" : "1"))
-      );
-  }
 
   function teacherAdd() {
     const name = form.getFieldValue("name");
@@ -58,7 +59,7 @@ const AddTeacherpage = () => {
         email: email,
         department: department,
         alternateDepartments: "",
-        timetable: buttonConvert(),
+        timetable: buttonConvert(buttonStatus),
         labtable: null,
       },
       {
@@ -68,7 +69,6 @@ const AddTeacherpage = () => {
       }
     );
 
-    // Use toast.promise to show the loading, success, and error states
     toast.promise(promise, {
       loading: "Creating teacher...",
       success: (res) => {
