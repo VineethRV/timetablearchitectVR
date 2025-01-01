@@ -332,7 +332,7 @@ blocks:string|null
                 if(!score){
                     return {
                         status: statusCodes.BAD_REQUEST,
-                        timetable: null
+                        timetable: errMessage
                     }
                 }   
                 for (let i = 0; i < scoreValue.length; i++) {
@@ -363,7 +363,20 @@ blocks:string|null
                 }
             }
         }
+
         errMessage="error when merging timetable"
+
+        let maxScore = Math.max(...score.flat());
+        if (maxScore > 0) {
+            for (let i = 0; i < score.length; i++) {
+                for (let j = 0; j < score[i].length; j++) {
+                    if (score[i][j] > 0) {
+                        score[i][j] /= maxScore;
+                    }
+                }
+            }
+        }
+
         for(let i=0;i<score.length;i++){
             for(let j=0;j<score[i].length-1;j+=2){
                 if(score[i][j]<0 || score[i][j+1]<0){
@@ -372,6 +385,7 @@ blocks:string|null
                 }
             }
         }
+        
         return {
             status: statusCodes.OK,
             timetable: convertTableToString(score.map((row) => row.map((val) => val.toString())))

@@ -364,7 +364,7 @@ function getRecommendations(token, lab, blocks) {
 }
 function recommendLab(token, Lteachers, Lrooms, blocks) {
     return __awaiter(this, void 0, void 0, function () {
-        var timetable, errMessage, teachers, score, j, k, j, _a, status_5, teacher, scoreValue, i, j_2, rooms, k, _b, status_6, room, scoreValue, i, j, i, j, i, j, _c;
+        var timetable, errMessage, teachers, score, j, k, j, _a, status_5, teacher, scoreValue, i, j_2, rooms, k, _b, status_6, room, scoreValue, i, j, i, j, i, j, maxScore, i, j, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
@@ -443,7 +443,7 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                         if (!score) {
                             return [2 /*return*/, {
                                     status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                    timetable: null
+                                    timetable: errMessage
                                 }];
                         }
                         for (i = 0; i < scoreValue.length; i++) {
@@ -484,6 +484,16 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                             if (score[i][j] < 0 || score[i][j + 1] < 0) {
                                 score[i][j] = -1;
                                 score[i][j + 1] = -1;
+                            }
+                        }
+                    }
+                    maxScore = Math.max.apply(Math, score.flat());
+                    if (maxScore > 0) {
+                        for (i = 0; i < score.length; i++) {
+                            for (j = 0; j < score[i].length; j++) {
+                                if (score[i][j] > 0) {
+                                    score[i][j] /= maxScore;
+                                }
                             }
                         }
                     }
