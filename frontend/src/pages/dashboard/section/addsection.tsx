@@ -240,20 +240,22 @@ const AddSectionPage: React.FC = () => {
             {
               if(eleTT[i][j]!=="0")
               {
+                console.log(eleTT[i][j])
                 block[i][j]=eleTT[i][j]
               }
             }
           }
+          console.log("block",block)
         }
         else{
           return statusCodes.BAD_REQUEST
         }
       })}
-      console.log(block)
+      
     const promise =axios.post(
     BACKEND_URL+"/suggestTimetable",
     {
-      blocks:block,
+      blocks:convertTableToString(block),
       courses:courses,
       teachers:teachers,
       rooms:rooms,
