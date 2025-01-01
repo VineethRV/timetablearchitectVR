@@ -30,6 +30,7 @@ import ForgetOTP from "./pages/ForgetPassword";
 import VerifyComponent from "./pages/VerifyEmail";
 import EditCoursepage from "./pages/dashboard/courses/corecourse/editcorecourse";
 import { ChatBot } from "./components/ChatBot/ChatBot";
+import { CoreCoursesTemplate, RoomTemplate, TeacherTemplate } from "./components/Templates/Page";
 
 function App() {
   return (
@@ -42,6 +43,10 @@ function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/verify-email" element={<VerifyComponent />}/>
         <Route path="/forget-password" element={<ForgetOTP />} />
+        <Route path="/templates/teacher" element={<TeacherTemplate />} />
+        <Route path="/templates/rooms" element={<RoomTemplate />} />
+        <Route path="/templates/core-courses" element={<CoreCoursesTemplate />} />
+
         <Route path="/dashboard" element={<Dashboard />}>
           <Route index element={<AdminPanel />} />
           <Route path="/dashboard/teachers" element={<Teacher />}>
