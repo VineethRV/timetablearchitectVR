@@ -4,7 +4,10 @@ import { FiBarChart2 } from "react-icons/fi";
 import CapacityCard from "../../components/AdminPanelComp/CapacityCard";
 import RequestAccessWrapper from "../../components/AdminPanelComp/RequestAccessWrap";
 import { GridDisplay } from "../../components/TopComponents/GridDisplay";
+import { useEffect, useState } from "react";
 const { Header, Content } = Layout;
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
 
 const stats = [
   { title: "Sections formed", number: 54 },
@@ -12,68 +15,46 @@ const stats = [
   { title: "Allotted labs", number: 84 },
 ];
 
-const sampleTeachers = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    department: "Computer Science"
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    department: "Mathematics"
-  },
-  {
-    id: 3,
-    name: "Robert Johnson",
-    email: "robert.j@example.com",
-    department: "Physics"
-  },
-  {
-    id: 4,
-    name: "Robert Johnson",
-    email: "robert.j@example.com",
-    department: "Physics"
-  },
-  {
-    id: 5,
-    name: "Robert Johnson",
-    email: "robert.j@example.com",
-    department: "Physics"
-  },
-  {
-    id: 6,
-    name: "Robert Johnson",
-    email: "robert.j@example.com",
-    department: "Physics"
-  }
-];
-
-const sampleRooms = [
-  {
-    id: 1,
-    name: "Room 101",
-    department: "Computer Science",
-    lab: true
-  },
-  {
-    id: 2,
-    name: "Room 202",
-    department: "Physics",
-    lab: false
-  },
-  {
-    id: 3,
-    name: "Room 303",
-    department: "Mathematics",
-    lab: true
-  }
-];
 
 const AdminPanel = () => {
-  // loading component must be added
+  const [topTeachers, setTopTeachers] = useState([]);
+  const [topRooms,setTopRooms] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const { data:teachersData } = await axios.get(BACKEND_URL + "/teacherPercentage", {
+        headers: { Authorization: localStorage.getItem("token") },
+      });
+      const formattedTeachersData = teachersData.rank
+        .filter((name: string, index: number) => name && teachersData.department[index])
+        .map((name: string, index: number) => ({
+          id: index + 1,
+          name: name,
+          department: teachersData.department[index],
+          score: teachersData.score[index]
+      }));
+
+      setTopTeachers(formattedTeachersData);
+
+      const {data : roomsData} = await axios.get(BACKEND_URL + "/roomPercentage", {
+        headers: { Authorization: localStorage.getItem("token") },
+      });
+      
+      const formattedRoomsData = roomsData.rank
+      .filter((name: string, index: number) => name && roomsData.department[index])
+      .map((name: string, index: number) => ({
+        id: index + 1,
+        name: name,
+        department: roomsData.department[index],
+        score: roomsData.score[index],
+        lab: false
+      }));
+
+      setTopRooms(formattedRoomsData)
+    }
+
+    fetchData();
+  }, []);
 
   return (
     <Layout className="bg-slate-50 overflow-scroll h-full w-full overflow-x-hidden">
@@ -108,7 +89,7 @@ const AdminPanel = () => {
         </Row>
         <CapacityCard />
         <RequestAccessWrapper />
-        <GridDisplay teachers={sampleTeachers} rooms={sampleRooms} />
+        <GridDisplay teachers={topTeachers} rooms={topRooms} />
       </Content>
     </Layout>
   );
