@@ -52,6 +52,8 @@ const CoursesSidebar = () => {
   const handleSemesterChange = (value: number) => {
     setSelectedSemester(value);
     localStorage.setItem("semester", value.toString()); // Update localStorage
+    // should be done using state variables 
+    window.location.reload(); // Refresh the page
   };
 
   return (
