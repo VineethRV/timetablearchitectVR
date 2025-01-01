@@ -273,7 +273,7 @@ const AddLabPage: React.FC = () => {
       const parsedScores = scoreResponse.timetable
         .split(";")
         .map((row: string) =>
-          row.split(",").map((score: string) => parseInt(score, 10))
+          row.split(",").map((score: string) => parseInt(score, 10) * 100)
         );
       setTimetableScore(parsedScores);
 
