@@ -96,7 +96,6 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                             switch (_g.label) {
                                 case 0:
                                     course = courses[i];
-                                    console.log("course: ", course);
                                     teacher = teachers[i];
                                     return [4 /*yield*/, (0, course_1.peekCourse)(token, course, semester)];
                                 case 1:
@@ -104,20 +103,16 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                     if (courseResponse.status !== statusCodes_1.statusCodes.OK || !courseResponse.course) {
                                         return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: null } }];
                                     }
-                                    console.log("\ncourse response: ", courseResponse);
                                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, teacher)];
                                 case 2:
                                     teacherResponse = _g.sent();
                                     if (teacherResponse.status !== statusCodes_1.statusCodes.OK || !teacherResponse.teacher) {
                                         return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: null } }];
                                     }
-                                    console.log("\nteacher response: ", teacherResponse);
                                     bestScore = (0, common_1.scoreTeachers)(teacherResponse.teacher.timetable, teacherResponse.teacher.labtable);
-                                    console.log("\nbestScore: ", bestScore);
                                     currRoomInfo = null;
                                     //create a preffered room if not given.
                                     if (!preferredRooms) {
-                                        console.log("\npreffered room not given");
                                         maxNonNegativeEntries = -1;
                                         for (_i = 0, roomsInfo_1 = roomsInfo; _i < roomsInfo_1.length; _i++) {
                                             roomInfo = roomsInfo_1[_i];
@@ -137,12 +132,10 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                 }
                                             }
                                         }
-                                        console.log("\npreffered room selecgted: ", preferredRooms);
                                     }
                                     // Retrieve room details
                                     //following if statement checks if there is a specified room  (if yes, code is allowed inside)
                                     if (roomsInfo && rooms[i] != '0') {
-                                        console.log("\nspecific room: ", rooms[i]);
                                         currRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === rooms[i]; });
                                         //if specified room not found
                                         if (!currRoomInfo) {
@@ -197,10 +190,8 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                     }
                                     //if not specified room
                                     else {
-                                        console.log("\nno specific room");
                                         bestScoreCopy = bestScore;
                                         preferredRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === preferredRooms; });
-                                        console.log("\nroom used: ", preferredRoomInfo === null || preferredRoomInfo === void 0 ? void 0 : preferredRoomInfo.name);
                                         if (!preferredRoomInfo) {
                                             return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: null } }];
                                         }
@@ -212,7 +203,6 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                 }
                                             }
                                         }
-                                        console.log("\nbestScore: ", bestScore);
                                         ///make sure bestScore and bestScore copy dont allocate when other course are alloted
                                         for (i_6 = 0; i_6 < timetable.length; i_6++) {
                                             for (j = 0; j < timetable[i_6].length; j++) {
@@ -228,7 +218,6 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                 availableSlots++;
                                             }
                                         }
-                                        console.log("\navailable slots:", availableSlots);
                                         if ((_c = courseResponse.course) === null || _c === void 0 ? void 0 : _c.credits) {
                                             //of available slots are leseer than credits, then iterate through all rooms in an attempt to find all possible intersections
                                             if (availableSlots < ((_d = courseResponse.course) === null || _d === void 0 ? void 0 : _d.credits)) {
@@ -334,13 +323,13 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
         });
     });
 }
-function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, electives, labs, semester, defaultRooms, timetable) {
+function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, electives, labs, semester, defaultRooms, timetable, roomTimetable) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, status_1, user, Section, duplicates, department, newCourse, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, tRoom, roomResponse, tRoomTT, e_1;
+        var _a, status_1, user, Section, duplicates, department, newCourse, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, e_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 17, , 18]);
+                    _b.trys.push([0, 22, , 23]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _b.sent(), status_1 = _a.status, user = _a.user;
@@ -348,8 +337,8 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                             }];
-                    if (!(status_1 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 16];
-                    if (!(user && user.role != "viewer")) return [3 /*break*/, 15];
+                    if (!(status_1 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 21];
+                    if (!(user && user.role != "viewer")) return [3 /*break*/, 20];
                     Section = {
                         name: name,
                         batch: batch,
@@ -377,6 +366,7 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                             }];
                     }
+                    console.log(4);
                     department = user.department;
                     return [4 /*yield*/, prisma.section.create({
                             data: Section,
@@ -387,19 +377,20 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                     i = 0;
                     _b.label = 4;
                 case 4:
-                    if (!(i < tt.length)) return [3 /*break*/, 14];
+                    if (!(i < tt.length)) return [3 /*break*/, 12];
                     j = 0;
                     _b.label = 5;
                 case 5:
-                    if (!(j < tt[i].length)) return [3 /*break*/, 13];
-                    if (!(tt[i][j] !== "0")) return [3 /*break*/, 12];
+                    if (!(j < tt[i].length)) return [3 /*break*/, 11];
+                    if (!(tt[i][j] !== "0")) return [3 /*break*/, 10];
                     tCourse = tt[i][j];
                     k = 0;
                     _b.label = 6;
                 case 6:
-                    if (!(k < courses.length)) return [3 /*break*/, 12];
-                    if (!(tCourse == courses[k])) return [3 /*break*/, 11];
+                    if (!(k < courses.length)) return [3 /*break*/, 10];
+                    if (!(tCourse == courses[k])) return [3 /*break*/, 9];
                     tTeacher = teachers[k];
+                    console.log(1);
                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(JWTtoken, tTeacher, department)];
                 case 7:
                     teacherResponse = _b.sent();
@@ -409,54 +400,88 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                     tTeacherTT = (0, common_1.convertStringToTable)(teacherResponse.teacher.timetable);
                     tTeacherTT[i][j] = tCourse;
                     teacherResponse.teacher.timetable = (0, common_1.convertTableToString)(tTeacherTT);
-                    console.log("teacherresponse", teacherResponse);
                     return [4 /*yield*/, (0, teacher_1.updateTeachers)(JWTtoken, tTeacher, department, teacherResponse.teacher)];
                 case 8:
                     updateteacher = _b.sent();
                     if (updateteacher.status !== statusCodes_1.statusCodes.OK || !updateteacher.teacher) {
                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
                     }
-                    if (!(rooms[k] != "0")) return [3 /*break*/, 10];
-                    tRoom = rooms[k];
-                    return [4 /*yield*/, (0, room_1.peekRoom)(JWTtoken, tRoom)];
+                    console.log(2);
+                    return [3 /*break*/, 10];
                 case 9:
-                    roomResponse = _b.sent();
-                    if (roomResponse.status !== statusCodes_1.statusCodes.OK || !roomResponse.room) {
-                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
-                    }
-                    tRoomTT = (0, common_1.convertStringToTable)(roomResponse.room.timetable);
-                    tRoomTT[i][j] = tCourse;
-                    _b.label = 10;
-                case 10: return [3 /*break*/, 12];
-                case 11:
                     k++;
                     return [3 /*break*/, 6];
-                case 12:
+                case 10:
                     j++;
                     return [3 /*break*/, 5];
-                case 13:
+                case 11:
                     i++;
                     return [3 /*break*/, 4];
-                case 14: return [2 /*return*/, {
+                case 12:
+                    roomTT = (0, common_1.convertStringToTable)(roomTimetable);
+                    console.log(roomTT);
+                    i = 0;
+                    _b.label = 13;
+                case 13:
+                    if (!(i < roomTT.length)) return [3 /*break*/, 19];
+                    j = 0;
+                    _b.label = 14;
+                case 14:
+                    if (!(j < roomTT[i].length)) return [3 /*break*/, 18];
+                    if (!(roomTT[i][j] !== "0")) return [3 /*break*/, 17];
+                    return [4 /*yield*/, prisma.room.findFirst({
+                            where: {
+                                orgId: user.orgId,
+                                department: user.role = department,
+                                name: roomTT[i][j],
+                            },
+                        })];
+                case 15:
+                    existingRoom = _b.sent();
+                    if (!existingRoom) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.NOT_FOUND,
+                            }];
+                    }
+                    TT = (0, common_1.convertStringToTable)(existingRoom.timetable);
+                    TT[i][j] = tt[i][j];
+                    return [4 /*yield*/, prisma.room.update({
+                            where: {
+                                id: existingRoom.id,
+                            },
+                            data: {
+                                timetable: (0, common_1.convertTableToString)(TT),
+                            },
+                        })];
+                case 16:
+                    _b.sent();
+                    _b.label = 17;
+                case 17:
+                    j++;
+                    return [3 /*break*/, 14];
+                case 18:
+                    i++;
+                    return [3 /*break*/, 13];
+                case 19: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.OK,
                     }];
-                case 15: 
+                case 20: 
                 // If role is viewer
                 return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN
                     }];
-                case 16: 
+                case 21: 
                 // If status is not OK
                 return [2 /*return*/, {
                         status: status_1,
                     }];
-                case 17:
+                case 22:
                     e_1 = _b.sent();
                     console.error(e_1);
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR
                         }];
-                case 18: return [2 /*return*/];
+                case 23: return [2 /*return*/];
             }
         });
     });

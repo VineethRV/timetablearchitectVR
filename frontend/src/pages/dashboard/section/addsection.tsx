@@ -54,6 +54,7 @@ const AddSectionPage: React.FC = () => {
   const [buttonStatus1, setButtonStatus1] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
+  const [roomTT,setRoomTT]=useState("0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0")
   
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -167,7 +168,6 @@ const AddSectionPage: React.FC = () => {
     const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
     const semester=Number(localStorage.getItem("semester"))
     const Prefrooms=form.getFieldValue("Room")
-    console.log(block,courses,teachers,rooms,semester)
     const promise =axios.post(
     BACKEND_URL+"/suggestTimetable",
     {
@@ -187,13 +187,14 @@ const AddSectionPage: React.FC = () => {
       loading: "Generating timetable...",
       success: (res) => {
         const statusCode = res.status;
-        console.log(res.data.returnVal.timetable)
         switch (statusCode) {
           case statusCodes.OK:
             SetshowTT(true)
             const convertedTimetable = res.data.returnVal.timetable.map((row: any[]) =>
               row.map(value => (value === "0" ? "Free" : value === "1" ? "Blocked" : value))
             );
+
+            setRoomTT(convertTableToString(res.data.returnVal.roomtable))
             setButtonStatus1(convertedTimetable);
             return "Generated timetable!!"
           case statusCodes.UNAUTHORIZED:
@@ -238,7 +239,8 @@ const AddSectionPage: React.FC = () => {
           rooms:rooms,
           defaultRooms:defaultRooms,
           semester:semester,
-          timetable:timetable
+          timetable:timetable,
+          roomTimetable: roomTT
         },
         {
           headers: {

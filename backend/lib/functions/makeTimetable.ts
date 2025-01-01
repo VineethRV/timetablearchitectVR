@@ -56,26 +56,21 @@ export async function suggestTimetable(
         // Iterate over the courses
         for (let i = 0; i < courses.length; i++) {
             const course = courses[i];
-            console.log("course: ",course)
             const teacher = teachers[i];
             // Retrieve course details
             const courseResponse = await peekCourse(token, course, semester);
             if (courseResponse.status !== statusCodes.OK || !courseResponse.course) {
                 return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal:null  };
             }
-            console.log("\ncourse response: ",courseResponse)
             // Retrieve teacher details
             const teacherResponse = await peekTeacher(token, teacher);
             if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
                 return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal:null  };
             }
-            console.log("\nteacher response: ",teacherResponse)
             let bestScore=scoreTeachers(teacherResponse.teacher.timetable,teacherResponse.teacher.labtable);
-            console.log("\nbestScore: ",bestScore)
             let currRoomInfo=null;
             //create a preffered room if not given.
             if(!preferredRooms){
-                console.log("\npreffered room not given")
                 let maxNonNegativeEntries = -1;
                 for (const roomInfo of roomsInfo) {
                     if(roomInfo){
@@ -94,12 +89,10 @@ export async function suggestTimetable(
                         }
                     }
                 }
-                console.log("\npreffered room selecgted: ",preferredRooms)
             }
             // Retrieve room details
             //following if statement checks if there is a specified room  (if yes, code is allowed inside)
             if(roomsInfo && rooms[i]!='0'){
-                console.log("\nspecific room: ",rooms[i])
                 currRoomInfo = roomsInfo.find(room => room?.name === rooms[i]);
                 //if specified room not found
                 if (!currRoomInfo) {
@@ -155,11 +148,9 @@ export async function suggestTimetable(
             }
             //if not specified room
             else{
-                console.log("\nno specific room")
                 //bestScore is used to keep intersections and scores of preffered room, while the copy is used to allocate alternate rooms, if bestScore is not full
                 let bestScoreCopy=bestScore;
                 const preferredRoomInfo = roomsInfo.find(room => room?.name === preferredRooms);
-                console.log("\nroom used: ",preferredRoomInfo?.name)
                 if (!preferredRoomInfo) {
                     return { status: statusCodes.BAD_REQUEST, returnVal: null };
                 }
@@ -172,7 +163,6 @@ export async function suggestTimetable(
                         }
                     }
                 }
-                console.log("\nbestScore: ",bestScore)
                 ///make sure bestScore and bestScore copy dont allocate when other course are alloted
                 for (let i = 0; i < timetable.length; i++) {
                     for (let j = 0; j < timetable[i].length; j++) {
@@ -189,7 +179,6 @@ export async function suggestTimetable(
                         availableSlots++;
                     }
                 }
-                console.log("\navailable slots:",availableSlots)
                 if (courseResponse.course?.credits) {
                     //of available slots are leseer than credits, then iterate through all rooms in an attempt to find all possible intersections
                     if (availableSlots < courseResponse.course?.credits) {
@@ -289,7 +278,8 @@ export async function saveTimetable(
     labs: string|null,
     semester: number,
     defaultRooms: string|null,
-    timetable:string
+    timetable:string,
+    roomTimetable:string
 ): Promise<{status:number}> {
  try {
     const { status, user } = await auth.getPosition(JWTtoken);
@@ -346,20 +336,9 @@ export async function saveTimetable(
                         const tTeacherTT=convertStringToTable(teacherResponse.teacher.timetable)
                         tTeacherTT[i][j]=tCourse;
                         teacherResponse.teacher.timetable=convertTableToString(tTeacherTT)
-                        console.log("teacherresponse",teacherResponse)
                         const updateteacher=await updateTeachers(JWTtoken,tTeacher,department,teacherResponse.teacher)
                         if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
                             return { status: statusCodes.INTERNAL_SERVER_ERROR  };
-                        }
-                        if(rooms[k]!="0")
-                        {
-                            const tRoom=rooms[k];
-                        const roomResponse = await peekRoom(JWTtoken, tRoom);
-                        if (roomResponse.status !== statusCodes.OK || !roomResponse.room) {
-                            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
-                        }
-                        const tRoomTT=convertStringToTable(roomResponse.room.timetable)
-                        tRoomTT[i][j]=tCourse;
                         }
                         break;
                     }
@@ -367,6 +346,41 @@ export async function saveTimetable(
               }
             }
           }
+          const roomTT=convertStringToTable(roomTimetable)
+          console.log(roomTT)
+          for(let i=0;i<roomTT.length;i++)
+          {
+            for(let j=0;j<roomTT[i].length;j++)
+            {
+                if(roomTT[i][j]!=="0")
+                {
+                     const existingRoom = await prisma.room.findFirst({
+                              where: {
+                                orgId: user.orgId,
+                                department:
+                                  user.role = department,
+                                name: roomTT[i][j],
+                              },
+                            });
+                    
+                            if (!existingRoom) {
+                              return {
+                                status: statusCodes.NOT_FOUND,
+                              };
+                            }
+                            const TT=convertStringToTable(existingRoom.timetable)
+                            TT[i][j]=tt[i][j]
+                            await prisma.room.update({
+                              where: {
+                                id: existingRoom.id,
+                              },
+                              data: {
+                                timetable: convertTableToString(TT),
+                              },
+                            });
+                    }
+                }
+            }
         return {
           status: statusCodes.OK,
         };

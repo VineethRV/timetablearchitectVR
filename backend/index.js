@@ -772,14 +772,14 @@ app.post("/api/recommendLab", async (req, res) => {
 
 app.post("/api/saveTimetable",async (req,res)=>{
   const token = req.headers.authorization?.split(" ")[1];
-  const { name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable } = req.body;
-  if(!name||!batch||!courses||!teachers||!rooms||!semester||!timetable)
+  const { name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable } = req.body;
+  if(!name||!batch||!courses||!teachers||!rooms||!semester||!timetable||!roomTimetable)
     return res.status(200).json({
       status: 400,
       message: "Token, name,batch,courses, teachers, rooms, semester and timetable  are required",
     });
     try {
-      const result = await saveTimetable(token,name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable);
+      const result = await saveTimetable(token,name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable);
       res.status(200).json({ status: result.status});
     } catch (error) {
       res.status(200).json({ status: 500, message: "Server error" });
