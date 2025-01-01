@@ -50,8 +50,13 @@ function RoomPage() {
         const validRooms = parsedData.filter((room: any) => room.name);
         const names = validRooms.map((room: any) => room.name);
         const labs = validRooms.map((room: any) =>
-          room.lab == "TRUE" ? true : false
+          room.lab == "1" ? true : false
         );
+
+        const finalRooms = validRooms.map((room: any) => ({
+          ...room,
+          lab: room.lab == "1" ? true : false,
+        }));
 
         try {
           const response = await axios.post(
@@ -66,7 +71,7 @@ function RoomPage() {
           );
           if (response.data.status === statusCodes.CREATED) {
             toast.success("Rooms imported successfully!");
-            setRoomsData((prev) => [...prev, ...validRooms]); // Update the table
+            setRoomsData((prev) => [...prev, ...finalRooms]); // Update the table
           } else {
             toast.error("Error importing rooms!");
           }
