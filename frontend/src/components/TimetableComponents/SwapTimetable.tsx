@@ -65,7 +65,7 @@ const SwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus
     buttons: timeslots.map((_, colIndex) => (
       <Button
         key={colIndex}
-        className={`w-28 h-10 m-1 text-xs font-semibold rounded-md overflow-hidden ${
+        className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
           selectedSlot?.rowIndex === rowIndex &&
           selectedSlot?.colIndex === colIndex
             ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
