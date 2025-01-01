@@ -45,10 +45,10 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                         if (period!='0') score++;
                     });
                 });
-                if((36-score)>rankScore[9]){
+                if((36 - score)/36>rankScore[9]){
                     for(let i=0;i<10;i++){
-                        if((36-score)>rankScore[i]){
-                            rankScore.splice(i, 0, 36 - score);
+                        if((36 - score)/36>rankScore[i]){
+                            rankScore.splice(i, 0, (36 - score)/36);
                             rank.splice(i, 0, teacher.name);
                             department.splice(i, 0, teacher.department?teacher.department:"");
                             rankScore.pop();
@@ -105,7 +105,7 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 if((36-score)>rankScore[9]){
                     for(let i=0;i<10;i++){
                         if((36-score)>rankScore[i]){
-                            rankScore.splice(i, 0, 36 - score);
+                            rankScore.splice(i, 0, (36 - score)/36);
                             rank.splice(i, 0, teacher.name);
                             rankScore.pop();
                             rank.pop();
@@ -168,10 +168,10 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                         if (period != '0') score++;
                     });
                 });
-                if ((36 - score) > rankScore[9]) {
+                if (((36 - score)/36) > rankScore[9]) {
                     for (let i = 0; i < 10; i++) {
-                        if ((36 - score) > rankScore[i]) {
-                            rankScore.splice(i, 0, 36 - score);
+                        if (((36 - score)/36) > rankScore[i]) {
+                            rankScore.splice(i, 0, (36 - score)/36);
                             rank.splice(i, 0, room.name);
                             department.splice(i, 0, room.department ? room.department : "");
                             rankScore.pop();
@@ -217,10 +217,10 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                         if (period != '0') score++;
                     });
                 });
-                if ((36 - score) > rankScore[9]) {
+                if (((36 - score)/36) > rankScore[9]) {
                     for (let i = 0; i < 10; i++) {
-                        if ((36 - score) > rankScore[i]) {
-                            rankScore.splice(i, 0, 36 - score);
+                        if (((36 - score)/36) > rankScore[i]) {
+                            rankScore.splice(i, 0, (36 - score)/36);
                             rank.splice(i, 0, room.name);
                             rankScore.pop();
                             rank.pop();
@@ -283,10 +283,10 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                         if (period != '0') score++;
                     });
                 });
-                if ((36 - score) > rankScore[9]) {
+                if (((36 - score)/36) > rankScore[9]) {
                     for (let i = 0; i < 10; i++) {
-                        if ((36 - score) > rankScore[i]) {
-                            rankScore.splice(i, 0, 36 - score);
+                        if (((36 - score)/36) > rankScore[i]) {
+                            rankScore.splice(i, 0, (36 - score)/36);
                             rank.splice(i, 0, lab.name);
                             department.splice(i, 0, lab.department ? lab.department : "");
                             rankScore.pop();
@@ -332,10 +332,10 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                         if (period != '0') score++;
                     });
                 });
-                if ((36 - score) > rankScore[9]) {
+                if (((36 - score)/36) > rankScore[9]) {
                     for (let i = 0; i < 10; i++) {
-                        if ((36 - score) > rankScore[i]) {
-                            rankScore.splice(i, 0, 36 - score);
+                        if (((36 - score)/36) > rankScore[i]) {
+                            rankScore.splice(i, 0, (36 - score)/36);
                             rank.splice(i, 0, lab.name);
                             rankScore.pop();
                             rank.pop();
