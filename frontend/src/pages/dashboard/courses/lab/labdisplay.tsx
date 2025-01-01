@@ -9,10 +9,11 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Lab } from "../../../../types/main";
 import LabTable from "../../../../components/CoursePage/Labtable";
+
 function page() {
   const [labsData, setLabsData] = useState<Lab[]>([]);
   const [loading, setLoading] = useState(true);
-  const semester=5;
+
   const department="Computer Science Engineering"
   useEffect(() => {
     axios
@@ -21,7 +22,7 @@ function page() {
           authorization: localStorage.getItem("token"),
         },
         params: {
-          semester,
+          semester: Number(localStorage.getItem("semester")),
           department,
         },
       })
