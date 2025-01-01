@@ -7,39 +7,39 @@ import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import Loading from "../../../../components/Loading/Loading";
 
+export const fetchdept = async (): Promise<string> => {
+  try {
+    const response = await axios.post(
+      BACKEND_URL + "/getPosition",
+      {},
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
+    );
+
+    const status = response.status;
+    if (status === 200) {
+      return response.data.message.department; 
+    }
+    return ""; 
+  } catch (error) {
+    console.log(error);
+    return ""; 
+  }
+};
+
 function page() {
 
   const [coreData, setCoreData] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchdept = async (): Promise<string> => {
-    try {
-      const response = await axios.post(
-        BACKEND_URL + "/getPosition",
-        {},
-        {
-          headers: {
-            authorization: localStorage.getItem("token"),
-          },
-        }
-      );
-  
-      const status = response.status;
-      if (status === 200) {
-        return response.data.message.department; 
-      }
-      return ""; 
-    } catch (error) {
-      console.log(error);
-      return ""; 
-    }
-  };
   
 
 
   useEffect(() => {
     const department =fetchdept();
-    const semester=5;
+    const semester=localStorage.getItem("semester");
     axios
       .get(BACKEND_URL + "/courses", {
         headers: {

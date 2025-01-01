@@ -102,6 +102,7 @@ model Organisation {
   courses             Course[]
   teachers            Teacher[]
   rooms               Room[]
+  sections            Section[]
   users               User[]          @relation("OrganisationUsers")
   access_request_list AccessRequest[]
   invite_code         String?
@@ -117,4 +118,20 @@ model AccessRequest {
   organisation Organisation @relation(fields: [orgId], references: [id])
   orgId        Int
   level        String
+}
+
+model Section{
+  id     Int          @id @default(autoincrement())
+  name   String
+  batch  Int
+  courses String[]
+  teachers String[]
+  rooms String[]
+  elective String?
+  lab String?
+  defaultRoom String?
+  semester Int?
+  organisation Organisation @relation(fields: [orgId], references: [id])
+  orgId  Int
+  timeTable String
 }

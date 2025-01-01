@@ -15,7 +15,8 @@ const { orgRouter } = require("./routes/org.js");
 const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
-const { suggestTimetable } = require("./lib/functions/makeTimetable");
+const { chatRouter } = require('./routes/chatbot.js')
+const { suggestTimetable, saveTimetable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -28,6 +29,7 @@ app.use("/api/user", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/org", orgRouter);
 app.use("/api/leader",leaderRouter);
+app.use('/api/chatbot',chatRouter)
 
 //check authentication of user
 app.post("/api/checkAuthentication", async (req, res) => {
@@ -767,6 +769,23 @@ app.post("/api/recommendLab", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+
+app.post("/api/saveTimetable",async (req,res)=>{
+  const token = req.headers.authorization?.split(" ")[1];
+  const { name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable } = req.body;
+  if(!name||!batch||!courses||!teachers||!rooms||!semester||!timetable)
+    return res.status(200).json({
+      status: 400,
+      message: "Token, name,batch,courses, teachers, rooms, semester and timetable  are required",
+    });
+    try {
+      const result = await saveTimetable(token,name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable);
+      res.status(200).json({ status: result.status});
+    } catch (error) {
+      res.status(200).json({ status: 500, message: "Server error" });
+    }
+})
+
 app.post("/api/suggestTimetable", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { blocks, courses, teachers, rooms, semester, preferredRooms } = req.body;
@@ -784,6 +803,7 @@ app.post("/api/suggestTimetable", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+
 // Get teacher percentage
 app.get("/api/teacherPercentage", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];

@@ -1,9 +1,12 @@
 import { peekCourse } from "../actions/course";
+import { PrismaClient } from "@prisma/client";
+import * as auth from "../actions/auth";
 import { getRooms, peekRoom } from "../actions/room";
 import { peekTeacher } from "../actions/teacher";
 import { statusCodes } from "../types/statusCodes";
 import { convertStringToTable, convertTableToString, scoreRooms, scoreTeachers } from "./common";
-
+import { Section } from "../types/main";
+const prisma = new PrismaClient();
 
 // add one more dimemtion of rooms in return val toadd handling of subjects if the room is not specified explicitly
 //test all functions, add handling of rooms to admins,
@@ -275,6 +278,77 @@ export async function suggestTimetable(
     }
 }
 
+export async function saveTimetable(
+    JWTtoken: string,
+    name: string,
+    batch: number,
+    courses: string[],
+    teachers: string[],
+    rooms: string[],
+    electives: string|null,
+    labs: string|null,
+    semester: number,
+    defaultRooms: string|null,
+    timetable:string
+): Promise<{status:number}> {
+ try {
+    const { status, user } = await auth.getPosition(JWTtoken);
+    if (user?.orgId == null)
+      return {
+        status: statusCodes.BAD_REQUEST,
+      };
+    if (status == statusCodes.OK) {
+      if (user && user.role != "viewer") {
+        const Section: Section = {
+          name: name,
+          batch: batch,
+          orgId: user.orgId,
+          courses: courses,
+          teachers:teachers,
+          rooms:rooms,
+          electives:electives,
+          labs:labs,
+          defaultRoom: defaultRooms,
+          semester: semester,
+          timeTable: timetable
+        };
+
+        const duplicates = await prisma.section.findFirst({
+          where: {
+            orgId: Section.orgId,
+            name: name,
+            batch:batch
+          },
+        });
+        if (duplicates) {
+          return {
+            status: statusCodes.BAD_REQUEST,
+          };
+        }
+        // If check is successful
+        const newCourse = await prisma.section.create({
+          data: Section,
+        });
+        return {
+          status: statusCodes.OK,
+        };
+      }
+      // If role is viewer
+      return {
+        status: statusCodes.FORBIDDEN
+      };
+    }
+    // If status is not OK
+    return {
+      status: status,
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR
+    };
+  }
+}
 // export async function suggestLab(
 
 // ){

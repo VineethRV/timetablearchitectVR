@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   Form,
@@ -24,7 +24,7 @@ import { buttonConvert } from "../teacher/addteacher";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import Timetable from "../../../components/timetable";
-import { convertToTimetable } from "../courses/lab/addlab";
+import { fetchdept } from "../courses/corecourse/corecoursedisplay";
 
 const formItemLayout = {
   labelCol: {
@@ -45,7 +45,9 @@ const AddSectionPage: React.FC = () => {
   const [tableData,setTableData]=useState<courseList[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [courseOptions, setCourseOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
@@ -61,6 +63,7 @@ const AddSectionPage: React.FC = () => {
     setIsModalOpen(false);
     form.setFieldValue("course","")
     form.setFieldValue("teachers","");
+    form.setFieldValue("rooms","");
   };
 
   function clearFields() {
@@ -72,9 +75,10 @@ const AddSectionPage: React.FC = () => {
   const handleModalSubmit=()=>{
     const course=form.getFieldValue("course")
     const teacher=form.getFieldValue("teachers")
+    const room=form.getFieldValue("rooms")?form.getFieldValue("rooms"):"--"
     const key=form.getFieldValue("key")
     if (!course || !teacher) {
-      console.error("Course or teacher is missing");
+      console.error("Fill Course and corresponding Teacher!");
       return;
     }
     if(key==null)
@@ -83,12 +87,13 @@ const AddSectionPage: React.FC = () => {
       key: `${Date.now()}`, 
       course,
       teacher,
+      room,
     };
     setTableData((prevData) => [...prevData, newEntry]);
   }
   else{
     const updatedData = tableData.map((item) =>
-      item.key === key ? { ...item, course, teacher } : item
+      item.key === key ? { ...item, course, teacher,room } : item
     );
 
     setTableData(updatedData);
@@ -99,7 +104,8 @@ const AddSectionPage: React.FC = () => {
   useEffect(()=>{
     fetchTeachers();
     fetchRooms();
-  })
+    fetchCourse();
+  },[])
 
   const fetchTeachers = async () => {
     try {
@@ -122,11 +128,35 @@ const AddSectionPage: React.FC = () => {
           authorization: localStorage.getItem("token"),
         },
       });
-      setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+      setRoomOptions(response.data.message.map((item: any) => item.name));
     } catch (error) {
       console.error("Failed to fetch rooms:", error);
       message.error("Error fetching room data.");
     }
+  };
+
+  const fetchCourse = async () => {
+    const department =fetchdept();
+    const semester=localStorage.getItem("semester");
+    axios
+      .get(BACKEND_URL + "/courses", {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+        params: {
+          semester,
+          department,
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+        console.log(res.data.message)
+        if (status == statusCodes.OK) {
+          setCourseOptions(res.data.message.map((item: any) => item.name));
+        } else {
+          message.error("Failed to fetch courses !!");
+        }
+      });
   };
 
   function getRecommendation()
@@ -134,17 +164,19 @@ const AddSectionPage: React.FC = () => {
     const block=convertTableToString(buttonConvert(buttonStatus));
     const courses=tableData.map((item)=>item.course)
     const teachers=tableData.map((item)=>item.teacher)
+    const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
     const semester=Number(localStorage.getItem("semester"))
-    const rooms=form.getFieldValue("Room")
-    console.log(block,courses,teachers,[rooms],semester)
+    const Prefrooms=form.getFieldValue("Room")
+    console.log(block,courses,teachers,rooms,semester)
     const promise =axios.post(
     BACKEND_URL+"/suggestTimetable",
     {
       blocks:block,
       courses:courses,
       teachers:teachers,
-      rooms:[rooms],
-      semester:semester
+      rooms:rooms,
+      semester:semester,
+      preferredRooms:Prefrooms
     },
     {
       headers: {
@@ -159,7 +191,10 @@ const AddSectionPage: React.FC = () => {
         switch (statusCode) {
           case statusCodes.OK:
             SetshowTT(true)
-            setButtonStatus1(res.data.returnVal.timetable)
+            const convertedTimetable = res.data.returnVal.timetable.map((row: any[]) =>
+              row.map(value => (value === "0" ? "Free" : value === "1" ? "Blocked" : value))
+            );
+            setButtonStatus1(convertedTimetable);
             return "Generated timetable!!"
           case statusCodes.UNAUTHORIZED:
             return "You are not authorized!";
@@ -171,7 +206,7 @@ const AddSectionPage: React.FC = () => {
       },
       error: (error) => {
         console.error("Error:", error.response?.data || error.message);
-        return "Failed to create teacher. Please try again!";
+        return "Failed to generate timetable. Please try again!";
       },
     });
   }
@@ -180,8 +215,102 @@ const AddSectionPage: React.FC = () => {
     handleOpenModal()
     form.setFieldValue("course",record.course)
     form.setFieldValue("teachers",record.teacher)
+    form.setFieldValue("rooms",record.room)
     form.setFieldValue("key",record.key)
   };
+
+  const handleSubmit=()=>{
+      const name=form.getFieldValue("className");
+      const batch=form.getFieldValue("classBatch");
+      const courses=tableData.map((item)=>item.course)
+      const teachers=tableData.map((item)=>item.teacher)
+      const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
+      const semester=Number(localStorage.getItem("semester"))
+      const defaultRooms=form.getFieldValue("Room")
+      const timetable= convertTableToString(buttonStatus1)
+      const promise= axios.post(
+        BACKEND_URL+"/saveTimetable",
+        { 
+          name:name,
+          batch:batch,
+          courses:courses,
+          teachers:teachers,
+          rooms:rooms,
+          defaultRooms:defaultRooms,
+          semester:semester,
+          timetable:timetable
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          }
+        }
+      );
+      toast.promise(promise, {
+        loading: "Saving timetable...",
+        success: (res) => {
+          const statusCode = res.status;
+          switch (statusCode) {
+            case statusCodes.OK:
+              form.resetFields();
+              SetshowTT(false)
+              return "Saved timetable!!"
+            case statusCodes.UNAUTHORIZED:
+              return "You are not authorized!";
+            case statusCodes.INTERNAL_SERVER_ERROR:
+              return "Internal server error";
+            default:
+              return "Failed to save timetable";
+          }
+        },
+        error: (error) => {
+          console.error("Error:", error.response?.data || error.message);
+          return "Failed to save timetable. Please try again!";
+        },
+      });
+  }
+
+
+  const handleSaveTimetable = () => {
+    {showTT?<></>:getRecommendation();}
+    Modal.confirm({
+      title: "Are you sure?",
+      content: "Do you want to save the generated timetable?",
+      onOk: () => {
+        handleSubmit();
+        message.success("Timetable saved successfully!");
+      },
+      onCancel: () => {
+        message.info("Action cancelled. The timetable was not saved.");
+      },
+      footer: (
+        <div className="flex justify-between">
+         <Button
+          onClick={() => {
+            handleViewTimetable();
+            Modal.destroyAll(); }}>
+          View TimeTable
+        </Button>
+          <div className="space-x-2">
+            <Button onClick={() => Modal.destroyAll()}>Cancel</Button>
+            <Button type="primary" onClick={() => {
+              handleSubmit();
+              message.success("Timetable saved successfully!");
+            }}>
+              Save
+            </Button>
+          </div>
+        </div>
+      ),
+    });
+  };
+
+  const handleViewTimetable = () => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
@@ -213,7 +342,7 @@ const AddSectionPage: React.FC = () => {
         }}
         className="flex justify-left items-center mt-12 ml-4"
       >
-        <Form {...formItemLayout} form={form} layout="vertical" requiredMark className="w-96">
+        <Form {...formItemLayout} onValuesChange={()=>SetshowTT(false)} form={form} layout="vertical" requiredMark className="w-96">
           <Form.Item name="className" label="Class Name" required>
             <Input placeholder="Name" className="font-inter font-normal" />
           </Form.Item>
@@ -251,14 +380,23 @@ const AddSectionPage: React.FC = () => {
                   >
                     <div>
                       <Form.Item name="key" initialValue={null} className="hidden"></Form.Item>
-                      <Form.Item label="Course"name="course" rules={[{ required: true, message: "Please select a Course!" }]} >
-                      <Input placeholder="Course" />
+                      <Form.Item required label="Course"name="course" rules={[{ required: true, message: "Please select a Course!" }]} >
+                      <Select options={courseOptions.map((course) => ({
+                              label: course,
+                              value: course,
+                            }))} placeholder="Course" />
                       </Form.Item>
-                      <Form.Item label="Teacher" name="teachers" rules={[{ required: true, message: "Please select a teacher!" }]}>
+                      <Form.Item required label="Teacher" name="teachers" rules={[{ required: true, message: "Please select a teacher!" }]}>
                       <Select options={teacherOptions.map((teacher) => ({
                               label: teacher,
                               value: teacher,
                             }))} placeholder="teacher" />
+                      </Form.Item>
+                      <Form.Item label="Any particular room to be used?" name="rooms">
+                      <Select options={roomOptions.map((room) => ({
+                        value: room,
+                        label: room,
+                            }))} placeholder="default room" />
                       </Form.Item>
                     </div>
                   </Form.Item>
@@ -279,19 +417,14 @@ const AddSectionPage: React.FC = () => {
             <Select placeholder="Labs" className="font-normal w-96" />
           </Form.Item>
           <Form.Item
-            label="Select default Room" name="Room"
+            label="Select the default Room for the section" name="Room"
           >
             <Select placeholder="Room" options={roomOptions.map((item)=>({
             label:item,
             value:item}))} className="font-normal w-96" />
           </Form.Item>
-          <Form.Item
-            label="Department from which room will be selected if default room is not available"
-          >
-            <Select placeholder="Department" className="font-normal w-96" />
-          </Form.Item>
           <label className="flex items-center">
-            <span>Block</span>
+            <span>Block the timeslots where you do not want the courses to be allocated</span>
             <Tooltip title="Click on the timeslots where to the teacher is busy to set them to busy">
               <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
             </Tooltip>
@@ -316,21 +449,26 @@ const AddSectionPage: React.FC = () => {
               </Button>
             <Form.Item>
               <Button
-                onClick={getRecommendation}
+                onClick={handleSaveTimetable}
                 className="bg-[#636AE8FF] text-[#FFFFFF] w-[75px] h-[32px]"
               >
-                Submit
+                Save
               </Button>
             </Form.Item>
           </div>
+          <div ref={bottomRef}>
           {showTT ? (
+            <div>
+              <label>Generated Timetable</label>
             <Timetable
               buttonStatus={buttonStatus1}
               setButtonStatus={setButtonStatus1}
             ></Timetable>
+            </div>
           ) : (
             <></>
           )}
+          </div>
         </Form>
       </motion.div>
     </div>
