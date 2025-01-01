@@ -5,6 +5,7 @@ import { Table, Button } from "antd";
 interface TimetableProps {
   buttonStatus: string[][]; // Array of arrays with course names
   setButtonStatus: (status: string[][]) => void; // Function to update button status
+  timetableScore: number[][]; // Array of arrays with scores for each slot
 }
 
 const weekdays = [
@@ -25,36 +26,54 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const SwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) => {
+const SwapTimetable: React.FC<TimetableProps> = ({
+  buttonStatus,
+  setButtonStatus,
+  timetableScore,
+}) => {
   const [selectedSlot, setSelectedSlot] = useState<{
     rowIndex: number;
     colIndex: number;
   } | null>(null);
 
+  const [swapping, setSwapping] = useState<{
+    firstSlot: { rowIndex: number; colIndex: number } | null;
+    secondSlot: { rowIndex: number; colIndex: number } | null;
+  }>({ firstSlot: null, secondSlot: null });
+
   // Handle button click for swapping
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
+    if (timetableScore[rowIndex][colIndex] < 0) {
+      return; // Block slot if score is less than 0
+    }
+
     if (!selectedSlot) {
       // Select the first slot
       setSelectedSlot({ rowIndex, colIndex });
     } else {
       // Perform the swap
+      const firstSlot = selectedSlot;
+      const secondSlot = { rowIndex, colIndex };
+
+      setSwapping({ firstSlot, secondSlot });
+
       const updatedStatus = buttonStatus.map((row, rIdx) =>
         row.map((course, cIdx) => {
-          if (
-            rIdx === selectedSlot.rowIndex &&
-            cIdx === selectedSlot.colIndex
-          ) {
+          if (rIdx === firstSlot.rowIndex && cIdx === firstSlot.colIndex) {
             return buttonStatus[rowIndex][colIndex]; // Swap with the new selection
           }
           if (rIdx === rowIndex && cIdx === colIndex) {
-            return buttonStatus[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
+            return buttonStatus[firstSlot.rowIndex][firstSlot.colIndex]; // Swap with the previously selected
           }
           return course;
         })
       );
 
-      setButtonStatus(updatedStatus);
-      setSelectedSlot(null); // Reset the selected slot
+      setTimeout(() => {
+        setButtonStatus(updatedStatus);
+        setSelectedSlot(null); // Reset the selected slot
+        setSwapping({ firstSlot: null, secondSlot: null });
+      }, 400); // Animation duration
     }
   };
 
@@ -62,25 +81,87 @@ const SwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus
   const dataSource = weekdays.map((day, rowIndex) => ({
     key: rowIndex.toString(),
     day: day,
-    buttons: timeslots.map((_, colIndex) => (
-      <Button
-        key={colIndex}
-        className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
-          selectedSlot?.rowIndex === rowIndex &&
-          selectedSlot?.colIndex === colIndex
-            ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
-            : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
-        }`}
-        onClick={() => handleButtonClick(rowIndex, colIndex)}
-        style={{
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-          overflow: "hidden",
-        }}
-      >
-        {buttonStatus[rowIndex][colIndex]}
-      </Button>
-    )),
+    buttons: timeslots.map((_, colIndex) => {
+      const score = timetableScore[rowIndex][colIndex];
+
+      let buttonStyle = {
+        backgroundColor: "#FFFFFF", // Default color (white)
+        color: "#000000",
+        borderColor: "#D9D9D9",
+      };
+
+      if (score > 90) {
+        buttonStyle = {
+          backgroundColor: "#003300", // Very dark green
+          color: "#FFFFFF",
+          borderColor: "#003300",
+        };
+      } else if (score > 60) {
+        buttonStyle = {
+          backgroundColor: "#006400", // Dark green
+          color: "#FFFFFF",
+          borderColor: "#006400",
+        };
+      } else if (score > 40) {
+        buttonStyle = {
+          backgroundColor: "#32CD32", // Medium green
+          color: "#000000",
+          borderColor: "#32CD32",
+        };
+      } else if (score > 20) {
+        buttonStyle = {
+          backgroundColor: "#90EE90", // Light green
+          color: "#000000",
+          borderColor: "#90EE90",
+        };
+      } else if (score > 0) {
+        buttonStyle = {
+          backgroundColor: "#D9FBD9", // Very light green
+          color: "#000000",
+          borderColor: "#D9FBD9",
+        };
+      } else if (score < 0) {
+        buttonStyle = {
+          backgroundColor: "#FF5722", // Red
+          color: "#FFFFFF",
+          borderColor: "#FF5722",
+        };
+      }
+
+      const isSwapping =
+        (swapping.firstSlot &&
+          swapping.firstSlot.rowIndex === rowIndex &&
+          swapping.firstSlot.colIndex === colIndex) ||
+        (swapping.secondSlot &&
+          swapping.secondSlot.rowIndex === rowIndex &&
+          swapping.secondSlot.colIndex === colIndex);
+
+      return (
+        <Button
+          key={colIndex}
+          className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden transform transition-all duration-300 ease-in-out ${
+            selectedSlot?.rowIndex === rowIndex &&
+            selectedSlot?.colIndex === colIndex
+              ? "border-4 border-blue-500 scale-105 shadow-lg"
+              : ""
+          } ${
+            isSwapping
+              ? "animate-pulse bg-yellow-300 scale-110 shadow-md"
+              : ""
+          }`}
+          onClick={() => handleButtonClick(rowIndex, colIndex)}
+          style={{
+            ...buttonStyle,
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+          }}
+          disabled={score < 0} // Disable button if score is less than 0
+        >
+          {buttonStatus[rowIndex][colIndex]}
+        </Button>
+      );
+    }),
   }));
 
   // Columns for the table

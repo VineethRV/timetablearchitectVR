@@ -59,17 +59,34 @@ const AddLabPage: React.FC = () => {
   const [formFields, setFormFields] = useState<BatchField[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
-  const [showTT, SetshowTT] = useState(false);
+  const [showTT, SetshowTT] = useState(true);
   const semester = Number(localStorage.getItem("semester"));
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
   const [buttonStatus1, setButtonStatus1] = useState(
-    weekdays.map(() => timeslots.map(() => "Free"))
+    [
+      ["Math", "English", "DSA", "Blocked", "Free", "Free"], // Monday
+      ["Physics", "Chemistry", "Blocked", "DSA", "Math", "LDCO"], // Tuesday
+      ["Free", "Blocked", "Drama", "Geography", "ADLD", "IT"], // Wednesday
+      ["DSA", "English", "OS", "Blocked", "Math", "Chemistry"], // Thursday
+      ["History", "Geography", "Blocked", "Free", "ADLD", "PE"], // Friday
+      ["LDCO", "ADLD", "Art", "Economics", "Blocked", "Maths"], // Saturday
+    ]
   );
   const [tableData, setTableData] = useState<BatchField[]>([]);
   const [editingRecord, setEditingRecord] = useState<BatchField[] | null>(null);
+
+  const [timetableScore, setTimetableScore] = useState([
+  [60, 40, 20, -10, 70, 55], // Monday
+  [45, 50, -20, 30, 25, 10], // Tuesday
+  [80, -15, 35, 50, 60, 40], // Wednesday
+  [20, 30, 60, -5, 55, 70],  // Thursday
+  [10, 25, -30, 45, 35, 60], // Friday
+  [55, 40, 20, 10, -10, 50], // Saturday
+  ]
+  );
 
   const navigate = useNavigate();
 
@@ -193,7 +210,7 @@ const AddLabPage: React.FC = () => {
     );
 
     for (const field of newFormFields) {
-      console.log(field);
+      // console.log(field);
       if (!field.course || !field.teachers || !field.rooms) {
         toast.info("Please enter all fields to continue");
         return;
@@ -206,7 +223,7 @@ const AddLabPage: React.FC = () => {
       ...batch,
       courseSet: courset,
     }));
-    console.log(updatedBatches)
+    // console.log(updatedBatches)
     setFormFields(newFormFields);
     setTableData((prevData) => {
       if (editingRecord) {
@@ -231,7 +248,7 @@ const AddLabPage: React.FC = () => {
         message.error("Please ensure all fields are filled!");
         return;
       }
-      console.log(courseSets,teachers,rooms,convertTableToString(buttonStatus))
+      // console.log(courseSets,teachers,rooms,convertTableToString(buttonStatus))
       const response = await axios.post(
         BACKEND_URL + "/getLabRecommendation",
         {
@@ -246,7 +263,7 @@ const AddLabPage: React.FC = () => {
           },
         }
       );
-      
+      console.log(response)
       // here is the get scores of the slot endpoint
       const scoreResponse = await axios.post(BACKEND_URL + '/recommendLab', {
         Lteachers: teachers,
@@ -264,7 +281,7 @@ const AddLabPage: React.FC = () => {
       console.log(scoreResponse)
       console.log("score ...")
 
-      console.log(response.status,response.data)
+      // console.log(response.status,response.data)
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
@@ -550,7 +567,7 @@ const AddLabPage: React.FC = () => {
                 records.map((record: BatchField) => ({
                   ...record,
                   teachers: record.teachers.flatMap((teacher: string) => {
-                    console.log(teacher); // Inspect each teacher value
+                    // console.log(teacher); // Inspect each teacher value
                     return teacher.split(",").map((t) => t.trim());
                   }),
                 }))
@@ -601,6 +618,7 @@ const AddLabPage: React.FC = () => {
 
           {showTT ? (
             <SwapTimetable
+            timetableScore={timetableScore}
               buttonStatus={buttonStatus1}
               setButtonStatus={setButtonStatus1}
             ></SwapTimetable>
