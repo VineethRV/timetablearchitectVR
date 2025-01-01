@@ -278,7 +278,6 @@ const AddSectionPage: React.FC = () => {
       content: "Do you want to save the generated timetable?",
       onOk: () => {
         handleSubmit();
-        message.success("Timetable saved successfully!");
       },
       onCancel: () => {
         message.info("Action cancelled. The timetable was not saved.");
@@ -295,7 +294,7 @@ const AddSectionPage: React.FC = () => {
             <Button onClick={() => Modal.destroyAll()}>Cancel</Button>
             <Button type="primary" onClick={() => {
               handleSubmit();
-              message.success("Timetable saved successfully!");
+              Modal.destroyAll();
             }}>
               Save
             </Button>
