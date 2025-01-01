@@ -273,9 +273,11 @@ Lrooms:string[],
 blocks:string|null
 ):Promise<{status:number, timetable:string|null}>{
     let timetable:string[][]|null=convertStringToTable(blocks);
+    let errMessage=""
     try{
         let teachers=[]
         let score: number[][]=[[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]];
+        errMessage="error while fetching timetable"
         if (timetable) {
             for(let j=0;j<timetable.length;j++){
                 for(let k=0;k<timetable[j].length;k++){
@@ -285,7 +287,9 @@ blocks:string|null
                 }
             }
         }
+        errMessage="error accessing teacher"
         for(let j=0;j<Lteachers.length;j++){
+            errMessage="error when fetching teacher: "+Lteachers[j]
             let {status,teacher}=(await peekTeacher(token,Lteachers[j]));
             if(status==statusCodes.OK && teacher){
                 teachers.push(teacher);
@@ -309,72 +313,74 @@ blocks:string|null
                 }
                
             }
-            let rooms=[]
-            for (let k = 0; k < Lrooms.length; k++) {
-                let {status, room} = await peekRoom(token,Lrooms[k]);
-                if (status == statusCodes.OK && room) {
-                    rooms.push(room);
-                    let scoreValue = scoreRooms(room.timetable);
-                    console.log("RoomT",scoreValue)
-                    if(!score){
-                        return {
-                            status: statusCodes.BAD_REQUEST,
-                            timetable: null
-                        }
-                    }   
-                    for (let i = 0; i < scoreValue.length; i++) {
-                        for (let j = 0; j < scoreValue[i].length; j++) {
-                            if (scoreValue[i][j] < 0) {
-                                score[i][j] = -1;
-                            } 
-                        }
-                    }
-                } 
-                else {  
+            else{
+                return{
+                    status:status,
+                    timetable:errMessage
+                }
+            }
+        }
+        let rooms=[]
+        errMessage="error when accessing rooms"
+        for (let k = 0; k < Lrooms.length; k++) {
+            errMessage="error when fetching: "+Lrooms[k]
+            let {status, room} = await peekRoom(token,Lrooms[k]);
+            if (status == statusCodes.OK && room) {
+                rooms.push(room);
+                let scoreValue = scoreRooms(room.timetable);
+                console.log("RoomT",scoreValue)
+                if(!score){
                     return {
-                        status: status,
+                        status: statusCodes.BAD_REQUEST,
                         timetable: null
-                    };
+                    }
+                }   
+                for (let i = 0; i < scoreValue.length; i++) {
+                    for (let j = 0; j < scoreValue[i].length; j++) {
+                        if (scoreValue[i][j] < 0) {
+                            score[i][j] = -1;
+                        } 
+                    }
                 }
-            }
-            if(!score){
+            } 
+            else {  
                 return {
-                    status: statusCodes.BAD_REQUEST,
-                    timetable: null
-                }
+                    status: status,
+                    timetable: errMessage
+                };
             }
-            if (!timetable) {
-                timetable = Array(score.length).fill(null).map(() => Array(score[0].length).fill("0"));
-            }
-            for (let i = 0; i < timetable.length; i++) {
-                for (let j = 0; j < timetable[i].length; j++) {
-                    if (timetable[i][j] !== "0") {
-                        score[i][j] = -1;
-                    }
-                }
-            }
-            for(let i=0;i<score.length;i++){
-                for(let j=0;j<score[i].length-1;j+=2){
-                    if(score[i][j]<0 || score[i][j+1]<0){
-                        score[i][j]=-1
-                        score[i][j+1]=-1
-                    }
-                }
-            }
+        }
+        if(!score){
             return {
-                status: statusCodes.OK,
-                timetable: convertTableToString(score.map((row) => row.map((val) => val.toString())))
+                status: statusCodes.BAD_REQUEST,
+                timetable: "score is null"
+            }
+        }
+        for (let i = 0; i < timetable.length; i++) {
+            for (let j = 0; j < timetable[i].length; j++) {
+                if (timetable[i][j] !== "0") {
+                    score[i][j] = -1;
+                }
+            }
+        }
+        errMessage="error when merging timetable"
+        for(let i=0;i<score.length;i++){
+            for(let j=0;j<score[i].length-1;j+=2){
+                if(score[i][j]<0 || score[i][j+1]<0){
+                    score[i][j]=-1
+                    score[i][j+1]=-1
+                }
             }
         }
         return {
-            status:statusCodes.OK,
-            timetable:convertTableToString(timetable)
+            status: statusCodes.OK,
+            timetable: convertTableToString(score.map((row) => row.map((val) => val.toString())))
         }
     }
     catch{
         return {
             status:statusCodes.INTERNAL_SERVER_ERROR,
-            timetable:null
+            timetable:errMessage
         }
     }
 }

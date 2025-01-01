@@ -364,29 +364,33 @@ function getRecommendations(token, lab, blocks) {
 }
 function recommendLab(token, Lteachers, Lrooms, blocks) {
     return __awaiter(this, void 0, void 0, function () {
-        var timetable, teachers, score_2, j, k, j, _a, status_5, teacher, scoreValue, i, j_2, rooms, k, _b, status_6, room, scoreValue, i, j_3, i, j_4, i, j_5, _c;
+        var timetable, errMessage, teachers, score, j, k, j, _a, status_5, teacher, scoreValue, i, j_2, rooms, k, _b, status_6, room, scoreValue, i, j, i, j, i, j, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
                     timetable = (0, common_1.convertStringToTable)(blocks);
+                    errMessage = "";
                     _d.label = 1;
                 case 1:
                     _d.trys.push([1, 10, , 11]);
                     teachers = [];
-                    score_2 = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+                    score = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+                    errMessage = "error while fetching timetable";
                     if (timetable) {
                         for (j = 0; j < timetable.length; j++) {
                             for (k = 0; k < timetable[j].length; k++) {
                                 if (timetable[j][k] != "0") {
-                                    score_2[j][k] = -1;
+                                    score[j][k] = -1;
                                 }
                             }
                         }
                     }
+                    errMessage = "error accessing teacher";
                     j = 0;
                     _d.label = 2;
                 case 2:
-                    if (!(j < Lteachers.length)) return [3 /*break*/, 9];
+                    if (!(j < Lteachers.length)) return [3 /*break*/, 5];
+                    errMessage = "error when fetching teacher: " + Lteachers[j];
                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, Lteachers[j])];
                 case 3:
                     _a = (_d.sent()), status_5 = _a.status, teacher = _a.teacher;
@@ -394,45 +398,58 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                         teachers.push(teacher);
                         scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
                         console.log("scoreT", scoreValue);
-                        if (score_2.length == 0) {
-                            score_2 = scoreValue;
+                        if (score.length == 0) {
+                            score = scoreValue;
                         }
                         else {
                             for (i = 0; i < scoreValue.length; i++) {
                                 for (j_2 = 0; j_2 < scoreValue[i].length; j_2++) {
                                     if (scoreValue[i][j_2] < 0) {
-                                        score_2[i][j_2] = -1;
+                                        score[i][j_2] = -1;
                                     }
                                     else {
-                                        if (score_2[i][j_2] >= 0)
-                                            score_2[i][j_2] += scoreValue[i][j_2];
+                                        if (score[i][j_2] >= 0)
+                                            score[i][j_2] += scoreValue[i][j_2];
                                     }
                                 }
                             }
                         }
                     }
-                    rooms = [];
-                    k = 0;
+                    else {
+                        return [2 /*return*/, {
+                                status: status_5,
+                                timetable: errMessage
+                            }];
+                    }
                     _d.label = 4;
                 case 4:
-                    if (!(k < Lrooms.length)) return [3 /*break*/, 7];
-                    return [4 /*yield*/, (0, room_1.peekRoom)(token, Lrooms[k])];
+                    j++;
+                    return [3 /*break*/, 2];
                 case 5:
+                    rooms = [];
+                    errMessage = "error when accessing rooms";
+                    k = 0;
+                    _d.label = 6;
+                case 6:
+                    if (!(k < Lrooms.length)) return [3 /*break*/, 9];
+                    errMessage = "error when fetching: " + Lrooms[k];
+                    return [4 /*yield*/, (0, room_1.peekRoom)(token, Lrooms[k])];
+                case 7:
                     _b = _d.sent(), status_6 = _b.status, room = _b.room;
                     if (status_6 == statusCodes_1.statusCodes.OK && room) {
                         rooms.push(room);
                         scoreValue = (0, common_1.scoreRooms)(room.timetable);
                         console.log("RoomT", scoreValue);
-                        if (!score_2) {
+                        if (!score) {
                             return [2 /*return*/, {
                                     status: statusCodes_1.statusCodes.BAD_REQUEST,
                                     timetable: null
                                 }];
                         }
                         for (i = 0; i < scoreValue.length; i++) {
-                            for (j_3 = 0; j_3 < scoreValue[i].length; j_3++) {
-                                if (scoreValue[i][j_3] < 0) {
-                                    score_2[i][j_3] = -1;
+                            for (j = 0; j < scoreValue[i].length; j++) {
+                                if (scoreValue[i][j] < 0) {
+                                    score[i][j] = -1;
                                 }
                             }
                         }
@@ -440,54 +457,45 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                     else {
                         return [2 /*return*/, {
                                 status: status_6,
-                                timetable: null
+                                timetable: errMessage
                             }];
                     }
-                    _d.label = 6;
-                case 6:
+                    _d.label = 8;
+                case 8:
                     k++;
-                    return [3 /*break*/, 4];
-                case 7:
-                    if (!score_2) {
+                    return [3 /*break*/, 6];
+                case 9:
+                    if (!score) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                timetable: null
+                                timetable: "score is null"
                             }];
                     }
-                    if (!timetable) {
-                        timetable = Array(score_2.length).fill(null).map(function () { return Array(score_2[0].length).fill("0"); });
-                    }
                     for (i = 0; i < timetable.length; i++) {
-                        for (j_4 = 0; j_4 < timetable[i].length; j_4++) {
-                            if (timetable[i][j_4] !== "0") {
-                                score_2[i][j_4] = -1;
+                        for (j = 0; j < timetable[i].length; j++) {
+                            if (timetable[i][j] !== "0") {
+                                score[i][j] = -1;
                             }
                         }
                     }
-                    for (i = 0; i < score_2.length; i++) {
-                        for (j_5 = 0; j_5 < score_2[i].length - 1; j_5 += 2) {
-                            if (score_2[i][j_5] < 0 || score_2[i][j_5 + 1] < 0) {
-                                score_2[i][j_5] = -1;
-                                score_2[i][j_5 + 1] = -1;
+                    errMessage = "error when merging timetable";
+                    for (i = 0; i < score.length; i++) {
+                        for (j = 0; j < score[i].length - 1; j += 2) {
+                            if (score[i][j] < 0 || score[i][j + 1] < 0) {
+                                score[i][j] = -1;
+                                score[i][j + 1] = -1;
                             }
                         }
                     }
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
-                            timetable: (0, common_1.convertTableToString)(score_2.map(function (row) { return row.map(function (val) { return val.toString(); }); }))
+                            timetable: (0, common_1.convertTableToString)(score.map(function (row) { return row.map(function (val) { return val.toString(); }); }))
                         }];
-                case 8:
-                    j++;
-                    return [3 /*break*/, 2];
-                case 9: return [2 /*return*/, {
-                        status: statusCodes_1.statusCodes.OK,
-                        timetable: (0, common_1.convertTableToString)(timetable)
-                    }];
                 case 10:
                     _c = _d.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
-                            timetable: null
+                            timetable: errMessage
                         }];
                 case 11: return [2 /*return*/];
             }
