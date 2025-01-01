@@ -40,7 +40,10 @@ interface BatchField {
   teachers: string[];
   rooms: string[];
 }
-export const convertToTimetable = (setButtonStatus1:(value: React.SetStateAction<string[][]>) => void,time: string) => {
+export const convertToTimetable = (
+  setButtonStatus1: (value: React.SetStateAction<string[][]>) => void,
+  time: string
+) => {
   setButtonStatus1(
     time
       .split(";")
@@ -50,7 +53,6 @@ export const convertToTimetable = (setButtonStatus1:(value: React.SetStateAction
   );
 };
 
-
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form] = Form.useForm();
@@ -59,33 +61,20 @@ const AddLabPage: React.FC = () => {
   const [formFields, setFormFields] = useState<BatchField[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
-  const [showTT, SetshowTT] = useState(true);
+  const [showTT, SetshowTT] = useState(false);
   const semester = Number(localStorage.getItem("semester"));
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
   const [buttonStatus1, setButtonStatus1] = useState(
-    [
-      ["Math", "English", "DSA", "Blocked", "Free", "Free"], // Monday
-      ["Physics", "Chemistry", "Blocked", "DSA", "Math", "LDCO"], // Tuesday
-      ["Free", "Blocked", "Drama", "Geography", "ADLD", "IT"], // Wednesday
-      ["DSA", "English", "OS", "Blocked", "Math", "Chemistry"], // Thursday
-      ["History", "Geography", "Blocked", "Free", "ADLD", "PE"], // Friday
-      ["LDCO", "ADLD", "Art", "Economics", "Blocked", "Maths"], // Saturday
-    ]
+    weekdays.map(() => timeslots.map(() => "Free"))
   );
   const [tableData, setTableData] = useState<BatchField[]>([]);
   const [editingRecord, setEditingRecord] = useState<BatchField[] | null>(null);
 
-  const [timetableScore, setTimetableScore] = useState([
-  [60, 40, 20, -10, 70, 55], // Monday
-  [45, 50, -20, 30, 25, 10], // Tuesday
-  [80, -15, 35, 50, 60, 40], // Wednesday
-  [20, 30, 60, -5, 55, 70],  // Thursday
-  [10, 25, -30, 45, 35, 60], // Friday
-  [55, 40, 20, 10, -10, 50], // Saturday
-  ]
+  const [timetableScore, setTimetableScore] = useState(
+    weekdays.map(() => timeslots.map(() => 0))
   );
 
   const navigate = useNavigate();
@@ -263,29 +252,36 @@ const AddLabPage: React.FC = () => {
           },
         }
       );
-      console.log(response)
+      const flattenedTeachers = teachers.flat();
+      const flattenedRooms = rooms.flat();
+
       // here is the get scores of the slot endpoint
-      const scoreResponse = await axios.post(BACKEND_URL + '/recommendLab', {
-        Lteachers: teachers,
-        Lrooms: rooms,
-        blocks: convertTableToString(buttonStatus),
-      },
-      {
-        headers: {
-          authorization: localStorage.getItem("token"),
+      const { data: scoreResponse } = await axios.post(
+        BACKEND_URL + "/recommendLab",
+        {
+          Lteachers: flattenedTeachers,
+          Lrooms: flattenedRooms,
+          blocks: convertTableToString(buttonStatus),
         },
-      }
-      )
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      );
 
-      console.log("score ...")
-      console.log(scoreResponse)
-      console.log("score ...")
+      const parsedScores = scoreResponse.timetable
+        .split(";")
+        .map((row: string) =>
+          row.split(",").map((score: string) => parseInt(score, 10))
+        );
+      setTimetableScore(parsedScores);
 
-      // console.log(response.status,response.data)
+      console.log(response.status, response.data);
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
-        convertToTimetable(setButtonStatus1,response.data.timetable);
+        convertToTimetable(setButtonStatus1, response.data.timetable);
       } else {
         message.error(
           response.data.message || "Failed to fetch recommendations."
@@ -618,7 +614,7 @@ const AddLabPage: React.FC = () => {
 
           {showTT ? (
             <SwapTimetable
-            timetableScore={timetableScore}
+              timetableScore={timetableScore}
               buttonStatus={buttonStatus1}
               setButtonStatus={setButtonStatus1}
             ></SwapTimetable>
