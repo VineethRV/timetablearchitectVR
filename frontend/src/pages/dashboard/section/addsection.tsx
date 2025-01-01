@@ -56,7 +56,17 @@ const AddSectionPage: React.FC = () => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
   const [roomTT,setRoomTT]=useState("0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0")
-  
+  const [timetableScore, setTimetableScore] = useState([
+    [60, 40, 20, -10, 70, 55], // Monday
+    [45, 50, -20, 30, 25, 10], // Tuesday
+    [80, -15, 35, 50, 60, 40], // Wednesday
+    [20, 30, 60, -5, 55, 70],  // Thursday
+    [10, 25, -30, 45, 35, 60], // Friday
+    [55, 40, 20, 10, -10, 50], // Saturday
+    ]
+    );
+
+
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
@@ -538,6 +548,7 @@ const AddSectionPage: React.FC = () => {
                 <SwapTimetable
                   buttonStatus={buttonStatus1}
                   setButtonStatus={setButtonStatus1}
+                  timetableScore={timetableScore}
                 ></SwapTimetable>
               </div>
             ) : (
