@@ -389,7 +389,7 @@ function peekTeacher(token_1, name_1) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _c.trys.push([0, 4, , 5]);
+                    _c.trys.push([0, 7, , 8]);
                     return [4 /*yield*/, auth.getPosition(token)];
                 case 1:
                     _a = _c.sent(), status_5 = _a.status, user = _a.user;
@@ -399,15 +399,12 @@ function peekTeacher(token_1, name_1) {
                                 teacher: null,
                             }];
                     }
-                    if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
+                    teacher = void 0;
+                    if (!(user.role == "admin")) return [3 /*break*/, 3];
                     return [4 /*yield*/, prisma.teacher.findFirst({
                             where: {
                                 name: name,
-                                department: user.role == "admin"
-                                    ? department
-                                        ? department
-                                        : user.department
-                                    : user.department,
                                 orgId: user.orgId,
                             },
                             select: {
@@ -423,6 +420,28 @@ function peekTeacher(token_1, name_1) {
                         })];
                 case 2:
                     teacher = _c.sent();
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, prisma.teacher.findFirst({
+                        where: {
+                            name: name,
+                            department: user.department,
+                            orgId: user.orgId,
+                        },
+                        select: {
+                            name: true,
+                            orgId: true,
+                            department: true,
+                            alternateDepartments: true,
+                            initials: true,
+                            email: true,
+                            labtable: true,
+                            timetable: true,
+                        },
+                    })];
+                case 4:
+                    teacher = _c.sent();
+                    _c.label = 5;
+                case 5:
                     if (teacher)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.OK,
@@ -432,20 +451,20 @@ function peekTeacher(token_1, name_1) {
                             status: statusCodes_1.statusCodes.NOT_FOUND,
                             teacher: null
                         }];
-                case 3: 
+                case 6: 
                 //else
                 return [2 /*return*/, {
                         status: status_5,
                         teacher: null,
                     }];
-                case 4:
+                case 7:
                     _b = _c.sent();
                     //internal error
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             teacher: null,
                         }];
-                case 5: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });

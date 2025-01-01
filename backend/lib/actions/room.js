@@ -390,6 +390,7 @@ function peekRoom(token_1, name_1) {
                     if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
                     room = void 0;
                     if (!(user.role == "admin")) return [3 /*break*/, 3];
+                    console.log("admin found!");
                     return [4 /*yield*/, prisma.room.findFirst({
                             where: {
                                 name: name,
@@ -398,6 +399,7 @@ function peekRoom(token_1, name_1) {
                         })];
                 case 2:
                     room = _c.sent();
+                    console.log("\nrooms:", room);
                     return [3 /*break*/, 5];
                 case 3: return [4 /*yield*/, prisma.room.findFirst({
                         where: {
