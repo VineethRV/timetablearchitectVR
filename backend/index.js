@@ -201,7 +201,7 @@ app.get("/api/teachers", async (req, res) => {
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
-});
+});3
 
 // Peek a specific teacher
 app.post("/api/teachers/peek", async (req, res) => {

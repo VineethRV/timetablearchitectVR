@@ -92,7 +92,7 @@ const DashboardSidebar = () => {
             </div>
 
             <div
-              onClick={() => handleClick("/courses")}
+              onClick={() => handleClick("/courses/core-courses")}
               className={`flex relative items-center p-2 cursor-pointer ${
                 pathname == "/dashboard/courses" ||
                 pathname.includes("/dashboard/courses")

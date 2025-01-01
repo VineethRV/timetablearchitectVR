@@ -265,7 +265,8 @@ const TeachersTable = ({
   // Add a unique key to each teacher record (email is assumed to be unique)
   const dataWithKeys = filteredTeachersData.map((teacher) => ({
     ...teacher,
-    key: teacher.email, // Use email as the unique key
+    // @ts-ignore
+    key: teacher.id, // Use email as the unique key
   }));
 
   return (
