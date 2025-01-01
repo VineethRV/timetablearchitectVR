@@ -505,6 +505,7 @@ app.put("/api/electives", async (req, res) => {
 app.post("/api/electives/peek", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { name, semester, department } = req.body;
+  console.log(token,name,semester)
   if (!token || !name || semester === undefined) {
     return res
       .status(200)
@@ -789,6 +790,7 @@ app.post("/api/saveTimetable",async (req,res)=>{
 app.post("/api/suggestTimetable", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { blocks, courses, teachers, rooms, semester, preferredRooms } = req.body;
+  console.log(blocks,courses,teachers,rooms,semester,preferredRooms)
   if (!token || !blocks || !courses || !rooms || !teachers  || semester === undefined) {
     return res.status(200).json({
       status: 400,

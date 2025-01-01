@@ -29,6 +29,29 @@ const formItemLayout = {
   },
 };
 
+
+export const fetchdept = ()=> {
+  try {
+    axios.post(
+      BACKEND_URL + "/getPosition",
+      {},
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
+    ).then((res)=>{
+    if (res.status === 200) {
+      return res.data.message.department;
+    } else {
+      return ""
+    }}
+  )
+  } catch (error) {
+    console.log(error);
+    return ""
+  }
+};
 const AddCoursepage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -42,33 +65,10 @@ const AddCoursepage: React.FC = () => {
     form.setFieldsValue({rooms:null});
   }
 
-  const [department, setDepartment] = useState(""); // State for department
+  const [department, setDepartment] = useState(fetchdept()); // State for department
 
-  const fetchdept = async () => {
-    try {
-      const response = await axios.post(
-        BACKEND_URL + "/getPosition",
-        {},
-        {
-          headers: {
-            authorization: localStorage.getItem("token"),
-          },
-        }
-      );
-      console.log(response.status, response.data);
-      if (response.status === 200) {
-        setDepartment(response.data.message.department); // Set the department
-      } else {
-        setDepartment(""); // Reset to empty string if not successful
-      }
-    } catch (error) {
-      console.log(error);
-      setDepartment(""); // Reset to empty string in case of error
-    }
-  };
 
   useEffect(() => {
-    fetchdept();
     console.log(department) // Fetch department on component mount
   }, []);
   

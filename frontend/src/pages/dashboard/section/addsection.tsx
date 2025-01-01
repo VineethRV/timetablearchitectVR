@@ -39,6 +39,13 @@ const formItemLayout = {
   },
 };
 
+export function convertStringToTable(timetableString: string|null): string[][] {
+  if(timetableString)
+      return timetableString.split(";").map((row) => row.split(","));
+  else
+      return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0".split(";").map((row) => row.split(","));
+}
+
 const AddSectionPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -47,6 +54,7 @@ const AddSectionPage: React.FC = () => {
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [courseOptions, setCourseOptions] = useState<string[]>([]);
+  const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [buttonStatus, setButtonStatus] = useState(
@@ -117,6 +125,7 @@ const AddSectionPage: React.FC = () => {
     fetchTeachers();
     fetchRooms();
     fetchCourse();
+    fetchElectives();
   }, []);
 
   const fetchTeachers = async () => {
@@ -130,6 +139,33 @@ const AddSectionPage: React.FC = () => {
     } catch (error) {
       console.error("Failed to fetch teachers:", error);
       message.error("Error fetching teacher data.");
+    }
+  };
+
+  const fetchElectives = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const semester = localStorage.getItem("semester");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        return;
+      }
+      const response = await axios.get(BACKEND_URL + "/electives", {
+        headers: {
+          authorization: token,
+        },
+        params: {
+          semester,
+        },
+      });
+      if (response.data.status === 200) {
+        setElectiveOptions(response.data.message.map((elective: { name: string }) => elective.name)); 
+      } else {
+        message.error(response.data.message || "Failed to fetch electives.");
+      }
+    } catch (error) {
+      message.error("An error occurred while fetching electives.");
+      console.error(error);
     }
   };
 
@@ -148,7 +184,7 @@ const AddSectionPage: React.FC = () => {
   };
 
   const fetchCourse = async () => {
-    const department = fetchdept();
+    const department=fetchdept();
     const semester = localStorage.getItem("semester");
     axios
       .get(BACKEND_URL + "/courses", {
@@ -173,12 +209,47 @@ const AddSectionPage: React.FC = () => {
 
   function getRecommendation()
   {
-    const block=convertTableToString(buttonConvert(buttonStatus));
+    const block=buttonConvert(buttonStatus);
     const courses=tableData.map((item)=>item.course)
     const teachers=tableData.map((item)=>item.teacher)
     const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
     const semester=Number(localStorage.getItem("semester"))
     const Prefrooms=form.getFieldValue("Room")
+    const elective=form.getFieldValue("Electives")
+    const lab=form.getFieldValue("Labs")
+    if(elective!=undefined)
+      {
+      axios.post(
+        BACKEND_URL+"/electives/peek",
+        {
+          name:elective,
+          semester,
+        },
+        { headers: {
+          authorization: localStorage.getItem("token"),
+        }}
+      ).then((res)=>{
+        console.log("res",res.data)
+        if(res.status==200)
+        {
+          const eleTT=convertStringToTable(res.data.message.timetable);
+          console.log(eleTT)
+          for(let i=0;i<eleTT.length;i++)
+          {
+            for(let j=0;j<eleTT[i].length;j++)
+            {
+              if(eleTT[i][j]!=="0")
+              {
+                block[i][j]=eleTT[i][j]
+              }
+            }
+          }
+        }
+        else{
+          return statusCodes.BAD_REQUEST
+        }
+      })}
+      console.log(block)
     const promise =axios.post(
     BACKEND_URL+"/suggestTimetable",
     {
@@ -208,7 +279,7 @@ const AddSectionPage: React.FC = () => {
                   value === "0" ? "Free" : value === "1" ? "Blocked" : value
                 )
             );
-
+            console.log(convertedTimetable)
             setRoomTT(convertTableToString(res.data.returnVal.roomtable))
             setButtonStatus1(convertedTimetable);
             return "Generated timetable!!";
@@ -483,10 +554,13 @@ const AddSectionPage: React.FC = () => {
             onEditClick={handleEditClick}
           />
           <br></br>
-          <Form.Item label="Electives and Common time courses">
-            <Select placeholder="Electives" className="font-normal w-96" />
+          <Form.Item name="Electives" label="Electives and Common time courses">
+            <Select options={electiveOptions.map((ecourse) => ({
+                            label: ecourse,
+                            value: ecourse,
+                          }))} placeholder="Electives" className="font-normal w-96" />
           </Form.Item>
-          <Form.Item label="Lab courses applicable for the section">
+          <Form.Item name="labs" label="Lab courses applicable for the section">
             <Select placeholder="Labs" className="font-normal w-96" />
           </Form.Item>
           <Form.Item
