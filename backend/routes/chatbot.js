@@ -81,15 +81,7 @@ IMPORTANT: Return result in below format in form of stringified JSON
       buttonText: string;
     ]
   }
-
-  If the result contains a list of instructions that can be followed to do something use below format
-  {
-    msgs : [
-      type: 'instructions';
-      title: string;
-      steps: string[];
-    ]
-  }
+  IMPORTANT : Limit the buttonText to one word
 
   If the result contains DOWNLOAD TEMPLATE use below format.
   {
@@ -99,6 +91,38 @@ IMPORTANT: Return result in below format in form of stringified JSON
       fileName: string;
     ]
   }
+
+  If the result contains a list of instructions that can be followed to do something use below format
+  {
+    msgs : [
+      type: 'instructions';
+      title: string;
+      steps: STEP_FORMAT[];
+    ]
+  }
+
+    IMPORTANT: Don't number the steps like 1. 2. 3. etc.
+    Here STEP_FORMAT can vary depending on the step,
+    If the step contains a link (i.e navigation links to some page) it follows the below format
+    {
+      type: 'link';
+      text: string;
+      url: string;
+      buttonText: string;
+    }
+    IMPORTANT : Limit the buttonText to one word
+
+    If the step contains only text it follows the below format
+    {
+      type: 'text';
+      text: string;
+    }
+    If the step contains DOWNLOAD TEMPLATE it follows the below format.
+    {
+      type: 'file';
+      text: string;
+      fileName: string;
+    }
 
   IMPORTANT: If any questions other than the above context is asked. Return the below response.
   {
