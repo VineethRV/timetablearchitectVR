@@ -26,54 +26,60 @@ export async function suggestTimetable(
     semester: number,
     preferredRooms: string|null,
 ): Promise<{status:number,returnVal:returnStrcture|null}> {
+    let errMessage = "";
     try {
-        // Convert the block string to a 2D array
+        console.log("Converting block string to table");
+        errMessage = "error while converting block string to table";
         const blocks = convertStringToTable(block);
-        // Initialize the timetable with empty strings
         const timetable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? cell : '0'));
         const roomtable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? '-' : '0'));
 
-        //store all rooms of the department in roomsInfo var
+        console.log("Fetching department rooms");
+        errMessage = "error while fetching department rooms";
         const departmentRoomsResponse = await getRooms(token);
         if (departmentRoomsResponse.status !== statusCodes.OK || !departmentRoomsResponse.rooms) {
-            return { status: departmentRoomsResponse.status, returnVal:null};
+            return { status: departmentRoomsResponse.status, returnVal: { timetable: [[errMessage]], roomtable: null } };
         }
-        let flag=0;
+
+        let flag = 0;
         const roomsInfo = await Promise.all(departmentRoomsResponse.rooms.map(async (room) => {
             const roomResponse = await peekRoom(token, room.name);
             if (roomResponse.status !== statusCodes.OK || !roomResponse.room) {
-                flag=1;
+                flag = 1;
             }
             return roomResponse.room;
         }));
-        if(flag==1){
-            return {status:statusCodes.INTERNAL_SERVER_ERROR,returnVal:null };
+        if (flag == 1) {
+            return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
         }
 
-        //init bfactor of each day array to 1
         let bFactor = Array(6).fill(1);
 
-        // Iterate over the courses
         for (let i = 0; i < courses.length; i++) {
             const course = courses[i];
             const teacher = teachers[i];
-            // Retrieve course details
+
+            console.log(`Fetching course details for course: ${course}`);
+            errMessage = "error while fetching course details";
             const courseResponse = await peekCourse(token, course, semester);
             if (courseResponse.status !== statusCodes.OK || !courseResponse.course) {
-                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal:null  };
+                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
             }
-            // Retrieve teacher details
+
+            console.log(`Fetching teacher details for teacher: ${teacher}`);
+            errMessage = "error while fetching teacher details";
             const teacherResponse = await peekTeacher(token, teacher);
             if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
-                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal:null  };
+                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
             }
-            let bestScore=scoreTeachers(teacherResponse.teacher.timetable,teacherResponse.teacher.labtable);
-            let currRoomInfo=null;
-            //create a preffered room if not given.
-            if(!preferredRooms){
+
+            let bestScore = scoreTeachers(teacherResponse.teacher.timetable, teacherResponse.teacher.labtable);
+            let currRoomInfo = null;
+            errMessage="failed to create Preferred room"
+            if (!preferredRooms) {
                 let maxNonNegativeEntries = -1;
                 for (const roomInfo of roomsInfo) {
-                    if(roomInfo){
+                    if (roomInfo) {
                         const roomScore = scoreRooms(roomInfo.timetable);
                         let nonNegativeEntries = 0;
                         for (let i = 0; i < roomScore.length; i++) {
@@ -90,71 +96,65 @@ export async function suggestTimetable(
                     }
                 }
             }
-            // Retrieve room details
-            //following if statement checks if there is a specified room  (if yes, code is allowed inside)
-            if(roomsInfo && rooms[i]!='0'){
+            errMessage="failed to allocate room"
+            if (roomsInfo && rooms[i] != '0') {
                 currRoomInfo = roomsInfo.find(room => room?.name === rooms[i]);
-                //if specified room not found
                 if (!currRoomInfo) {
-                    return { status: statusCodes.BAD_REQUEST, returnVal:null  };
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
                 }
-                let feasible=scoreRooms(currRoomInfo.timetable);
-                for(let i=0;i<feasible.length;i++){
-                    for(let j=0;j<feasible[i].length;j++){
-                        if(feasible[i][j]<0){
-                            bestScore[i][j]=-1;
+
+                let feasible = scoreRooms(currRoomInfo.timetable);
+                for (let i = 0; i < feasible.length; i++) {
+                    for (let j = 0; j < feasible[i].length; j++) {
+                        if (feasible[i][j] < 0) {
+                            bestScore[i][j] = -1;
                         }
-                    } 
-                    let availableSlots = 0;
+                    }
+                }
+
+                let availableSlots = 0;
+                for (let i = 0; i < bestScore.length; i++) {
+                    if (bestScore[i].some(score => score > 0)) {
+                        availableSlots++;
+                    }
+                }
+
+                if (courseResponse.course?.credits) {
                     for (let i = 0; i < bestScore.length; i++) {
-                        if (bestScore[i].some(score => score > 0)) {
-                            availableSlots++;
-                        }
-                    }
-                    if(courseResponse.course?.credits){
-                        //introcude randomness and also divide by bfactor value
-                        for(let i=0;i<bestScore.length;i++){
-                            for(let j=0;j<bestScore[i].length;j++){
-                                if(bestScore[i][j]>0){
-                                    bestScore[i][j]=(bestScore[i][j]+randomFactor*Math.random())/bFactor[i];
-                                }
+                        for (let j = 0; j < bestScore[i].length; j++) {
+                            if (bestScore[i][j] > 0) {
+                                bestScore[i][j] = (bestScore[i][j] + randomFactor * Math.random()) / bFactor[i];
                             }
                         }
-                        //allot the course
-                        for (let k = 0; k < Math.min(courseResponse.course.credits, availableSlots); k++) {
-                            const sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
+                    }
+
+                    for (let k = 0; k < Math.min(courseResponse.course.credits, availableSlots); k++) {
+                        const sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
                             .sort((a, b) => b.score - a.score);
-                            const { index } = sortedScores[k];
-                            const row = Math.floor(index / bestScore[0].length);
-                            const col = index % bestScore[0].length;
-                            timetable[row][col] = courseResponse.course.name;
-                            roomtable[row][col] = currRoomInfo.name;
-                            bFactor[row]=bFactor[row]+courseResponse.course.bFactor;
-                            //prevent allocation on the same day
-                            for(let j=0;j<bestScore[i].length;j++){
-                                bestScore[row][j]=-1;
-                            }
-                        }
-                        //if available slots are less than the credits of the course, return service unavailable
-                        if (availableSlots < courseResponse.course?.credits) {
-                            return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal:{timetable: timetable,roomtable:null}  };
+                        const { index } = sortedScores[k];
+                        const row = Math.floor(index / bestScore[0].length);
+                        const col = index % bestScore[0].length;
+                        timetable[row][col] = courseResponse.course.name;
+                        roomtable[row][col] = currRoomInfo.name;
+                        bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
+                        for (let j = 0; j < bestScore[i].length; j++) {
+                            bestScore[row][j] = -1;
                         }
                     }
-                    else{
-                        return {status:statusCodes.BAD_REQUEST,returnVal:null};
-                    }  
+
+                    if (availableSlots < courseResponse.course?.credits) {
+                        return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } };
+                    }
+                } else {
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
                 }
-            
-            }
-            //if not specified room
-            else{
-                //bestScore is used to keep intersections and scores of preffered room, while the copy is used to allocate alternate rooms, if bestScore is not full
-                let bestScoreCopy=bestScore;
+            } else {
+                let bestScoreCopy = bestScore;
                 const preferredRoomInfo = roomsInfo.find(room => room?.name === preferredRooms);
                 if (!preferredRoomInfo) {
-                    return { status: statusCodes.BAD_REQUEST, returnVal: null };
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
                 }
-                //make sure bestScore contains intersection of teachers and rooms
+
                 let feasible = scoreRooms(preferredRoomInfo.timetable);
                 for (let i = 0; i < feasible.length; i++) {
                     for (let j = 0; j < feasible[i].length; j++) {
@@ -163,7 +163,7 @@ export async function suggestTimetable(
                         }
                     }
                 }
-                ///make sure bestScore and bestScore copy dont allocate when other course are alloted
+
                 for (let i = 0; i < timetable.length; i++) {
                     for (let j = 0; j < timetable[i].length; j++) {
                         if (timetable[i][j] !== '0') {
@@ -172,34 +172,33 @@ export async function suggestTimetable(
                         }
                     }
                 }
-                //count how many intersections are there in bestScore
+
                 let availableSlots = 0;
                 for (let i = 0; i < bestScore.length; i++) {
                     if (bestScore[i].some(score => score > 0)) {
                         availableSlots++;
                     }
                 }
+
                 if (courseResponse.course?.credits) {
-                    //of available slots are leseer than credits, then iterate through all rooms in an attempt to find all possible intersections
                     if (availableSlots < courseResponse.course?.credits) {
-                        //allot whatevers possible in the preffered room
                         for (let k = 0; k < availableSlots; k++) {
                             let sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
-                            .sort((a, b) => b.score - a.score);
+                                .sort((a, b) => b.score - a.score);
                             const { index } = sortedScores[k];
                             const row = Math.floor(index / bestScore[0].length);
                             const col = index % bestScore[0].length;
                             timetable[row][col] = courseResponse.course.name;
                             roomtable[row][col] = preferredRoomInfo.name;
-                            for(let i=0;i<bestScore[row].length;i++){
+                            for (let i = 0; i < bestScoreCopy[row].length; i++) {
                                 bestScoreCopy[row][i] = -1;
                             }
                         }
+
                         let remainingCredits = courseResponse.course.credits - availableSlots;
 
                         for (const roomInfo of roomsInfo) {
                             if (remainingCredits <= 0) break;
-                            //if room isnt same as prefereed room
                             if (roomInfo && roomInfo.name !== preferredRoomInfo.name) {
                                 let feasible = scoreRooms(roomInfo.timetable);
                                 let bestScoreCopyCopy = bestScoreCopy;
@@ -209,14 +208,16 @@ export async function suggestTimetable(
                                             bestScoreCopyCopy[i][j] = -1;
                                         }
                                     }
-                                } 
+                                }
+
                                 let availableSlots = 0;
                                 for (let i = 0; i < bestScore.length; i++) {
                                     if (bestScoreCopyCopy[i].some(score => score > 0)) {
                                         availableSlots++;
                                     }
                                 }
-                                if(availableSlots>=remainingCredits){
+
+                                if (availableSlots >= remainingCredits) {
                                     const sortedScores = bestScoreCopyCopy.flat().map((score, index) => ({ score, index }))
                                         .sort((a, b) => b.score - a.score);
                                     for (let k = 0; k < remainingCredits; k++) {
@@ -225,48 +226,151 @@ export async function suggestTimetable(
                                         const col = index % bestScoreCopyCopy[0].length;
                                         timetable[row][col] = courseResponse.course.name;
                                         roomtable[row][col] = roomInfo.name;
-                                        for(let i=0;i<bestScoreCopyCopy[row].length;i++){
+                                        for (let i = 0; i < bestScoreCopyCopy[row].length; i++) {
                                             bestScoreCopyCopy[row][i] = -1;
                                         }
                                     }
-                                    remainingCredits=0;
+                                    remainingCredits = 0;
                                 }
                             }
                         }
+
                         if (remainingCredits > 0)
                             return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } };
-                    } 
-                    
-                    //if available slots are greater than the credits allot the timetable
-                    else {
+                    } else {
                         for (let k = 0; k < courseResponse.course.credits; k++) {
                             let sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
-                            .sort((a, b) => b.score - a.score);
+                                .sort((a, b) => b.score - a.score);
                             const { index } = sortedScores[k];
                             const row = Math.floor(index / bestScore[0].length);
                             const col = index % bestScore[0].length;
                             timetable[row][col] = courseResponse.course.name;
                             roomtable[row][col] = preferredRoomInfo.name;
-                            for(let i=0;i<bestScore[row].length;i++){
-                                bestScore[row][i]=-1;
+                            for (let i = 0; i < bestScore[row].length; i++) {
+                                bestScore[row][i] = -1;
                             }
                         }
                     }
-                } 
-                //if credits not availabe return 0
-                else {
-                    return { status: statusCodes.BAD_REQUEST, returnVal: null };
+                } else {
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
                 }
-            
             }
-
         }
+
         return { status: statusCodes.OK, returnVal: { timetable: timetable, roomtable: roomtable } };
     } catch (error) {
-        return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: null };
+        console.error(error);
+        return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
     }
 }
+export async function recommendCourse(
+    token: string,
+    teacher: string,
+    room: string | null,
+    blocks: string | null
+): Promise<{ status: number, timetable: string | null }> {
+    let timetable: string[][] | null = convertStringToTable(blocks);
+    let errMessage = "";
+    try {
+        let score: number[][] = Array(6).fill(0).map(() => Array(6).fill(0));
+        errMessage = "error while fetching timetable";
+        if (timetable) {
+            for (let j = 0; j < timetable.length; j++) {
+                for (let k = 0; k < timetable[j].length; k++) {
+                    if (timetable[j][k] != "0") {
+                        score[j][k] = -1;
+                    }
+                }
+            }
+        }
+        errMessage = "error accessing teacher";
+        let { status, teacher: teacherData } = await peekTeacher(token, teacher);
+        if (status == statusCodes.OK && teacherData) {
+            let scoreValue = scoreTeachers(teacherData.timetable, teacherData.labtable);
+            for (let i = 0; i < scoreValue.length; i++) {
+                for (let j = 0; j < scoreValue[i].length; j++) {
+                    if (scoreValue[i][j] < 0) {
+                        score[i][j] = -1;
+                    } else {
+                        if (score[i][j] >= 0)
+                            score[i][j] += scoreValue[i][j];
+                    }
+                }
+            }
+        } else {
+            return {
+                status: status,
+                timetable: errMessage
+            };
+        }
 
+        if (room) {
+            errMessage = "error when accessing room";
+            let { status, room: roomData } = await peekRoom(token, room);
+            if (status == statusCodes.OK && roomData) {
+                let scoreValue = scoreRooms(roomData.timetable);
+                for (let i = 0; i < scoreValue.length; i++) {
+                    for (let j = 0; j < scoreValue[i].length; j++) {
+                        if (scoreValue[i][j] < 0) {
+                            score[i][j] = -1;
+                        }
+                    }
+                }
+            } else {
+                return {
+                    status: status,
+                    timetable: errMessage
+                };
+            }
+        }
+
+        if (!score) {
+            return {
+                status: statusCodes.BAD_REQUEST,
+                timetable: "score is null"
+            };
+        }
+        for (let i = 0; i < timetable.length; i++) {
+            for (let j = 0; j < timetable[i].length; j++) {
+                if (timetable[i][j] !== "0") {
+                    score[i][j] = -1;
+                }
+            }
+        }
+
+        errMessage = "error when merging timetable";
+
+        let maxScore = Math.max(...score.flat());
+        if (maxScore > 0) {
+            for (let i = 0; i < score.length; i++) {
+                for (let j = 0; j < score[i].length; j++) {
+                    if (score[i][j] > 0) {
+                        score[i][j] /= maxScore;
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < score.length; i++) {
+            for (let j = 0; j < score[i].length - 1; j += 2) {
+                if (score[i][j] < 0 || score[i][j + 1] < 0) {
+                    score[i][j] = -1;
+                    score[i][j + 1] = -1;
+                }
+            }
+        }
+
+        return {
+            status: statusCodes.OK,
+            timetable: convertTableToString(score.map((row) => row.map((val) => val.toString())))
+        };
+    } catch {
+        return {
+            status: statusCodes.INTERNAL_SERVER_ERROR,
+            timetable: errMessage
+        };
+    }
+}
 export async function saveTimetable(
     JWTtoken: string,
     name: string,

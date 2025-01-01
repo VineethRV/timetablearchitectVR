@@ -849,6 +849,24 @@ app.get("/api/labPercentage", async (req, res) => {
   }
 });
 
+app.post("/api/recommendCourse", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { teacher, room, blocks } = req.body;
+  if (!token || !teacher || !blocks) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token, teacher, and blocks are required",
+    });
+  }
+
+  try {
+    const result = await recommendCourse(token, teacher, room, blocks);
+    res.status(200).json({ status: result.status, timetable: result.timetable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
 app.get("/health", (_, res) => {
   return res.json({
     msg: "Server is healthy !!",
