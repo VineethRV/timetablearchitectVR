@@ -356,28 +356,44 @@ export async function peekTeacher(
 
     //if verification of rules is okay, perform the following
     if (status == statusCodes.OK && user) {
-      const teacher = await prisma.teacher.findFirst({
-        where: {
-          name: name,
-          department:
-            user.role == "admin"
-              ? department
-                ? department
-                : user.department
-              : user.department,
-          orgId: user.orgId,
-        },
-        select: {
-          name: true,
-          orgId: true,
-          department: true,
-          alternateDepartments: true,
-          initials: true,
-          email: true,
-          labtable: true,
-          timetable: true,
-        },
-      });
+      let teacher 
+      if(user.role=="admin"){
+        teacher=await prisma.teacher.findFirst({
+          where: {
+            name: name,
+            orgId: user.orgId,
+          },
+          select: {
+            name: true,
+            orgId: true,
+            department: true,
+            alternateDepartments: true,
+            initials: true,
+            email: true,
+            labtable: true,
+            timetable: true,
+          },
+        });
+      }
+      else{
+        teacher=await prisma.teacher.findFirst({
+          where: {
+            name: name,
+            department:user.department,
+            orgId: user.orgId,
+          },
+          select: {
+            name: true,
+            orgId: true,
+            department: true,
+            alternateDepartments: true,
+            initials: true,
+            email: true,
+            labtable: true,
+            timetable: true,
+          },
+        });
+      }
       if(teacher)
         return {
           status: statusCodes.OK,

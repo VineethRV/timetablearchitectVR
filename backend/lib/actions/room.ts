@@ -340,12 +340,14 @@ export async function peekRoom(
       //find all the clasrooms in his lab
       let room
       if(user.role=="admin"){
+        console.log("admin found!")
         room = await prisma.room.findFirst({
           where: {
             name: name,
             orgId: user.orgId
           },
         });
+        console.log("\nrooms:",room)
       }
       else{
         room = await prisma.room.findFirst({
