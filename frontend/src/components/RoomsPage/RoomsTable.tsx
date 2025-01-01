@@ -247,7 +247,8 @@ const RoomsTable = ({
 
   const dataWithKeys = filteredRoomsData.map((room) => ({
     ...room,
-    key: room.name,
+    // @ts-ignore 
+    key: room.id,
   }));
 
   return (

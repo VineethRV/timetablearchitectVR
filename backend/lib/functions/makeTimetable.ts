@@ -2,7 +2,7 @@ import { peekCourse } from "../actions/course";
 import { PrismaClient } from "@prisma/client";
 import * as auth from "../actions/auth";
 import { getRooms, peekRoom } from "../actions/room";
-import { peekTeacher } from "../actions/teacher";
+import { peekTeacher, updateTeachers } from "../actions/teacher";
 import { statusCodes } from "../types/statusCodes";
 import { convertStringToTable, convertTableToString, scoreRooms, scoreTeachers } from "./common";
 import { Section } from "../types/main";
@@ -320,15 +320,53 @@ export async function saveTimetable(
             batch:batch
           },
         });
-        if (duplicates) {
+        if (duplicates||(courses.length!==teachers.length)||courses.length!==rooms.length) {
           return {
             status: statusCodes.BAD_REQUEST,
           };
         }
-        // If check is successful
+        const department=user.department
         const newCourse = await prisma.section.create({
           data: Section,
         });
+        const tt=convertStringToTable(timetable)
+        for (let i = 0; i < tt.length; i++) {
+            for (let j = 0; j < tt[i].length; j++) {
+              if (tt[i][j] !== "0") {
+                const tCourse=tt[i][j]
+                for(let k=0;k<courses.length;k++)
+                {
+                    if(tCourse==courses[k])
+                    {
+                        const tTeacher=teachers[k];
+                        const teacherResponse = await peekTeacher(JWTtoken, tTeacher,department);
+                        if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
+                            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                        }
+                        const tTeacherTT=convertStringToTable(teacherResponse.teacher.timetable)
+                        tTeacherTT[i][j]=tCourse;
+                        teacherResponse.teacher.timetable=convertTableToString(tTeacherTT)
+                        console.log("teacherresponse",teacherResponse)
+                        const updateteacher=await updateTeachers(JWTtoken,tTeacher,department,teacherResponse.teacher)
+                        if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
+                            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                        }
+                        if(rooms[k]!="0")
+                        {
+                            const tRoom=rooms[k];
+                        const roomResponse = await peekRoom(JWTtoken, tRoom);
+                        if (roomResponse.status !== statusCodes.OK || !roomResponse.room) {
+                            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                        }
+                        const tRoomTT=convertStringToTable(roomResponse.room.timetable)
+                        tRoomTT[i][j]=tCourse;
+                        }
+                        break;
+                    }
+                }
+              }
+            }
+          }
         return {
           status: statusCodes.OK,
         };

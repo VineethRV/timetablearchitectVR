@@ -1,4 +1,4 @@
-import CoreTable from "../../../../components/CoursePage/coreTable";
+import CoreTable from "../../../../components/CoursePage/CoreTable";
 import { useEffect, useState } from "react";
 import { Course } from "../../../../types/main";
 import axios from "axios";
@@ -21,32 +21,29 @@ export const fetchdept = async (): Promise<string> => {
 
     const status = response.status;
     if (status === 200) {
-      return response.data.message.department; 
+      return response.data.message.department;
     }
-    return ""; 
+    return "";
   } catch (error) {
     console.log(error);
-    return ""; 
+    return "";
   }
 };
 
 function page() {
-
   const [coreData, setCoreData] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
-  
-
 
   useEffect(() => {
-    const department =fetchdept();
-    const semester=localStorage.getItem("semester");
+    const department = fetchdept();
+
     axios
       .get(BACKEND_URL + "/courses", {
         headers: {
           authorization: localStorage.getItem("token"),
         },
         params: {
-          semester,
+          semester: Number(localStorage.getItem("semester")),
           department,
         },
       })
@@ -67,8 +64,7 @@ function page() {
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">Core Courses</h1>
-      <CoreTable CoreData={coreData} setCoreData={setCoreData}/>
-
+      <CoreTable CoreData={coreData} setCoreData={setCoreData} />
     </div>
   );
 }

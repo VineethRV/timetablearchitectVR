@@ -20,6 +20,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../../../config";
 import { timeslots, weekdays } from "../../../../utils/main";
 import { toast } from "sonner";
+import SwapTimetable from "../../../../components/TimetableComponents/SwapTimetable";
 
 const formItemLayout = {
   labelCol: {
@@ -245,6 +246,24 @@ const AddLabPage: React.FC = () => {
           },
         }
       );
+      
+      // here is the get scores of the slot endpoint
+      const scoreResponse = await axios.post(BACKEND_URL + '/recommendLab', {
+        Lteachers: teachers,
+        Lrooms: rooms,
+        blocks: convertTableToString(buttonStatus),
+      },
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
+      )
+
+      console.log("score ...")
+      console.log(scoreResponse)
+      console.log("score ...")
+
       console.log(response.status,response.data)
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
@@ -581,10 +600,10 @@ const AddLabPage: React.FC = () => {
           </div>
 
           {showTT ? (
-            <Timetable
+            <SwapTimetable
               buttonStatus={buttonStatus1}
               setButtonStatus={setButtonStatus1}
-            ></Timetable>
+            ></SwapTimetable>
           ) : (
             <></>
           )}
