@@ -34,9 +34,10 @@ const RoomTemplate = () => {
 
 const CoreCoursesTemplate = () => {
   useEffect(() => {
-    downloadCSV("core_courses_template.csv", ["course_name", "course_code"]);
+    downloadCSV("core_courses_template.csv", ["name", "code","no_of_hrs"]);
   }, []);
   return null; // No UI required as the tab closes automatically
 };
+
 
 export { TeacherTemplate, RoomTemplate, CoreCoursesTemplate };
