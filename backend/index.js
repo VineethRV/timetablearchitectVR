@@ -793,7 +793,7 @@ app.get("/api/teacherPercentage", async (req, res) => {
 
   try {
     const result = await panel.getTeacherPercentage(token);
-    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score });
+    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score, department: result.department });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -808,7 +808,7 @@ app.get("/api/roomPercentage", async (req, res) => {
 
   try {
     const result = await panel.getRoomPercentage(token);
-    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score });
+    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score, department: result.department });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
@@ -823,7 +823,7 @@ app.get("/api/labPercentage", async (req, res) => {
 
   try {
     const result = await panel.getLabPercentage(token);
-    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score });
+    res.status(200).json({ status: result.status, percentage: result.percentage, rank: result.rank, score: result.score, department: result.department });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

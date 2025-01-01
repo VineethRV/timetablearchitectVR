@@ -4,10 +4,11 @@ import { PrismaClient } from "@prisma/client";
 import { convertStringToTable } from "./common";
 const prisma = new PrismaClient();
 
-export async function getTeacherPercentage(token:string):Promise<{status:number,percentage:number, rank:string[],score:number[]}>{
+export async function getTeacherPercentage(token:string):Promise<{status:number,percentage:number, rank:string[],score:number[],department:string[]|null}>{
     let {status,user}=await getPosition(token)
     let rank: string[] = new Array(10).fill("");
     let rankScore: number[] = new Array(10).fill(0);
+    let department: string[] = new Array(10).fill("");
     console.log("token recieved\n")
     if(status==statusCodes.OK && user?.orgId){
         console.log("status ok\n")
@@ -19,9 +20,11 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 orgId: user.orgId,
                 },
                 select: {
+                    department:true,
                     name:true,
                     timetable:true,
-                    labtable:true
+                    labtable:true,
+
                 },
             })
             let totalPeriods = 0;
@@ -47,7 +50,9 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                         if((36-score)>rankScore[i]){
                             rankScore.splice(i, 0, 36 - score);
                             rank.splice(i, 0, teacher.name);
+                            department.splice(i, 0, teacher.department?teacher.department:"");
                             rankScore.pop();
+                            department.pop();
                             rank.pop();
                             break;
                         }
@@ -62,7 +67,8 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 status: statusCodes.OK,
                 percentage: percentage,
                 rank: rank,
-                score: rankScore
+                score: rankScore,
+                department:department
             };
         }
         else{
@@ -116,7 +122,8 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 status: statusCodes.OK,
                 percentage: percentage,
                 rank: rank,
-                score: rankScore
+                score: rankScore,
+                department:null
             };
         }
     }
@@ -125,14 +132,16 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
             status:statusCodes.FORBIDDEN,
             percentage:0,
             rank: rank,
-            score: rankScore
+            score: rankScore,
+            department:null
         }
     }
 }
-export async function getRoomPercentage(token: string): Promise<{ status: number, percentage: number, rank: string[], score: number[] }> {
+export async function getRoomPercentage(token: string): Promise<{ status: number, percentage: number, rank: string[], score: number[], department: string[] | null }> {
     let { status, user } = await getPosition(token);
     let rank: string[] = new Array(10).fill("");
     let rankScore: number[] = new Array(10).fill(0);
+    let department: string[] = new Array(10).fill("");
 
     if (status == statusCodes.OK && user?.orgId) {
         if (user.role == 'admin') {
@@ -143,7 +152,8 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                 },
                 select: {
                     name: true,
-                    timetable: true
+                    timetable: true,
+                    department: true
                 },
             });
             let totalPeriods = 0;
@@ -163,8 +173,10 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                         if ((36 - score) > rankScore[i]) {
                             rankScore.splice(i, 0, 36 - score);
                             rank.splice(i, 0, room.name);
+                            department.splice(i, 0, room.department ? room.department : "");
                             rankScore.pop();
                             rank.pop();
+                            department.pop();
                             break;
                         }
                     }
@@ -178,7 +190,8 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                 status: statusCodes.OK,
                 percentage: percentage,
                 rank: rank,
-                score: rankScore
+                score: rankScore,
+                department: department
             };
         } else {
             let rooms = await prisma.room.findMany({
@@ -224,7 +237,8 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                 status: statusCodes.OK,
                 percentage: percentage,
                 rank: rank,
-                score: rankScore
+                score: rankScore,
+                department: null
             };
         }
     } else {
@@ -232,14 +246,17 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
             status: statusCodes.FORBIDDEN,
             percentage: 0,
             rank: rank,
-            score: rankScore
+            score: rankScore,
+            department: null
         };
     }
 }
-export async function getLabPercentage(token: string): Promise<{ status: number, percentage: number, rank: string[], score: number[] }> {
+
+export async function getLabPercentage(token: string): Promise<{ status: number, percentage: number, rank: string[], score: number[], department: string[] | null }> {
     let { status, user } = await getPosition(token);
     let rank: string[] = new Array(10).fill("");
     let rankScore: number[] = new Array(10).fill(0);
+    let department: string[] = new Array(10).fill("");
 
     if (status == statusCodes.OK && user?.orgId) {
         if (user.role == 'admin') {
@@ -250,7 +267,8 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                 },
                 select: {
                     name: true,
-                    timetable: true
+                    timetable: true,
+                    department: true
                 },
             });
             let totalPeriods = 0;
@@ -270,8 +288,10 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                         if ((36 - score) > rankScore[i]) {
                             rankScore.splice(i, 0, 36 - score);
                             rank.splice(i, 0, lab.name);
+                            department.splice(i, 0, lab.department ? lab.department : "");
                             rankScore.pop();
                             rank.pop();
+                            department.pop();
                             break;
                         }
                     }
@@ -285,7 +305,8 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                 status: statusCodes.OK,
                 percentage: percentage,
                 rank: rank,
-                score: rankScore
+                score: rankScore,
+                department: department
             };
         } else {
             let labs = await prisma.room.findMany({
@@ -331,7 +352,8 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                 status: statusCodes.OK,
                 percentage: percentage,
                 rank: rank,
-                score: rankScore
+                score: rankScore,
+                department: null
             };
         }
     } else {
@@ -339,7 +361,8 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
             status: statusCodes.FORBIDDEN,
             percentage: 0,
             rank: rank,
-            score: rankScore
+            score: rankScore,
+            department: null
         };
     }
 }
