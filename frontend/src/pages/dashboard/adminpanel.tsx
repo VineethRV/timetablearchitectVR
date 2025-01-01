@@ -15,42 +15,74 @@ const stats = [
   { title: "Allotted labs", number: 84 },
 ];
 
-
 const AdminPanel = () => {
   const [topTeachers, setTopTeachers] = useState([]);
-  const [topRooms,setTopRooms] = useState([]);
+  const [topRooms, setTopRooms] = useState([]);
+  const [topLabs, setTopLabs] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
-      const { data:teachersData } = await axios.get(BACKEND_URL + "/teacherPercentage", {
-        headers: { Authorization: localStorage.getItem("token") },
-      });
+      const { data: teachersData } = await axios.get(
+        BACKEND_URL + "/teacherPercentage",
+        {
+          headers: { Authorization: localStorage.getItem("token") },
+        }
+      );
       const formattedTeachersData = teachersData.rank
-        .filter((name: string, index: number) => name && teachersData.department[index])
+        .filter(
+          (name: string, index: number) =>
+            name && teachersData.department[index]
+        )
         .map((name: string, index: number) => ({
           id: index + 1,
           name: name,
           department: teachersData.department[index],
-          score: teachersData.score[index]
-      }));
+          score: teachersData.score[index],
+        }));
 
       setTopTeachers(formattedTeachersData);
 
-      const {data : roomsData} = await axios.get(BACKEND_URL + "/roomPercentage", {
-        headers: { Authorization: localStorage.getItem("token") },
-      });
-      
-      const formattedRoomsData = roomsData.rank
-      .filter((name: string, index: number) => name && roomsData.department[index])
-      .map((name: string, index: number) => ({
-        id: index + 1,
-        name: name,
-        department: roomsData.department[index],
-        score: roomsData.score[index],
-        lab: false
-      }));
+      const { data: roomsData } = await axios.get(
+        BACKEND_URL + "/roomPercentage",
+        {
+          headers: { Authorization: localStorage.getItem("token") },
+        }
+      );
 
-      setTopRooms(formattedRoomsData)
+      const formattedRoomsData = roomsData.rank
+        .filter(
+          (name: string, index: number) => name && roomsData.department[index]
+        )
+        .map((name: string, index: number) => ({
+          id: index + 1,
+          name: name,
+          department: roomsData.department[index],
+          score: roomsData.score[index],
+          lab: false,
+        }));
+
+      setTopRooms(formattedRoomsData);
+
+      const { data: labsData } = await axios.get(
+        BACKEND_URL + "/labPercentage",
+        {
+          headers: { Authorization: localStorage.getItem("token") },
+        }
+      );
+
+      const formattedLabsData = labsData.rank
+        .filter(
+          (name: string, index: number) => name && labsData.department[index]
+        )
+        .map((name: string, index: number) => ({
+          id: index + 1,
+          name: name,
+          department: labsData.department[index],
+          score: labsData.score[index],
+          lab: true,
+        }));
+
+      setTopLabs(formattedLabsData);
     }
 
     fetchData();
@@ -89,7 +121,7 @@ const AdminPanel = () => {
         </Row>
         <CapacityCard />
         <RequestAccessWrapper />
-        <GridDisplay teachers={topTeachers} rooms={topRooms} />
+        <GridDisplay teachers={topTeachers} rooms={topRooms} labs={topLabs} />
       </Content>
     </Layout>
   );
