@@ -234,10 +234,17 @@ export async function updateRoom(
     };
   }
 }
-
+type RoomWithId = {
+  id: number;
+  name: string;
+  orgId: number;
+  department: string | null;
+  lab: boolean | null;
+  timetable: string | null;
+};
 export async function getRooms(
   token: string
-): Promise<{ status: number; rooms: Room[] | null }> {
+): Promise<{ status: number; rooms: RoomWithId[] | null }> {
   try {
     //get position of user
     const { status, user } = await auth.getPosition(token);
@@ -251,7 +258,7 @@ export async function getRooms(
 
     if (status == statusCodes.OK && user) {
       //find all the clasrooms in his lab
-      let rooms: Room[];
+      let rooms: RoomWithId[];
       if (user.role != "admin") {
         rooms = await prisma.room
           .findMany({
@@ -260,6 +267,7 @@ export async function getRooms(
               department: user.department,
             },
             select: {
+              id: true,
               name: true,
               department: true,
               lab: true,
@@ -279,6 +287,7 @@ export async function getRooms(
               orgId: user.orgId,
             },
             select: {
+              id: true,
               name: true,
               department: true,
               lab: true,

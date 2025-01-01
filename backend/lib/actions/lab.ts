@@ -98,11 +98,22 @@ export async function deleteLabs(
   }
 }
 
+export type LabWithIds = {
+  id: number;
+  name: string;
+  department: string | null;
+  orgId: number;
+  semester: number | null;
+  batches: string | null;
+  teachers: string | null;
+  rooms: string | null;
+  timetable: string | null;
+};
 export async function getLabs(
   JWTtoken: string,
   department: string | null = null,
   semester: number | null = null
-): Promise<{ status: number; data: Lab[] | null }> {
+): Promise<{ status: number; data: LabWithIds[] | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
 

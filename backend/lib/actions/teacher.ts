@@ -238,6 +238,17 @@ export async function createManyTeachers(
     };
   }
 }
+export type TeacherWithId = {
+  id: number;
+  name: string;
+  initials: string | null;
+  email: string | null;
+  department: string | null;
+  alternateDepartments: string | null;
+  timetable: string | null;
+  labtable: string | null;
+  orgId: number;
+};
 //to display teachers list
 export async function getTeachers(
   JWTtoken: string
@@ -254,7 +265,7 @@ export async function getTeachers(
 
     //if verification of roles is ok
     if (status == statusCodes.OK && user) {
-      let teachers: Teacher[];
+      let teachers: TeacherWithId[];
 
       //if role isnt admin, return teachers from same department
       if (user.role != "admin") {
@@ -265,6 +276,7 @@ export async function getTeachers(
               department: user.department,
             },
             select: {
+              id: true,
               name: true,
               department: true,
               initials: true,
@@ -290,6 +302,7 @@ export async function getTeachers(
               orgId: user.orgId,
             },
             select: {
+              id: true,
               name: true,
               department: true,
               initials: true,
