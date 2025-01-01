@@ -271,7 +271,7 @@ token:string,
 Lteachers:string[],
 Lrooms:string[],
 blocks:string|null
-):Promise<{status:number, timetable: string|null}>{
+):Promise<{status:number, timetable:string|null}>{
     let timetable:string[][]|null=convertStringToTable(blocks);
     try{
         let teachers=[]
