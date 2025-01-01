@@ -338,18 +338,24 @@ export async function peekRoom(
 
     if (status == statusCodes.OK && user) {
       //find all the clasrooms in his lab
-      const room = await prisma.room.findFirst({
-        where: {
-          name: name,
-          department:
-            user.role == "admin"
-              ? department
-                ? department
-                : user.department
-              : user.department, //if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
-          orgId: user.orgId,
-        },
-      });
+      let room
+      if(user.role=="admin"){
+        room = await prisma.room.findFirst({
+          where: {
+            name: name,
+            orgId: user.orgId
+          },
+        });
+      }
+      else{
+        room = await prisma.room.findFirst({
+          where: {
+            name: name,
+            department:user.department,//if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
+            orgId: user.orgId
+          },
+        });
+      }
       return {
         status: statusCodes.OK,
         room: room,

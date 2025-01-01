@@ -377,7 +377,7 @@ function peekRoom(token_1, name_1) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _c.trys.push([0, 5, , 6]);
+                    _c.trys.push([0, 8, , 9]);
                     return [4 /*yield*/, auth.getPosition(token)];
                 case 1:
                     _a = _c.sent(), status_5 = _a.status, user = _a.user;
@@ -387,37 +387,45 @@ function peekRoom(token_1, name_1) {
                                 room: null,
                             }];
                     }
-                    if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
+                    room = void 0;
+                    if (!(user.role == "admin")) return [3 /*break*/, 3];
                     return [4 /*yield*/, prisma.room.findFirst({
                             where: {
                                 name: name,
-                                department: user.role == "admin"
-                                    ? department
-                                        ? department
-                                        : user.department
-                                    : user.department, //if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
-                                orgId: user.orgId,
+                                orgId: user.orgId
                             },
                         })];
                 case 2:
                     room = _c.sent();
-                    return [2 /*return*/, {
-                            status: statusCodes_1.statusCodes.OK,
-                            room: room,
-                        }];
-                case 3: return [2 /*return*/, {
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, prisma.room.findFirst({
+                        where: {
+                            name: name,
+                            department: user.department, //if user is admin, refer the department passed in peekRoom(if a department isnt passed, the admins department is used), else use users deparment
+                            orgId: user.orgId
+                        },
+                    })];
+                case 4:
+                    room = _c.sent();
+                    _c.label = 5;
+                case 5: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.OK,
+                        room: room,
+                    }];
+                case 6: return [2 /*return*/, {
                         status: status_5,
                         room: null,
                     }];
-                case 4: return [3 /*break*/, 6];
-                case 5:
+                case 7: return [3 /*break*/, 9];
+                case 8:
                     _b = _c.sent();
                     //internal error
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             room: null,
                         }];
-                case 6: return [2 /*return*/];
+                case 9: return [2 /*return*/];
             }
         });
     });
