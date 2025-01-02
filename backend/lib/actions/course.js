@@ -333,7 +333,7 @@ function peekCourse(JWTtoken_1, name_1, semester_1) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _c.trys.push([0, 4, , 5]);
+                    _c.trys.push([0, 7, , 8]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _c.sent(), status_5 = _a.status, user = _a.user;
@@ -343,34 +343,45 @@ function peekCourse(JWTtoken_1, name_1, semester_1) {
                                 course: null,
                             }];
                     }
-                    if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    if (!(status_5 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
+                    course = void 0;
+                    if (!(user.role == 'admin')) return [3 /*break*/, 3];
                     return [4 /*yield*/, prisma.course.findFirst({
                             where: {
                                 name: name,
-                                department: user.role == "admin" && department
-                                    ? department
-                                    : user.department,
                                 orgId: user.orgId,
                                 semester: semester,
                             },
                         })];
                 case 2:
                     course = _c.sent();
-                    return [2 /*return*/, {
-                            status: statusCodes_1.statusCodes.OK,
-                            course: course,
-                        }];
-                case 3: return [2 /*return*/, {
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, prisma.course.findFirst({
+                        where: {
+                            name: name,
+                            department: user.department,
+                            orgId: user.orgId,
+                            semester: semester,
+                        },
+                    })];
+                case 4:
+                    course = _c.sent();
+                    _c.label = 5;
+                case 5: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.OK,
+                        course: course,
+                    }];
+                case 6: return [2 /*return*/, {
                         status: status_5,
                         course: null,
                     }];
-                case 4:
+                case 7:
                     _b = _c.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             course: null,
                         }];
-                case 5: return [2 /*return*/];
+                case 8: return [2 /*return*/];
             }
         });
     });

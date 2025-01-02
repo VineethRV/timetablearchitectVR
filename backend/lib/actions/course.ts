@@ -281,17 +281,28 @@ export async function peekCourse(
     }
 
     if (status == statusCodes.OK && user) {
-      const course = await prisma.course.findFirst({
-        where: {
-          name: name,
-          department:
-            user.role == "admin" && department
-              ? department
-              : user.department,
-          orgId: user.orgId,
-          semester: semester,
-        },
-      });
+      let course
+      if(user.role=='admin'){
+        course = await prisma.course.findFirst({
+          where: {
+            name: name,
+            orgId: user.orgId,
+            semester: semester,
+          },
+        });
+      }
+      else{
+        course = await prisma.course.findFirst({
+          where: {
+            name: name,
+            department:user.department,
+            orgId: user.orgId,
+            semester: semester,
+          },
+        });
+
+      }
+      
       return {
         status: statusCodes.OK,
         course: course,

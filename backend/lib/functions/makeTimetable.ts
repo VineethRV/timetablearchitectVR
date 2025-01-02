@@ -143,7 +143,7 @@ export async function suggestTimetable(
                     }
 
                     if (availableSlots < courseResponse.course?.credits) {
-                        return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } };
+                        return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: roomtable } };
                     }
                 } else {
                     return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
