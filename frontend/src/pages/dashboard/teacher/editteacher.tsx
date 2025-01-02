@@ -30,6 +30,28 @@ const formItemLayout = {
   },
 };
 
+export function newStringToTable(timetable: string): string[][] {
+  const arr: string[][] = timetable
+    .split(";")
+    .map((row: string) => row.split(","));
+
+  return arr.map((row, i) => {
+    return row.map((value, j) => {
+      return value == "0" ? "Free" : value;
+    });
+  });
+}
+
+export function newConvertTableToString(timetable: string[][]): string {
+  const s = timetable.map((row, i) => {
+    return row.map((value, j) => {
+      return value == "Free" ? "0" : value;
+    });
+  });
+
+  return s.map((row) => row.join(",")).join(";");
+}
+
 const EditTeacherpage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -67,7 +89,7 @@ const EditTeacherpage = () => {
     name: string,
     department: string | null
   ) => {
-    console.log(localStorage.getItem("token"),name,department)
+    console.log(localStorage.getItem("token"), name, department);
     axios
       .post(
         BACKEND_URL + "/teachers/peek",
@@ -87,7 +109,7 @@ const EditTeacherpage = () => {
         switch (status) {
           case statusCodes.OK:
             const timetableString = res.data.message.timetable
-              ? stringToTable(res.data.message.timetable)
+              ? newStringToTable(res.data.message.timetable)
               : Array(6).fill(Array(6).fill("Free"));
             setButtonStatus(timetableString);
 
@@ -117,7 +139,7 @@ const EditTeacherpage = () => {
       email,
       department,
       alternateDepartments: null,
-      timetable: convertTableToString(buttonStatus),
+      timetable: newConvertTableToString(buttonStatus),
       labtable: null,
       organisation: null,
     };

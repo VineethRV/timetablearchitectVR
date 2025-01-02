@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import { fetchdept } from "../courses/corecourse/corecoursedisplay";
 import SwapTimetable from "../../../components/TimetableComponents/SwapTimetable";
+import SimpleSwapTimetable from "../../../components/TimetableComponents/SimpleSwapTT";
 
 const formItemLayout = {
   labelCol: {
@@ -690,11 +691,11 @@ const AddSectionPage: React.FC = () => {
             {showTT ? (
               <div>
                 <label>Generated Timetable</label>
-                <SwapTimetable
+                <SimpleSwapTimetable
                   buttonStatus={buttonStatus1}
                   setButtonStatus={setButtonStatus1}
-                  timetableScore={timetableScore}
-                ></SwapTimetable>
+                  // timetableScore={timetableScore}
+                ></SimpleSwapTimetable>
               </div>
             ) : (
               <></>
