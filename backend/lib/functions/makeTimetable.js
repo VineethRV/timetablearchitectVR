@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -39,6 +50,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.suggestTimetable = suggestTimetable;
 exports.recommendCourse = recommendCourse;
 exports.saveTimetable = saveTimetable;
+exports.getTimetable = getTimetable;
 var course_1 = require("../actions/course");
 var client_1 = require("@prisma/client");
 var auth = require("../actions/auth");
@@ -595,6 +607,64 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR
                         }];
                 case 23: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getTimetable(JWTtoken, semester) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_4, user, section, error_2;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 5, , 6]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _b.sent(), status_4 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                section: null,
+                            }];
+                    }
+                    if (!(status_4 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    section = void 0;
+                    return [4 /*yield*/, prisma.section.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                semester: semester,
+                            },
+                            select: {
+                                name: true,
+                                batch: true,
+                                courses: true,
+                                teachers: true,
+                                rooms: true,
+                                semester: true,
+                                orgId: true,
+                                timeTable: true,
+                            },
+                        }).then(function (section) {
+                            return section.map(function (section) { return (__assign(__assign({}, section), { electives: null, labs: null, defaultRoom: null })); });
+                        })];
+                case 2:
+                    section = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            section: section,
+                        }];
+                case 3: return [2 /*return*/, {
+                        status: status_4,
+                        section: null,
+                    }];
+                case 4: return [3 /*break*/, 6];
+                case 5:
+                    error_2 = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            section: null,
+                        }];
+                case 6: return [2 /*return*/];
             }
         });
     });

@@ -505,6 +505,65 @@ export async function saveTimetable(
     };
   }
 }
+
+export async function getTimetable(
+    JWTtoken: string,
+    semester: number
+): Promise<{ status: number; section: Section[] | null }>{
+    try{
+         const { status, user } = await auth.getPosition(JWTtoken);
+        
+            if (user?.orgId == null) {
+              return {
+                status: statusCodes.BAD_REQUEST,
+                section: null,
+              };
+            }
+        
+            if (status == statusCodes.OK && user) {
+              let   section:  Section[];
+                section = await prisma.section.findMany({
+                  where: {
+                    orgId: user.orgId,
+                    semester: semester,
+                  },
+                  select: {
+                    name: true,
+                    batch: true,
+                    courses: true,
+                    teachers:true,
+                    rooms:true,
+                    semester:true,
+                    orgId:true,
+                    timeTable:true,
+                  },
+                }).then((section) =>
+                    section.map((section) => ({
+                      ...section,
+                      electives: null,
+                        labs: null, // Default value, since it's not queried
+                      defaultRoom: null, // Default value, since it's not queried
+                    }))
+                  );
+              return {
+                status: statusCodes.OK,
+                section: section,
+              };
+            } else {
+              return {
+                status: status,
+                section: null,
+              };
+            }
+    }
+    catch(error)
+    {
+        return {
+            status: statusCodes.INTERNAL_SERVER_ERROR,
+            section: null,
+          };
+    }
+}
 // export async function suggestLab(
 
 // ){

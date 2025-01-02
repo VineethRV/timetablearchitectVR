@@ -31,6 +31,7 @@ import VerifyComponent from "./pages/VerifyEmail";
 import EditCoursepage from "./pages/dashboard/courses/corecourse/editcorecourse";
 import { ChatBot } from "./components/ChatBot/ChatBot";
 import { CoreCoursesTemplate, RoomTemplate, TeacherTemplate } from "./components/Templates/Page";
+import SectionTabledisplay from "./pages/dashboard/section/sectiondisplay";
 
 function App() {
   return (
@@ -93,6 +94,7 @@ function App() {
             />
           </Route>
           <Route path="/dashboard/section" element={<Section />}>
+          <Route index element={<SectionTabledisplay />} />
             <Route path="/dashboard/section/add" element={<AddSectionPage />} />
           </Route>
           <Route path="/dashboard/admin/access" element={<Access />} />

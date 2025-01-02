@@ -55,6 +55,7 @@ const AddSectionPage: React.FC = () => {
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [courseOptions, setCourseOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
+  const [labOptions, setLabOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const [buttonStatus, setButtonStatus] = useState(
@@ -126,6 +127,7 @@ const AddSectionPage: React.FC = () => {
     fetchRooms();
     fetchCourse();
     fetchElectives();
+    fetchlabs();
   }, []);
 
   const fetchTeachers = async () => {
@@ -160,6 +162,34 @@ const AddSectionPage: React.FC = () => {
       });
       if (response.data.status === 200) {
         setElectiveOptions(response.data.message.map((elective: { name: string }) => elective.name)); 
+      } else {
+        message.error(response.data.message || "Failed to fetch electives.");
+      }
+    } catch (error) {
+      message.error("An error occurred while fetching electives.");
+      console.error(error);
+    }
+  };
+
+  
+  const fetchlabs = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const semester = localStorage.getItem("semester");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        return;
+      }
+      const response = await axios.get(BACKEND_URL + "/labs", {
+        headers: {
+          authorization: token,
+        },
+        params: {
+          semester,
+        },
+      });
+      if (response.data.status === 200) {
+        setLabOptions(response.data.message.map((lab: { name: string }) => lab.name)); 
       } else {
         message.error(response.data.message || "Failed to fetch electives.");
       }
@@ -206,68 +236,104 @@ const AddSectionPage: React.FC = () => {
         }
       });
   };
-
-  function getRecommendation()
-  {
-    const block=buttonConvert(buttonStatus);
-    const courses=tableData.map((item)=>item.course)
-    const teachers=tableData.map((item)=>item.teacher)
-    const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
-    const semester=Number(localStorage.getItem("semester"))
-    const Prefrooms=form.getFieldValue("Room")
-    const elective=form.getFieldValue("Electives")
-    const lab=form.getFieldValue("Labs")
-    if(elective!=undefined)
-      {
-      axios.post(
-        BACKEND_URL+"/electives/peek",
-        {
-          name:elective,
-          semester,
-        },
-        { headers: {
-          authorization: localStorage.getItem("token"),
-        }}
-      ).then((res)=>{
-        console.log("res",res.data)
-        if(res.status==200)
-        {
-          const eleTT=convertStringToTable(res.data.message.timetable);
-          console.log(eleTT)
-          for(let i=0;i<eleTT.length;i++)
+  async function getRecommendation() {
+    const block = buttonConvert(buttonStatus);
+    const courses = tableData.map((item) => item.course);
+    const teachers = tableData.map((item) => item.teacher);
+    const rooms = tableData.map((item) => (item.room === "--" ? "0" : item.room));
+    const semester = Number(localStorage.getItem("semester"));
+    const Prefrooms = form.getFieldValue("Room");
+    const elective = form.getFieldValue("Electives");
+    const lab = form.getFieldValue("Labs");
+  
+    // Wait for elective data if elective is defined
+    if (elective !== undefined) {
+      try {
+        const res = await axios.post(
+          BACKEND_URL + "/electives/peek",
           {
-            for(let j=0;j<eleTT[i].length;j++)
-            {
-              if(eleTT[i][j]!=="0")
-              {
-                console.log(eleTT[i][j])
-                block[i][j]=eleTT[i][j]
+            name: elective,
+            semester,
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        if (res.status === 200) {
+          const eleTT = convertStringToTable(res.data.message.timetable);
+          console.log(eleTT);
+  
+          for (let i = 0; i < eleTT.length; i++) {
+            for (let j = 0; j < eleTT[i].length; j++) {
+              if (eleTT[i][j] !== "0") {
+                block[i][j] = eleTT[i][j];
               }
             }
           }
-          console.log("block",block)
+        } else {
+          return statusCodes.BAD_REQUEST;
         }
-        else{
-          return statusCodes.BAD_REQUEST
-        }
-      })}
-      
-    const promise =axios.post(
-    BACKEND_URL+"/suggestTimetable",
-    {
-      blocks:convertTableToString(block),
-      courses:courses,
-      teachers:teachers,
-      rooms:rooms,
-      semester:semester,
-      preferredRooms:Prefrooms
-    },
-    {
-      headers: {
-        authorization: localStorage.getItem("token"),
+      } catch (error) {
+        console.error("Error fetching elective data:", error);
+        return "Failed to fetch elective data";
       }
     }
+  
+    console.log(lab)
+    if (lab !== undefined) {
+      try {
+        const resl = await axios.post(
+          BACKEND_URL + "/labs/peek",
+          {
+            name: lab,
+            semester,
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        console.log("lab",resl.status)
+        if (resl.status === 200) {
+          const labTT = convertStringToTable(resl.data.message.timetable);
+          console.log(labTT);
+  
+          for (let i = 0; i < labTT.length; i++) {
+            for (let j = 0; j < labTT[i].length; j++) {
+              if (labTT[i][j] !== "0") {
+                block[i][j] = labTT[i][j];
+              }
+            }
+          }
+        } else {
+          return statusCodes.BAD_REQUEST;
+        }
+      } catch (error) {
+        console.error("Error fetching lab data:", error);
+        return "Failed to fetch lab data";
+      }
+    }
+    // Proceed with the timetable generation after electives are processed
+    const promise = axios.post(
+      BACKEND_URL + "/suggestTimetable",
+      {
+        blocks: convertTableToString(block),
+        courses: courses,
+        teachers: teachers,
+        rooms: rooms,
+        semester: semester,
+        preferredRooms: Prefrooms,
+      },
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
     );
+  
     toast.promise(promise, {
       loading: "Generating timetable...",
       success: (res) => {
@@ -281,8 +347,8 @@ const AddSectionPage: React.FC = () => {
                   value === "0" ? "Free" : value === "1" ? "Blocked" : value
                 )
             );
-            console.log(convertedTimetable)
-            setRoomTT(convertTableToString(res.data.returnVal.roomtable))
+            console.log(convertedTimetable);
+            setRoomTT(convertTableToString(res.data.returnVal.roomtable));
             setButtonStatus1(convertedTimetable);
             return "Generated timetable!!";
           case statusCodes.UNAUTHORIZED:
@@ -299,7 +365,7 @@ const AddSectionPage: React.FC = () => {
       },
     });
   }
-
+  
   const handleEditClick = (record: courseList) => {
     handleOpenModal();
     form.setFieldValue("course", record.course);
@@ -562,8 +628,11 @@ const AddSectionPage: React.FC = () => {
                             value: ecourse,
                           }))} placeholder="Electives" className="font-normal w-96" />
           </Form.Item>
-          <Form.Item name="labs" label="Lab courses applicable for the section">
-            <Select placeholder="Labs" className="font-normal w-96" />
+          <Form.Item name="Labs" label="Lab courses applicable for the section">
+            <Select options={labOptions.map((lcourse) => ({
+                            label: lcourse,
+                            value: lcourse,
+                          }))} placeholder="Labs" className="font-normal w-96" />
           </Form.Item>
           <Form.Item
             label="Select the default Room for the section"

@@ -16,7 +16,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -766,6 +766,26 @@ app.post("/api/recommendLab", async (req, res) => {
   try {
     const result = await labF.recommendLab(token, Lteachers, Lrooms, blocks);
     res.status(200).json({ status: result.status, timetable: result.timetable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+
+app.get("/api/sections", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { semester } = req.query;
+  if (!token || semester === undefined) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token and semester are required" });
+  }
+  try {
+    const result = await getTimetable(
+      token,
+      parseInt(semester)
+    );
+    res.status(200).json({ status: result.status, message: result.section });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

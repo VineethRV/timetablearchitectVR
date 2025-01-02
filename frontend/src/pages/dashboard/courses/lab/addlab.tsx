@@ -53,8 +53,11 @@ export const convertToTimetable = (
   );
 };
 
+
+
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [department, setDepartment] = useState("");
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
@@ -78,6 +81,29 @@ const AddLabPage: React.FC = () => {
   );
 
   const navigate = useNavigate();
+
+  const fetchdept = ()=> {
+    try {
+      axios.post(
+        BACKEND_URL + "/getPosition",
+        {},
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      ).then((res)=>{
+      if (res.status === 200) {
+       setDepartment( res.data.message.department);
+      } else {
+        return ""
+      }}
+    )
+    } catch (error) {
+      console.log(error);
+      return ""
+    }
+  };
 
   const handleOpenModal = () => {
     const currentBatches = form.getFieldValue("numberOfBatches");
@@ -171,6 +197,7 @@ const AddLabPage: React.FC = () => {
     fetchTeachers();
     fetchRooms();
     fetchElectives();
+    fetchdept();
     setTableData(tableData);
   }, [tableData]);
 
@@ -356,8 +383,10 @@ const AddLabPage: React.FC = () => {
         batches: courseSets,
         teachers: teachers,
         rooms: rooms,
-        timetables: buttonStatus1,
-        department: "Computer Science Engineering",
+        timetables: buttonStatus1.map(row =>
+          row.map(value => value === "Free" ? "0" : value)
+        ),
+        department: department,
       },
       {
         headers: {
