@@ -1,28 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.timeslots = exports.weekdays = void 0;
 exports.convertStringToTable = convertStringToTable;
 exports.convertTableToString = convertTableToString;
 exports.scoreTeachers = scoreTeachers;
 exports.scoreRooms = scoreRooms;
-exports.getIntersection = getIntersection;
 var freeFactor = 0.1; //higher the number more continuous allocation is discouraged
-exports.weekdays = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-];
-exports.timeslots = [
-    "9:00-10:00",
-    "10:00-11:00",
-    "11:30-12:30",
-    "12:30-1:30",
-    "2:30-3:30",
-    "3:30-4:30",
-];
 function convertStringToTable(timetableString) {
     if (timetableString)
         return timetableString.split(";").map(function (row) { return row.split(","); });
@@ -81,24 +63,4 @@ function scoreRooms(roomTab) {
         scoredTable.push(arr);
     }
     return scoredTable;
-}
-function getIntersection(teachers, rooms) {
-    var intersection = exports.weekdays.map(function () { return exports.timeslots.map(function () { return 0; }); });
-    teachers.map(function (teacher) {
-        var teacherScore = scoreTeachers(teacher.timetable, teacher.labtable);
-        intersection.map(function (row, i) {
-            row.map(function (value, j) {
-                if (teacherScore[i][j] < 0 || value < 0)
-                    return -1;
-                return value + teacherScore[i][j];
-            });
-        });
-    });
-    rooms.map(function (room) {
-        var roomScore = scoreRooms(room.timetable);
-        intersection.map(function (row, i) {
-            return row.map(function (value, j) { return (roomScore[i][j] < 0 ? -1 : value); });
-        });
-    });
-    return intersection;
 }

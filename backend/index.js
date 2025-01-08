@@ -889,6 +889,24 @@ app.post("/api/recommendCourse", async (req, res) => {
   }
 });
 
+app.post("/api/getElectiveIntersection", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { teachers, rooms } = req.body;
+  if (!token || !teachers || !rooms) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token, teachers, and rooms are required",
+    });
+  }
+
+  try {
+    const intersection = getIntersection(teachers, rooms);
+    res.status(200).json({ status: 200, intersection });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
 app.get("/health", (_, res) => {
   return res.json({
     msg: "Server is healthy !!",
