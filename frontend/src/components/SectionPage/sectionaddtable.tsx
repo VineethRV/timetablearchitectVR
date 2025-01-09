@@ -23,8 +23,6 @@ const SectionAddTable= (
     onEditClick: (record: courseList) => void;
   }
 ) => {
-
-
   const handleDeleteClick = (record: courseList) => {
     const updatedData = sectionData.filter(item => item.key !== record.key);
     setSectionsData(updatedData);

@@ -24,7 +24,7 @@
 
 # LABS:
 [ ] Clicking generate should be responsive
-**[ ] Moving allotted timeslot does not work**
+**[ ] Moving allotted timeslot does not work(Vineeth)**
 [ ] Buttons in table can be bigger and table can be on the side rather than down
 `[ ] Deleting and modifying lab is giving invalid request`
 **[ ] Lab creation changes not reflected in teachers and rooms**

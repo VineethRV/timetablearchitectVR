@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button } from "antd";
+import { button } from "framer-motion/client";
 // Define the type for the timetable props
 interface TimetableProps {
   buttonStatus: string[][]; // Array of arrays with course names
@@ -26,6 +27,10 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
     rowIndex: number;
     colIndex: number;
   } | null>(null);
+  let score: number[][] = new Array(6).fill(0).map(() => 
+    new Array(6).fill(0).map(() => Math.random() * 2- 1)
+  );
+
   // Handle button click for swapping
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
     if (!selectedSlot) {
@@ -56,19 +61,28 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
     key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
+      
       <Button
         key={colIndex}
         className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
-          selectedSlot?.rowIndex === rowIndex &&
-          selectedSlot?.colIndex === colIndex
-            ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
-            : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
+          selectedSlot
+        ? selectedSlot.rowIndex === rowIndex &&
+          selectedSlot.colIndex === colIndex
+          ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
+          : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
+        : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
         }`}
         onClick={() => handleButtonClick(rowIndex, colIndex)}
+        disabled={
+          (selectedSlot ? true : false) &&
+          (score[rowIndex][colIndex] < 0 || buttonStatus[rowIndex][colIndex] !== "Free")
+        }
         style={{
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
           overflow: "hidden",
+          borderColor: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] == "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
+          borderWidth: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] == "Free" ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
         }}
       >
         {buttonStatus[rowIndex][colIndex]}
