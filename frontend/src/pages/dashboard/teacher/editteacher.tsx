@@ -27,6 +27,7 @@ const EditTeacherpage = () => {
   const [loading, setLoading] = useState(true);
   const [admin, setAdmin] = useState<Boolean>(false);
   const [userDepartment, setDepartment] = useState("");
+  const [lab, setLab] = useState("");
   const { oldname, olddepartment } = useParams();
   const clearFields = () => {
     form.setFieldValue("name", "");
@@ -78,10 +79,27 @@ const EditTeacherpage = () => {
 
         switch (status) {
           case statusCodes.OK:
-            const timetableString = res.data.message.timetable
+            const timetable= res.data.message.timetable
               ? stringToTable(res.data.message.timetable)
               : Array(6).fill(Array(6).fill("Free"));
-            setButtonStatus(timetableString);
+              const labtable = res.data.message.labtable
+              ? stringToTable(res.data.message.labtable)
+              : Array(6).fill(Array(6).fill("Free"));
+              const finaltable = Array(6).fill(null).map(() => Array(6).fill("Free"));
+            for(let i=0;i<timetable.length;i++)
+            {
+              for(let j=0;j<timetable[i].length;j++)
+              {
+                if(timetable[i][j]!="Free"){
+                  finaltable[i][j]=timetable[i][j];
+                }
+                if(labtable[i][j]!="Free"){
+                  finaltable[i][j]=labtable[i][j];
+                }
+              }
+            }
+            setLab(res.data.message.labtable)
+            setButtonStatus(finaltable);
             form.setFieldsValue({
               name: res.data.message.name,
               initials: res.data.message.initials,
@@ -109,7 +127,7 @@ const EditTeacherpage = () => {
       department,
       alternateDepartments: null,
       timetable: convertTableToString(buttonStatus),
-      labtable: null,
+      labtable:lab,
       organisation: null,
     };
 
