@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.register = exports.login = exports.checkAuthentication = void 0;
+exports.register = exports.login = exports.accessCode = exports.checkAuthentication = void 0;
 exports.getPosition = getPosition;
 exports.sendVerificationEmail = sendVerificationEmail;
 exports.checkUserExists = checkUserExists;
@@ -76,6 +76,67 @@ var checkAuthentication = function (token) { return __awaiter(void 0, void 0, vo
     });
 }); };
 exports.checkAuthentication = checkAuthentication;
+var accessCode = function (token) { return __awaiter(void 0, void 0, void 0, function () {
+    var jwtParsed, userId, user, organisation, _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 5, , 6]);
+                console.log("inside access code");
+                jwtParsed = jwt.decode(token);
+                console.log("parsing succesfull");
+                userId = jwtParsed.id;
+                console.log("accessed ID", userId);
+                return [4 /*yield*/, prisma.user.findUnique({
+                        where: {
+                            id: userId,
+                        },
+                    })];
+            case 1:
+                user = _b.sent();
+                if (!user) {
+                    console.log("breh\n");
+                }
+                if (!(user && user.orgId)) return [3 /*break*/, 3];
+                return [4 /*yield*/, prisma.organisation.findUnique({
+                        where: {
+                            id: user.orgId,
+                        },
+                    })];
+            case 2:
+                organisation = _b.sent();
+                if (organisation) {
+                    if (!organisation.invite_code) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.NOT_FOUND,
+                                accessCode: "organisation code not formed yet",
+                            }];
+                    }
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            accessCode: organisation.invite_code,
+                        }];
+                }
+                return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                        accessCode: "organisation not found",
+                    }];
+            case 3: return [2 /*return*/, {
+                    status: statusCodes_1.statusCodes.NOT_FOUND,
+                    accessCode: "user not found",
+                }];
+            case 4: return [3 /*break*/, 6];
+            case 5:
+                _a = _b.sent();
+                return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                        accessCode: "error"
+                    }];
+            case 6: return [2 /*return*/];
+        }
+    });
+}); };
+exports.accessCode = accessCode;
 var login = function (email, pass) { return __awaiter(void 0, void 0, void 0, function () {
     var user, validatePass, token, e_1;
     return __generator(this, function (_a) {

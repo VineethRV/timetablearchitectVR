@@ -31,6 +31,60 @@ export const checkAuthentication = async (token: string): Promise<boolean> => {
   }
 };
 
+export const accessCode = async (token: string): Promise<{ status: number; accessCode: string }> => {
+  try{
+    console.log("inside access code");
+    const jwtParsed = jwt.decode(token) as jwt.JwtPayload;
+    console.log("parsing succesfull");
+    const userId = jwtParsed.id;
+    console.log("accessed ID",userId);
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if(!user){
+      console.log("breh\n");
+    }
+    if (user && user.orgId) {
+      const organisation = await prisma.organisation.findUnique({
+        where: {
+          id: user.orgId,
+        },
+      });
+
+      if (organisation) {
+        if(!organisation.invite_code){
+          return {
+            status: statusCodes.NOT_FOUND,
+            accessCode: "organisation code not formed yet",
+          };
+        }
+        return {
+          status: statusCodes.OK,
+          accessCode: organisation.invite_code,
+        };
+      }
+      return {
+        status: statusCodes.INTERNAL_SERVER_ERROR,
+        accessCode: "organisation not found",
+      }
+    }
+    else{
+      return {
+        status: statusCodes.NOT_FOUND,
+        accessCode: "user not found",
+      }
+    }
+  }
+  catch{
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      accessCode:"error"
+    }
+  }
+}
+
 export const login = async (
   email: string,
   pass: string

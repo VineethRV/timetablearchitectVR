@@ -907,6 +907,19 @@ app.post("/api/getElectiveIntersection", async (req, res) => {
   }
 });
 
+app.get("/api/accessCode", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await auth.accessCode(token);
+    res.status(200).json({ status: result.status, accessCode: result.accessCode });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 app.get("/health", (_, res) => {
   return res.json({
     msg: "Server is healthy !!",
