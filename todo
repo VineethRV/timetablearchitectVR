@@ -1,0 +1,32 @@
+* Understand and make onboarding fluent
+* verify email
+* admin panel sections formed, courses alloted and other stuff.
+* display joining code in admin panel
+* disable requestAccess for editors
+* top teachers free in editors too
+
+TEACHER:
+if editor deparment should be disabled and cse should be selected
+if teacher busy should save as busy/whatever name and if teacher is free should save as 0
+labtable is becoming null when doing edit teachers
+Disable auto suggetion
+
+
+ROOM ADDING:
+ 1 0 problem
+
+
+Elective:
+	Elective problem(not displayed)
+Labs: 
+	clicking generate should be responsive
+	Moving alloted timeslot doesnt work.
+	Buttons in table can be bigger and table can be on the side rather than down.
+	Deleting and modifying lab is giving invalid request.
+	Lab creation changes not reflected in teachers and rooms.
+Core:
+	Semester option in core course redundant
+	Particular classroom still contains dummy data
+	Editing courses load forever
+
+	
