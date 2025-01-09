@@ -7,13 +7,16 @@
 [ ] top teachers free in editors too
 
 # TEACHER:
-**[ ] if editor deparment should be disabled and cse should be selected**
+**[ ] if editor deparment should be disabled and editor dep should be selected**
 `[ ] if teacher busy should save as busy/whatever name and if teacher is free should save as 0`
 **[ ] labtable is becoming null when doing edit teachers**
 [ ] Disable auto filling
 
 # ROOM ADDING:
 **[ ] 1 0 problem**
+**[ ] if editor deparment should be disabled and editor dep should be selected**
+
+[ ] Searching for department problem for admins 
 
 # ELECTIVE:
 **[ ] Elective problem (not displayed)**
