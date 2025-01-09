@@ -33,6 +33,27 @@ const formItemLayout = {
   },
 };
 
+export const fetchTeachers = async (setTeacherOptions: (options: string[]) => void) => {
+  try {
+    const response = await axios.get(BACKEND_URL + "/teachers", {
+      headers: {
+        authorization: localStorage.getItem("token"),
+      },
+    });
+
+    if (response.data && response.data.message) {
+      const teacherNames = response.data.message.map((item: any) => item.name);
+      setTeacherOptions(teacherNames);
+    } else {
+      console.warn("No teachers found in the response.");
+      setTeacherOptions([]);
+    }
+  } catch (error) {
+    console.error("Failed to fetch teachers:", error);
+    message.error("Error fetching teacher data.");
+  }
+};
+
 interface BatchField {
   key: string;
   courseSet: string;
@@ -53,7 +74,19 @@ export const convertToTimetable = (
   );
 };
 
-
+export const fetchRooms = async (setRoomOptions: (options: string[]) => void) => {
+  try {
+    const response = await axios.get(BACKEND_URL + "/rooms", {
+      headers: {
+        authorization: localStorage.getItem("token"),
+      },
+    });
+    setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+  } catch (error) {
+    console.error("Failed to fetch rooms:", error);
+    message.error("Error fetching room data.");
+  }
+};
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -141,19 +174,6 @@ const AddLabPage: React.FC = () => {
     setFormFields(updatedFields);
   };
 
-  const fetchTeachers = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + "/teachers", {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      });
-      setTeacherOptions(response.data.message.map((item: any) => item.name));
-    } catch (error) {
-      console.error("Failed to fetch teachers:", error);
-      message.error("Error fetching teacher data.");
-    }
-  };
   const fetchElectives = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -180,22 +200,9 @@ const AddLabPage: React.FC = () => {
     }
   };
 
-  const fetchRooms = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + "/rooms", {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      });
-      setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
-    } catch (error) {
-      console.error("Failed to fetch rooms:", error);
-      message.error("Error fetching room data.");
-    }
-  };
   useEffect(() => {
-    fetchTeachers();
-    fetchRooms();
+    fetchTeachers(setTeacherOptions);
+    fetchRooms(setRoomOptions);
     fetchElectives();
     fetchdept();
     setTableData(tableData);

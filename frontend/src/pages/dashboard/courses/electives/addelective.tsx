@@ -2,7 +2,6 @@ import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import {
   Button,
-  message,
   Form,
   Input,
   Select,
@@ -12,9 +11,10 @@ import {
 } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import ElectiveAddTable from "../../../../components/CoursePage/electiveAddtable";
+import { useEffect, useState } from "react";
+import ElectiveAddTable, { Elective } from "../../../../components/CoursePage/electiveAddtable";
 import Timetable from "../../../../components/timetable";
+import { fetchRooms, fetchTeachers } from "../lab/addlab";
 
 
 const formItemLayout = {
@@ -44,27 +44,63 @@ const formItemLayout = {
     "2:30-3:30",
     "3:30-4:30",
   ];
+
   
 const AddElectivepage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
-    const success = () => {
-      message.success("Lab Course Added successfully!", 3);
-    };
+    const [eledata,SetEleData]=useState<Elective[]>([])
+  const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
+  const [editingRecord, setEditingRecord] = useState<Elective | null>(null);
+  const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const [buttonStatus, setButtonStatus] = useState(
+    weekdays.map(() => timeslots.map(() => "Free"))
+  );
     const navigate=useNavigate();
   
+    useEffect(() => {
+      fetchTeachers(setTeacherOptions);
+      fetchRooms(setRoomOptions)
+      SetEleData(eledata);
+    }, [eledata]);
+
+
     const handleOpenModal = () => {
       setIsModalOpen(true);
     };
   
     const handleCloseModal = () => {
       setIsModalOpen(false);
-      form.resetFields(); // Clear form on modal close
+      form.resetFields(); 
+      setEditingRecord(null);
     };
   
-    const [buttonStatus, setButtonStatus] = useState(
-      weekdays.map(() => timeslots.map(() => "Free"))
-    );
+    const handleModalSubmit = () => {
+      const course = form.getFieldValue("course");
+      const teachers = form.getFieldValue("teachers");
+      const rooms = form.getFieldValue("rooms");
+    
+      const newElective: Elective = {
+        course: course,
+        teachers: teachers,
+        rooms: rooms,
+      };
+      if (editingRecord) {
+        SetEleData((prevEleData) =>
+          prevEleData.map((item) =>
+            item.course === editingRecord.course ? { ...item, ...newElective } : item
+          )
+        );
+      } else {
+        SetEleData((prevEleData) => [...prevEleData, newElective]);
+      }
+      handleCloseModal(); 
+    };
+    
+    const handleSubmit=()=>{
+
+    }
+
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] text-xl text-bold">
@@ -102,7 +138,7 @@ const AddElectivepage: React.FC = () => {
           <label>
             <div>
               <span className="inline-flex items-center space-x-10">
-                Teachers handling the Elective Course
+                Elective courses under this cluster
                 <Tooltip title="Select all the teachers that handle the courses offered under the Elective course">
                   <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
                 </Tooltip>
@@ -119,24 +155,91 @@ const AddElectivepage: React.FC = () => {
                 title="Enter the details about course offered under this elective"
                 visible={isModalOpen}
                 onCancel={handleCloseModal}
-                okText="Submit"
-                cancelText="Cancel"
+                onOk={handleModalSubmit}
+                width={1000}
               >
                 <Form form={form} layout="vertical">
+                <div
+                      style={{
+                        marginBottom: "16px",
+                        padding: "8px 12px",
+                        border: "1px solid #d9d9d9",
+                        borderRadius: "6px",
+                        backgroundColor: "#fafafa",
+                      }}
+                    >
                   <Form.Item>
-                    <div>
-                      <label>Course Name</label>
+                  <div style={{
+                          display: "flex",
+                          gap: "16px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                      <Form.Item
+                          label={
+                            <span className="text-sm font-medium">Elective</span>
+                          }
+                          name={'course'}
+                          style={{ flex: "1 1 30%" }}
+                        >
                       <Input placeholder="Course Name" />
-                      <label>Teachers</label>
-                      <Select placeholder="teachers" />
+                      </Form.Item>
+                      <Form.Item
+                          label={
+                            <span className="text-sm font-medium">Teachers</span>
+                          }
+                          name={'teachers'}
+                          style={{ flex: "1 1 30%" }}
+                        >
+                          <Select
+                            maxTagCount={2}
+                            mode="tags"
+                            placeholder="Teachers"
+                            options={teacherOptions.map((teacher) => ({
+                              label: teacher,
+                              value: teacher,
+                            }))}
+                            style={{ width: "100%" }}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          label={
+                            <span className="text-sm font-medium">Rooms</span>
+                          }
+                          name={'rooms'}
+                          style={{ flex: "1 1 30%" }}
+                        >
+                          <Select
+                            maxTagCount={2}
+                            mode="tags"
+                            placeholder="Rooms"
+                            options={roomOptions.map((room) => ({
+                              label: room,
+                              value: room,
+                            }))}
+                            style={{ flex: "1 1 30%" }}
+                          />
+                        </Form.Item>
                     </div>
                   </Form.Item>
+                  </div>
                 </Form>
               </Modal>
             </div>
           </label>
           <br/>
-          <ElectiveAddTable/>
+          <ElectiveAddTable electiveData={eledata} setElectivesData={SetEleData} 
+           onEditClick={(records) => {
+              form.setFieldValue(`course`, records.course);
+              form.setFieldValue(
+                `teachers`,
+                records.teachers
+              );
+            form.setFieldValue('rooms', records.rooms && records.rooms.length > 0 ? records.rooms : null);
+              handleOpenModal();
+              setEditingRecord(records);
+            }
+          }/>
           <br/><br/>
           <label className="flex items-center">
             <span>Select the timeslot for the subject</span>
@@ -158,7 +261,7 @@ const AddElectivepage: React.FC = () => {
                 </Button>
               </Form.Item>
               <Form.Item>
-                <Button onClick={success} className="bg-primary text-[#FFFFFF]">
+                <Button onClick={handleSubmit} className="bg-primary text-[#FFFFFF]">
                   Submit
                 </Button>
               </Form.Item>
