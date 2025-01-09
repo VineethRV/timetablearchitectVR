@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Form,
@@ -19,32 +19,18 @@ import { BACKEND_URL } from "../../../../config";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import { DEPARTMENTS_OPTIONS } from "../../../../info";
-import { timeslots, weekdays } from "../../../utils/main";
+import { formItemLayout, getPosition, timeslots, weekdays } from "../../../utils/main";
+import { buttonConvert } from "../teacher/addteacher";
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
 
 const AddRoomPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+  const [admin, setAdmin] = useState<Boolean>(false);
+  const [userDepartment, setDepartment] = useState("");
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
-
-  const buttonConvert=()=>{
-    return buttonStatus.map((row) =>
-      row.map((status) => (status === "Free" ? "0" : "1"))
-    );
-}
 
   function clearFields() {
     form.setFieldValue('className', "");
@@ -52,6 +38,10 @@ const AddRoomPage: React.FC = () => {
     form.setFieldValue('department', "");
     setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
   }
+
+    useEffect(() => {
+      getPosition(setDepartment, setAdmin);
+    }, []);
 
   function addClassRoom() {
     const className = form.getFieldValue('className');
@@ -62,7 +52,7 @@ const AddRoomPage: React.FC = () => {
       {
         name: className,
         lab: lab==1,
-        timetable: buttonConvert(),
+        timetable: buttonConvert(buttonStatus),
         department: dept,
       },
       {
@@ -140,9 +130,22 @@ const AddRoomPage: React.FC = () => {
               </Radio>
             </Radio.Group>
           </Form.Item>
-          <Form.Item label="Department" name="department">
-            <Select options={DEPARTMENTS_OPTIONS}  className="font-inter font-normal" />
-          </Form.Item>
+    <Form.Item
+                name="department"
+                initialValue={admin ? undefined : userDepartment} 
+                style={{ display: admin ? "block" : "none" }}
+              >
+                <div>
+                  <span>Department</span>
+                  <Select
+                    showSearch
+                    placeholder="Select a department"
+                    optionFilterProp="label"
+                    options={DEPARTMENTS_OPTIONS}
+                    className="font-normal w-96"
+                  />
+                </div>
+              </Form.Item>
           <label className="flex items-center">
             <span>Schedule</span>
             <Tooltip title="Click on the timeslots where to the teacher is busy to set them to busy">

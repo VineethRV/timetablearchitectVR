@@ -14,27 +14,21 @@ import { Room } from "../../../types/main";
 import Loading from "../../../components/Loading/Loading";
 import {
   convertTableToString,
+  formItemLayout,
+  getPosition,
   stringToTable,
   timeslots,
   weekdays,
 } from "../../../utils/main";
+import { DEPARTMENTS_OPTIONS } from "../../../../info";
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
 
 const EditRoomPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-
+  const [admin, setAdmin] = useState<Boolean>(false);
+  const [userDepartment, setDepartment] = useState("");
   const { oldname, olddepartment } = useParams();
 
   const [buttonStatus, setButtonStatus] = useState(
@@ -49,6 +43,7 @@ const EditRoomPage: React.FC = () => {
   }
 
   useEffect(() => {
+    getPosition(setDepartment, setAdmin);
     if (oldname && olddepartment) {
       fetchRoomDetails(oldname, olddepartment);
     }
@@ -105,7 +100,7 @@ const EditRoomPage: React.FC = () => {
   const handleSubmit = async () => {
     const name = form.getFieldValue("className");
     const lab = form.getFieldValue("lab") === 1 ? true : false;
-    const department = form.getFieldValue("department");
+    const department = admin ? form.getFieldValue("department") : olddepartment;
     const RoomData: Room = {
       name,
       organisation: null,
@@ -200,9 +195,21 @@ const EditRoomPage: React.FC = () => {
               </Radio>
             </Radio.Group>
           </Form.Item>
-          <Form.Item label="Department" name="department">
-            <Select className="font-inter font-normal" />
-          </Form.Item>
+                   {admin ? (
+                     <div>
+                       <Form.Item name="department" label="Department">
+                         <Select
+                           showSearch
+                           placeholder="Select a department"
+                           optionFilterProp="label"
+                           options={DEPARTMENTS_OPTIONS}
+                           className="font-normal w-96"
+                         />
+                       </Form.Item>
+                     </div>
+                   ) : (
+                     <></>
+                   )}
           <label className="flex items-center">
             <span>Schedule</span>
             <Tooltip title="Click on the timeslots where to the Room is busy to set them to busy">

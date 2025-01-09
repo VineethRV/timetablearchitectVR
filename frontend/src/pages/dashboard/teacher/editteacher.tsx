@@ -14,49 +14,20 @@ import { Teacher } from "../../../types/main";
 import Loading from "../../../components/Loading/Loading";
 import {
   convertTableToString,
+  formItemLayout,
+  getPosition,
   stringToTable,
   timeslots,
   weekdays,
 } from "../../../utils/main";
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
-
-export function newStringToTable(timetable: string): string[][] {
-  const arr: string[][] = timetable
-    .split(";")
-    .map((row: string) => row.split(","));
-
-  return arr.map((row, i) => {
-    return row.map((value, j) => {
-      return value == "0" ? "Free" : value;
-    });
-  });
-}
-
-export function newConvertTableToString(timetable: string[][]): string {
-  const s = timetable.map((row, i) => {
-    return row.map((value, j) => {
-      return value == "Free" ? "0" : value;
-    });
-  });
-
-  return s.map((row) => row.join(",")).join(";");
-}
-
 const EditTeacherpage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-
+  const [admin, setAdmin] = useState<Boolean>(false);
+  const [userDepartment, setDepartment] = useState("");
+  const [lab, setLab] = useState("");
   const { oldname, olddepartment } = useParams();
   const clearFields = () => {
     form.setFieldValue("name", "");
@@ -71,6 +42,7 @@ const EditTeacherpage = () => {
   );
 
   useEffect(() => {
+    getPosition(setDepartment, setAdmin);
     if (oldname && olddepartment) {
       fetchTeacherDetails(oldname, olddepartment);
     }
@@ -89,7 +61,6 @@ const EditTeacherpage = () => {
     name: string,
     department: string | null
   ) => {
-    console.log(localStorage.getItem("token"), name, department);
     axios
       .post(
         BACKEND_URL + "/teachers/peek",
@@ -108,11 +79,27 @@ const EditTeacherpage = () => {
 
         switch (status) {
           case statusCodes.OK:
-            const timetableString = res.data.message.timetable
-              ? newStringToTable(res.data.message.timetable)
+            const timetable= res.data.message.timetable
+              ? stringToTable(res.data.message.timetable)
               : Array(6).fill(Array(6).fill("Free"));
-            setButtonStatus(timetableString);
-
+              const labtable = res.data.message.labtable
+              ? stringToTable(res.data.message.labtable)
+              : Array(6).fill(Array(6).fill("Free"));
+              const finaltable = Array(6).fill(null).map(() => Array(6).fill("Free"));
+            for(let i=0;i<timetable.length;i++)
+            {
+              for(let j=0;j<timetable[i].length;j++)
+              {
+                if(timetable[i][j]!="Free"){
+                  finaltable[i][j]=timetable[i][j];
+                }
+                if(labtable[i][j]!="Free"){
+                  finaltable[i][j]=labtable[i][j];
+                }
+              }
+            }
+            setLab(res.data.message.labtable)
+            setButtonStatus(finaltable);
             form.setFieldsValue({
               name: res.data.message.name,
               initials: res.data.message.initials,
@@ -132,15 +119,15 @@ const EditTeacherpage = () => {
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
-    const department = form.getFieldValue("department");
+    const department = admin ? form.getFieldValue("department") : olddepartment;
     const teacherData: Teacher = {
       name,
       initials,
       email,
       department,
       alternateDepartments: null,
-      timetable: newConvertTableToString(buttonStatus),
-      labtable: null,
+      timetable: convertTableToString(buttonStatus),
+      labtable:lab,
       organisation: null,
     };
 
@@ -157,7 +144,6 @@ const EditTeacherpage = () => {
         },
       }
     );
-    console.log(oldname, olddepartment, teacherData);
     toast.promise(promise, {
       loading: "Updating teacher...",
       success: (res) => {
@@ -229,16 +215,31 @@ const EditTeacherpage = () => {
           <Form.Item name="email" label="Email Id">
             <Input placeholder="Email Id" className="font-inter font-normal" />
           </Form.Item>
-          <Form.Item name="department" label="Department">
+          {admin ? (
+            <div>
+              <Form.Item name="department" label="Department">
+                <Select
+                  showSearch
+                  placeholder="Select a department"
+                  optionFilterProp="label"
+                  options={DEPARTMENTS_OPTIONS}
+                  className="font-normal w-96"
+                />
+              </Form.Item>
+            </div>
+          ) : (
+            <></>
+          )}
+          {/* <Form.Item name="department" label="Department">
             <Select
               showSearch
+              style={{ display: admin ? "block" : "none" }}
               placeholder="Select a department"
               optionFilterProp="label"
               options={DEPARTMENTS_OPTIONS}
               className="font-normal w-96"
             />
-          </Form.Item>
-
+          </Form.Item> */}
           <label>
             <div className="flex items-center">
               <span>Schedule</span>
