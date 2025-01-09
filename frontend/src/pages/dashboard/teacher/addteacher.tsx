@@ -10,46 +10,15 @@ import axios from "axios";
 import { statusCodes } from "../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../config";
-import { timeslots, weekdays } from "../../../utils/main";
+import { formItemLayout, getPosition, timeslots, weekdays } from "../../../utils/main";
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
 
 export function buttonConvert(buttonStatus: string[][]): string[][] {
   return buttonStatus.map((row) =>
-    row.map((status) => (status === "Free" ? "0" : "1"))
+    row.map((status) => (status === "Free" ? "0" : status))
   );
 }
 
-export async function getPosition(
-  setDepartment: (options: string) => void,
-  setAdmin: (options: Boolean) => void
-) {
-  const response = await axios.post(
-    BACKEND_URL + "/getPosition",
-    {},
-    {
-      headers: {
-        authorization: localStorage.getItem("token"),
-      },
-    }
-  );
-  if (response.status == 200) {
-    if (response.data.message.role == "admin") setAdmin(true);
-    else setAdmin(false);
-    setDepartment(response.data.message.department);
-  } else {
-    return null;
-  }
-}
 
 const AddTeacherpage = () => {
   const [form] = Form.useForm();
@@ -59,6 +28,7 @@ const AddTeacherpage = () => {
   );
   const [admin, setAdmin] = useState<Boolean>(false);
   const [userDepartment, setDepartment] = useState("");
+
   const clearFields = () => {
     form.setFieldValue("name", "");
     form.setFieldValue("initials", "");

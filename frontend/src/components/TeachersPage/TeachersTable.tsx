@@ -210,7 +210,7 @@ const TeachersTable = ({
   // Data with unique keys for table
   const dataWithKeys = filteredTeachersData.map((teacher) => ({
     ...teacher,
-    key: teacher.email, // Use 'id' as the unique key
+    key: teacher.email, 
   }));
 
   // Handle search text change

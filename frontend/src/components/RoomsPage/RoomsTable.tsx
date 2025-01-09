@@ -43,6 +43,7 @@ const RoomsTable = ({
   setRoomsData: React.Dispatch<React.SetStateAction<Room[]>>;
 }) => {
   const navigate = useNavigate();
+   const [searchText, setSearchText] = useState('');
   const [isLab, setIsLab] = useState("Labs");
   const handleEditClick = (name: string, department: string) => {
     navigate(
@@ -100,7 +101,7 @@ const RoomsTable = ({
   }
 
   const rowSelection: TableProps<Room>["rowSelection"] = {
-    onChange: (selectedRowKeys: React.Key[], selectedRows: Room[]) => {
+    onChange: (_: React.Key[], selectedRows: Room[]) => {
       setSelectedRooms(selectedRows);
     },
     getCheckboxProps: (record: Room) => ({
@@ -224,32 +225,29 @@ const RoomsTable = ({
     });
   }
 
-  
-
   const filteredRoomsData = useMemo(() => {
-    if (departmentFilter == "Select a department" && isLab == "Labs") {
-      return roomsData;
-    }
-
-    const new_Rooms = roomsData.filter((t) => {
-      return (
-        (departmentFilter != "Select a department"
-          ? t.department == departmentFilter
-          : 1) &&
-        (isLab != "Labs"
-          ? (t.lab == true && isLab == "Yes") ||
-            (t.lab == false && isLab == "No")
-          : 1)
-      );
-    });
-    return new_Rooms;
-  }, [departmentFilter, roomsData, isLab]);
-
+      let filtered = roomsData;
+      if (departmentFilter !== "Select a department") {
+        filtered = filtered.filter((t) => t.department === departmentFilter);
+      }
+      if (isLab !== "Labs") {
+        filtered = filtered.filter((t) => (isLab==="Yes"?t.lab == true:t.lab == false));
+      }
+      if (searchText) {
+        filtered = filtered.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()));
+      }
+      return filtered;
+    }, [departmentFilter,isLab, searchText, roomsData]);
+  
   const dataWithKeys = filteredRoomsData.map((room) => ({
     ...room,
     // @ts-ignore 
     key: room.id,
   }));
+
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+  };
 
   return (
     <div>
@@ -258,6 +256,8 @@ const RoomsTable = ({
           className="w-fit"
           addonBefore={<CiSearch />}
           placeholder="ClassRoom"
+          value={searchText}
+          onChange={(e) => handleSearch(e.target.value)}
         />
 
         {/* this config to set background color of the selectors | did as specified in antd docs */}
