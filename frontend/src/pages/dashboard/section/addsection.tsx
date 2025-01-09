@@ -685,6 +685,17 @@ const AddSectionPage: React.FC = () => {
                 <SimpleSwapTimetable
                   buttonStatus={buttonStatus1}
                   setButtonStatus={setButtonStatus1}
+                  courses = {tableData.map((item) => item.course)}
+                  teachers = {tableData.map((item) => item.teacher)}
+                  rooms = {tableData.map((item) => (item.room === "--" ? form.getFieldValue("Room")?form.getFieldValue("Room"):roomTT.split(';').map((row)=>row.split(',')) .reduce((acc, row) => {
+                    const mostFrequent = row.reduce((a, b) =>
+                      row.filter(v => v === a).length >= row.filter(v => v === b).length ? a : b
+                    );
+                    return mostFrequent === "0" ? acc : mostFrequent;
+                  }, "0"): item.room))}
+                 
+                  
+                  setRoomTT={setRoomTT}
                   // timetableScore={timetableScore}
                 ></SimpleSwapTimetable>
               </div>

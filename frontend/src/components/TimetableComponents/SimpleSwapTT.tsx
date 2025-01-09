@@ -1,10 +1,19 @@
 import React, { useState } from "react";
 import { Table, Button } from "antd";
 import { button } from "framer-motion/client";
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
+import { convertTableToString } from "../../utils/main";
+import { convertStringToTable } from "../../pages/dashboard/section/addsection";
+import { toast } from "sonner";
 // Define the type for the timetable props
 interface TimetableProps {
   buttonStatus: string[][]; // Array of arrays with course names
   setButtonStatus: (status: string[][]) => void; // Function to update button status
+  courses:string[];
+  teachers:string[];
+  rooms: string[]; // Array of courses, teachers, and rooms
+  setRoomTT: (status: string) => void; 
 }
 const weekdays = [
   "Monday",
@@ -22,21 +31,68 @@ const timeslots = [
   "2:30-3:30",
   "3:30-4:30",
 ];
-const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) => {
+
+const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus,courses,teachers,rooms,setRoomTT }) => {
   const [selectedSlot, setSelectedSlot] = useState<{
     rowIndex: number;
     colIndex: number;
   } | null>(null);
-  let score: number[][] = new Array(6).fill(0).map(() => 
-    new Array(6).fill(0).map(() => Math.random() * 2- 1)
-  );
+  const [score, setScore] = useState<number[][]>(new Array(6).fill(0).map(() => new Array(6).fill(0).map(() => 0)));
 
-  // Handle button click for swapping
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
+    console.log("button clicked");
     if (!selectedSlot) {
+      console.log("inside first select");
       // Select the first slot
-      setSelectedSlot({ rowIndex, colIndex });
-    } else {
+      if (buttonStatus[rowIndex][colIndex] != "Free" && buttonStatus[rowIndex][colIndex] != "Busy") {
+        console.log("inside click");
+        setSelectedSlot({ rowIndex, colIndex });
+        const selectedIndex = courses.indexOf(buttonStatus[rowIndex][colIndex]);
+        let teacher = teachers[selectedIndex];
+        let room = rooms[selectedIndex];
+        console.log("course", buttonStatus[rowIndex][colIndex]);
+        console.log("teacher", teacher);
+        console.log("room", room);
+        const dummy = convertStringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
+        setScore(dummy)
+        //get score
+        toast.promise(
+          axios.post(
+            BACKEND_URL + "/recommendCourse",
+            {
+              teacher: teacher,
+              room: room == "0" ? null : room,
+              blocks: convertTableToString(buttonStatus),
+            },
+            {
+              headers: {
+          authorization: localStorage.getItem("token"),
+              },
+            }
+          ),
+          {
+            loading: "Finding optimal slots...",
+            success: (response) => {
+              console.log("response", response.data.timetable);
+              if (response.status === 200) {
+          const newScore = convertStringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
+          console.log("Course recommendation received", newScore);
+          setScore(newScore);
+          return "Optimal slots found!";
+              } else {
+          console.error("Failed to get course recommendation");
+          return "Failed to get course recommendation";
+              }
+            },
+            error: (error) => {
+              console.error("Error:", error.response?.data || error.message);
+              return "Failed to get course recommendation";
+            },
+          }
+        );
+      }
+    }
+    else {
       // Perform the swap
       const updatedStatus = buttonStatus.map((row, rIdx) =>
         row.map((course, cIdx) => {
@@ -56,21 +112,19 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
       setSelectedSlot(null); // Reset the selected slot
     }
   };
-  // Data source for the table
+
   const dataSource = weekdays.map((day, rowIndex) => ({
     key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
-      
       <Button
         key={colIndex}
         className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
           selectedSlot
-        ? selectedSlot.rowIndex === rowIndex &&
-          selectedSlot.colIndex === colIndex
-          ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
-          : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
-        : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
+            ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
+              ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
+              : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
+            : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
         }`}
         onClick={() => handleButtonClick(rowIndex, colIndex)}
         disabled={
@@ -89,7 +143,6 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
       </Button>
     )),
   }));
-  // Columns for the table
   const columns = [
     {
       title: "Timeslots",
@@ -112,18 +165,18 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
       ),
     })),
   ];
+
   return (
-    <div className="flex justify-center p-5">
-      <div className="max-w-[800px] w-full">
-        <Table
-          dataSource={dataSource}
-          columns={columns}
-          pagination={false}
-          bordered
-          size="middle"
-        />
-      </div>
+    <div className="flex justify-center p-4">
+      <Table
+        dataSource={dataSource}
+        columns={columns}
+        bordered
+        pagination={false}
+        size="middle"
+      />
     </div>
   );
 };
+
 export default SimpleSwapTimetable;

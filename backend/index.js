@@ -16,7 +16,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -880,12 +880,11 @@ app.post("/api/recommendCourse", async (req, res) => {
       message: "Token, teacher, and blocks are required",
     });
   }
-
   try {
     const result = await recommendCourse(token, teacher, room, blocks);
     res.status(200).json({ status: result.status, timetable: result.timetable });
   } catch (error) {
-    res.status(200).json({ status: 500, message: "Server error" });
+    res.status(200).json({ status: 500, message: error });
   }
 });
 
