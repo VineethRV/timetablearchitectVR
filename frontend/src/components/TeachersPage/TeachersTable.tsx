@@ -53,38 +53,30 @@ const TeachersTable = ({
   teachersData: Teacher[];
   setTeachersData: React.Dispatch<React.SetStateAction<Teacher[]>>;
 }) => {
-  // const router= useRouter();
   const navigate = useNavigate();
+  const [searchText, setSearchText] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState("Select a department");
+  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
 
+  // Function to handle edit action
   const handleEditClick = (name: string, department: string) => {
-    navigate(
-      `/dashboard/teachers/edit/${encodeURIComponent(
-        name
-      )}/${encodeURIComponent(department)}`
-    );
+    navigate(`/dashboard/teachers/edit/${encodeURIComponent(name)}/${encodeURIComponent(department)}`);
   };
 
-  const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([]);
-  const [departmentFilter, setDepartmentFilter] = useState(
-    "Select a department"
-  );
-
-  // Function to clear all fliters
+  // Clear filters function
   function clearFilters() {
     setDepartmentFilter("Select a department");
+    setSearchText(""); // Reset search text as well
   }
 
-  // Row Selection logic by ant design
+  // Row Selection Logic
   const rowSelection: TableProps<Teacher>["rowSelection"] = {
     onChange: (_: React.Key[], selectedRows: Teacher[]) => {
       setSelectedTeachers(selectedRows);
     },
-    getCheckboxProps: (record: Teacher) => ({
-      disabled: record.name === "Disabled User",
-      name: record.name,
-    }),
   };
 
+  // Delete a single teacher
   function deleteSingleTeacher(teacher: Teacher) {
     const teachers = [teacher];
     const res = axios
@@ -119,24 +111,25 @@ const TeachersTable = ({
     });
   }
 
+
+
+  // Columns configuration for the table
   const columns: TableColumnsType<Teacher> = [
     {
       title: "Avatar",
       dataIndex: "name",
-      render: (text: string) => {
-        return (
-          <Avatar
-            className="text-xl"
-            style={{
-              backgroundColor: getRandomColor(),
-              verticalAlign: "middle",
-            }}
-            size="large"
-          >
-            {text.slice(0, 1)}
-          </Avatar>
-        );
-      },
+      render: (text: string) => (
+        <Avatar
+          className="text-xl"
+          style={{
+            backgroundColor: getRandomColor(),
+            verticalAlign: "middle",
+          }}
+          size="large"
+        >
+          {text.slice(0, 1)}
+        </Avatar>
+      ),
     },
     {
       title: "Name",
@@ -153,56 +146,78 @@ const TeachersTable = ({
     {
       title: "Department",
       dataIndex: "department",
-      render: (dept: string) => {
-        return (
-          <h1
-            style={{
-              backgroundColor: deptColors[dept],
-              color: colorCombos.find(
-                (combo) => combo.backgroundColor === deptColors[dept]
-              )?.textColor,
-            }}
-            className="text-xs opacity-85 font-semibold w-fit px-2.5 py-0.5 rounded-xl"
-          >
-            {dept}
-          </h1>
-        );
-      },
+      render: (dept: string) => (
+        <h1
+          style={{
+            backgroundColor: deptColors[dept],
+            color: colorCombos.find((combo) => combo.backgroundColor === deptColors[dept])?.textColor,
+          }}
+          className="text-xs opacity-85 font-semibold w-fit px-2.5 py-0.5 rounded-xl"
+        >
+          {dept}
+        </h1>
+      ),
     },
     {
       title: "",
-      render: (record) => {
-        return (
-          <Tooltip title="Edit">
-            <Button
-              type="primary"
-              onClick={() => handleEditClick(record.name, record.department)}
-              shape="circle"
-              icon={<MdEdit />}
-            />
-          </Tooltip>
-        );
-      },
+      render: (record) => (
+        <Tooltip title="Edit">
+          <Button
+            type="primary"
+            onClick={() => handleEditClick(record.name, record.department)}
+            shape="circle"
+            icon={<MdEdit />}
+          />
+        </Tooltip>
+      ),
     },
     {
       title: "",
-      render: (record) => {
-        return (
-          <Tooltip title="Delete">
-            <Button
-              className="bg-red-400"
-              type="primary"
-              shape="circle"
-              onClick={() => deleteSingleTeacher(record)}
-              icon={<MdDelete />}
-            />
-          </Tooltip>
-        );
-      },
+      render: (record) => (
+        <Tooltip title="Delete">
+          <Button
+            className="bg-red-400"
+            type="primary"
+            shape="circle"
+            onClick={() => deleteSingleTeacher(record)}
+            icon={<MdDelete />}
+          />
+        </Tooltip>
+      ),
     },
   ];
 
-  // function handling deleting the teachers logic
+  // Assign department colors for consistency
+  teachersData?.forEach((teacher) => {
+    if (teacher.department && !deptColors[teacher.department]) {
+      deptColors[teacher.department] = colorCombos[cnt % colorCombos.length].backgroundColor;
+      cnt++;
+    }
+  });
+
+  // Memoizing the result of filteredTeachers
+  const filteredTeachersData = useMemo(() => {
+    let filtered = teachersData;
+    if (departmentFilter !== "Select a department") {
+      filtered = filtered.filter((t) => t.department === departmentFilter);
+    }
+    if (searchText) {
+      filtered = filtered.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()));
+    }
+    return filtered;
+  }, [departmentFilter, searchText, teachersData]);
+
+  // Data with unique keys for table
+  const dataWithKeys = filteredTeachersData.map((teacher) => ({
+    ...teacher,
+    key: teacher.email, // Use 'id' as the unique key
+  }));
+
+  // Handle search text change
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+  };
+
   function deleteTeachersHandler(teachers: Teacher[]) {
     if (selectedTeachers.length == 0) {
       toast.info("Select teachers to delete !!");
@@ -241,34 +256,6 @@ const TeachersTable = ({
     });
   }
 
-  // Assigning department colors for consistency
-  teachersData?.forEach((teacher) => {
-    if (teacher.department && !deptColors[teacher.department as string]) {
-      deptColors[teacher.department as string] =
-        colorCombos[cnt % colorCombos.length].backgroundColor;
-      cnt++;
-    }
-  });
-
-  // Memoizing the result of filteredTeachers -> Used for filtering the teachers
-  const filteredTeachersData = useMemo(() => {
-    if (departmentFilter == "Select a department") {
-      return teachersData;
-    }
-
-    const new_teachers = teachersData.filter(
-      (t) => t.department == departmentFilter
-    );
-    return new_teachers;
-  }, [departmentFilter, teachersData]);
-
-  // Add a unique key to each teacher record (email is assumed to be unique)
-  const dataWithKeys = filteredTeachersData.map((teacher) => ({
-    ...teacher,
-    // @ts-ignore
-    key: teacher.id, // Use email as the unique key
-  }));
-
   return (
     <div>
       <div className="flex space-x-8 justify-between py-4">
@@ -276,9 +263,10 @@ const TeachersTable = ({
           className="w-fit"
           addonBefore={<CiSearch />}
           placeholder="Teacher"
+          value={searchText}
+          onChange={(e) => handleSearch(e.target.value)}
         />
 
-        {/* this config to set background color of the selectors | did as specified in antd docs */}
         <ConfigProvider
           theme={{
             components: {
@@ -298,6 +286,7 @@ const TeachersTable = ({
             />
           </div>
         </ConfigProvider>
+
         <div className="flex space-x-2">
           <Button
             onClick={() => deleteTeachersHandler(selectedTeachers)}

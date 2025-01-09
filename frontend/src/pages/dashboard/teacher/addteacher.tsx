@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Button, Form, Input, Select, Tooltip, Upload } from "antd";
+import { useEffect, useState } from "react";
+import { Button, Form, Input, message, Select, Tooltip, Upload } from "antd";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
@@ -29,10 +29,36 @@ export function buttonConvert(buttonStatus: string[][]): string[][] {
   );
 }
 
+export async function getPosition(
+  setDepartment: (options: string) => void,
+  setAdmin: (options: Boolean) => void
+) {
+  const response = await axios.post(
+    BACKEND_URL + "/getPosition",
+    {},
+    {
+      headers: {
+        authorization: localStorage.getItem("token"),
+      },
+    }
+  );
+  if (response.status == 200) {
+    if (response.data.message.role == "admin") setAdmin(true);
+    else setAdmin(false);
+    setDepartment(response.data.message.department);
+  } else {
+    return null;
+  }
+}
+
 const AddTeacherpage = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
-
+  const [buttonStatus, setButtonStatus] = useState(
+    weekdays.map(() => timeslots.map(() => "Free"))
+  );
+  const [admin, setAdmin] = useState<Boolean>(false);
+  const [userDepartment, setDepartment] = useState("");
   const clearFields = () => {
     form.setFieldValue("name", "");
     form.setFieldValue("initials", "");
@@ -41,15 +67,26 @@ const AddTeacherpage = () => {
     setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
   };
 
-  const [buttonStatus, setButtonStatus] = useState(
-    weekdays.map(() => timeslots.map(() => "Free"))
-  );
+  useEffect(() => {
+    getPosition(setDepartment, setAdmin);
+  }, []);
 
   function teacherAdd() {
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
-    const department = form.getFieldValue("department");
+    const department = admin
+      ? form.getFieldValue("department")
+      : userDepartment;
+    if (
+      name == undefined ||
+      name == "" ||
+      initials == undefined ||
+      initials == ""
+    ) {
+      message.error("Fill all the required Fields");
+      return;
+    }
 
     const promise = axios.post(
       BACKEND_URL + "/teachers",
@@ -141,14 +178,21 @@ const AddTeacherpage = () => {
           <Form.Item name="email" label="Email Id">
             <Input placeholder="Email Id" className="font-inter font-normal" />
           </Form.Item>
-          <Form.Item name="department" label="Department">
-            <Select
-              showSearch
-              placeholder="Select a department"
-              optionFilterProp="label"
-              options={DEPARTMENTS_OPTIONS}
-              className="font-normal w-96"
-            />
+          <Form.Item
+            name="department"
+            initialValue={admin ? undefined : userDepartment} // Set default value when not admin
+            style={{ display: admin ? "block" : "none" }} // Hide the field if not admin
+          >
+            <div>
+              <span>Department</span>
+              <Select
+                showSearch
+                placeholder="Select a department"
+                optionFilterProp="label"
+                options={DEPARTMENTS_OPTIONS}
+                className="font-normal w-96"
+              />
+            </div>
           </Form.Item>
 
           <label>

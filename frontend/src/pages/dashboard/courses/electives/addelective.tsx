@@ -15,6 +15,13 @@ import { useEffect, useState } from "react";
 import ElectiveAddTable, { Elective } from "../../../../components/CoursePage/electiveAddtable";
 import Timetable from "../../../../components/timetable";
 import { fetchRooms, fetchTeachers } from "../lab/addlab";
+import { BACKEND_URL } from "../../../../../config";
+import axios from "axios";
+import { convertTableToString } from "../../../../utils/main";
+import { buttonConvert } from "../../teacher/addteacher";
+import { fetchdept } from "../corecourse/corecoursedisplay";
+import { toast } from "sonner";
+import { statusCodes } from "../../../../types/statusCodes";
 
 
 const formItemLayout = {
@@ -96,9 +103,59 @@ const AddElectivepage: React.FC = () => {
       }
       handleCloseModal(); 
     };
-    
-    const handleSubmit=()=>{
 
+      const clearFields = () => {
+        form.setFieldValue("clusterName", "");
+        SetEleData([])
+        setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
+      };
+    
+    const handleSubmit=async ()=>{
+      //name, courses, teachers, rooms, semester, timetable, department 
+      const courses = eledata.map((elective) => elective.course).join(";");
+      const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
+      const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
+      const department= await fetchdept()
+      const response=axios.post(
+        BACKEND_URL+"/electives",{
+          name: form.getFieldValue("clusterName"),
+          courses: courses,
+          teachers: teachers,
+          rooms: rooms,
+          semester:Number(localStorage.getItem("semester")),
+          timetable: convertTableToString(buttonConvert(buttonStatus)),
+          department: department
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      
+    toast.promise(response, {
+      loading: "Adding Electives...",
+      success: (res) => {
+        const statusCode = res.status;
+        console.log(res);
+        switch (statusCode) {
+          case statusCodes.OK:
+            return "Elective added successfully!";
+          case statusCodes.BAD_REQUEST:
+            return "Elective already exists!";
+          case statusCodes.UNAUTHORIZED:
+            return "You are not authorized!";
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            return "Internal server error";
+          default:
+            return "Unexpected status code";
+        }
+      },
+      error: (error) => {
+        console.error("Error:", error.response?.data || error.message);
+        return "Failed to add elective cluster. Please try again!";
+      },
+    });
     }
 
   return (
@@ -132,7 +189,7 @@ const AddElectivepage: React.FC = () => {
         className="flex mt-12 items-center pl-4"
       >
         <Form {...formItemLayout} form={form} layout="vertical" requiredMark>
-          <Form.Item label="Elective Course Name" required>
+          <Form.Item name="clusterName" label="Elective Cluster Name" required>
             <Input placeholder="Name" className="w-96 font-normal" />
           </Form.Item>
           <label>
