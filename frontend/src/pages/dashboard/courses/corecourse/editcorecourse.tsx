@@ -1,12 +1,11 @@
 import { CiImport } from "react-icons/ci";
-import { IoIosInformationCircleOutline } from "react-icons/io";
 import {
   Button,
   Form,
   Input,
-  Tooltip,
   Upload,
   InputNumber,
+  message,
 } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
@@ -16,28 +15,16 @@ import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Loading from "../../../../components/Loading/Loading";
-import RoomOptions from "../../../../components/general/roomoption";
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
+import { formItemLayout } from "../../../../utils/main";
 
 const EditCoursepage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
-  const semester=5;
   const { oldname, department } = useParams();
   function clearFields() {
     form.setFieldValue('coursename', "");
     form.setFieldValue('coursecode', "");
-    form.setFieldValue('selectSem', "");
     form.setFieldValue('Hpc',"");
     form.setFieldValue('bfactor',"");
     form.setFieldsValue({Courses:null});
@@ -63,7 +50,7 @@ const EditCoursepage: React.FC = () => {
         BACKEND_URL + "/courses/peek",
         {
           name: name,
-          semester:semester,
+          semester:Number(localStorage.getItem("semester")),
           department: department,
         },
         {
@@ -98,13 +85,15 @@ const EditCoursepage: React.FC = () => {
     const coursecode = form.getFieldValue('coursecode');
     const credits = form.getFieldValue('Hpc');
     const bfactor=form.getFieldValue("bfactor");
+    if ((coursename == undefined ||coursename == "" )|| (coursecode== undefined || coursecode=="")|| (credits==undefined)) {
+      message.error("Fill all the required Fields");
+      return;
+    }
     const CoreData= {
       name:coursename,
       code:coursecode,
-      department:department||"",
       bFactor: bfactor,
       credits: credits,
-      semester: semester,
     };
 
     const promise = axios.put(
@@ -112,7 +101,7 @@ const EditCoursepage: React.FC = () => {
       {
         originalName: oldname,
         originalDepartment: department,
-        originalSemester:semester,
+        originalSemester:Number(localStorage.getItem("semester")),
         course: CoreData
       },
       {
@@ -190,24 +179,6 @@ const EditCoursepage: React.FC = () => {
               placeholder="Hours per week"
               className="w-full font-normal"
             />
-          </Form.Item>
-          <Form.Item name="Courses"
-            label={
-              <span className="inline-flex items-center">
-                Any particular Course to be used?
-                <Tooltip title="Select one or more Courses to indicate specific Course preferences for this session.">
-                  <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
-                </Tooltip>
-              </span>
-            }
-          >
-            <Form.Item name="Courses" >
-  <RoomOptions
-    multiple={true}
-    value={form.getFieldValue("Courses")} 
-    onChange={(value) => form.setFieldsValue({ Courses: value })} 
-  />
-</Form.Item>
           </Form.Item>
           <Form.Item name="bfactor"label="Rate the subject from 1 to 5 based on the exhaustiveness of the subject">
             <InputNumber

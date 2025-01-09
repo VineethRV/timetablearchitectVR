@@ -1,41 +1,18 @@
-import CoreTable from "../../../../components/CoursePage/CoreTable";
 import { useEffect, useState } from "react";
-import { Course } from "../../../../types/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../../config";
 import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import Loading from "../../../../components/Loading/Loading";
+import CoreTable, { CoreType } from "../../../../components/CoursePage/coreTable";
+import { fetchdept } from "../../../../utils/main";
 
-export const fetchdept = async (): Promise<string> => {
-  try {
-    const response = await axios.post(
-      BACKEND_URL + "/getPosition",
-      {},
-      {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      }
-    );
-
-    const status = response.status;
-    if (status === 200) {
-      return response.data.message.department;
-    }
-    return "";
-  } catch (error) {
-    console.log(error);
-    return "";
-  }
-};
 
 function page() {
-  const [coreData, setCoreData] = useState<Course[]>([]);
+  const [coreData, setCoreData] = useState<CoreType[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [department, setDepartment] = useState(fetchdept());
   useEffect(() => {
-    const department = fetchdept();
 
     axios
       .get(BACKEND_URL + "/courses", {
@@ -49,6 +26,7 @@ function page() {
       })
       .then((res) => {
         const status = res.data.status;
+        console.log(res.data.message)
         if (status == statusCodes.OK) {
           setCoreData(res.data.message);
         } else {

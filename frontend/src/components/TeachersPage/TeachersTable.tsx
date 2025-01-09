@@ -20,28 +20,8 @@ import { CiSearch } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
+import { colorCombos, getRandomColor } from "../../utils/main";
 
-const getRandomColor = () => {
-  const letters = "0123456789ABCDEF";
-  let color = "#";
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-};
-
-const colorCombos: Record<string, string>[] = [
-  { textColor: "#FFFFFF", backgroundColor: "#000000" },
-  { textColor: "#333333", backgroundColor: "#FFFBCC" },
-  { textColor: "#1D3557", backgroundColor: "#A8DADC" },
-  { textColor: "#F2F2F2", backgroundColor: "#00796B" },
-  { textColor: "#FFFFFF", backgroundColor: "#283593" },
-  { textColor: "#FFFFFF", backgroundColor: "#2C3E50" },
-  { textColor: "#000000", backgroundColor: "#F2F2F2" },
-  { textColor: "#F2F2F2", backgroundColor: "#424242" },
-  { textColor: "#000000", backgroundColor: "#F4E04D" },
-  { textColor: "#2F4858", backgroundColor: "#F8B400" },
-];
 
 const deptColors: Record<string, string> = {};
 let cnt = 0;

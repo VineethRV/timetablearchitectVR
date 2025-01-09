@@ -48,12 +48,7 @@ const AddTeacherpage = () => {
     const department = admin
       ? form.getFieldValue("department")
       : userDepartment;
-    if (
-      name == undefined ||
-      name == "" ||
-      initials == undefined ||
-      initials == ""
-    ) {
+    if ((name == undefined ||name == "" )||(initials == undefined ||initials == "")|| (admin&&department=="")) {
       message.error("Fill all the required Fields");
       return;
     }

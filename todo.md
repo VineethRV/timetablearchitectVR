@@ -30,6 +30,6 @@
 **[ ] Lab creation changes not reflected in teachers and rooms**
 
 # CORE:
-[ ] Semester option in core course redundant
-`[ ] Particular classroom still contains dummy data`
-[ ] Editing courses load forever
+~~[ ] Semester option in core course redundant~~
+~~`[ ] Particular classroom still contains dummy data`~~
+~~[ ] Editing courses load forever~~
