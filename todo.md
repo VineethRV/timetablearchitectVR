@@ -2,7 +2,7 @@
 [ ] Understand and make onboarding fluent
 [ ] Verify email
 [ ] admin panel sections formed, courses alloted and other stuff.
-**[ ] display joining code in admin panel(Vineeth)**
+*[ ] display joining code in admin panel(Vineeth)*
 [ ] disable requestAccess for editors
 [ ] top teachers free in editors too
 
