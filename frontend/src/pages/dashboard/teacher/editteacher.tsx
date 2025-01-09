@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Button, Form, Input, Select, Tooltip, Upload } from "antd";
+import { Button, Form, Input, message, Select, Tooltip, Upload } from "antd";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
@@ -120,6 +120,10 @@ const EditTeacherpage = () => {
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
     const department = admin ? form.getFieldValue("department") : olddepartment;
+    if ((name == undefined ||name == "" )||(initials == undefined ||initials == "")|| (admin&&department=="")) {
+      message.error("Fill all the required Fields");
+      return;
+    }
     const teacherData: Teacher = {
       name,
       initials,

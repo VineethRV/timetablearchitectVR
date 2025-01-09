@@ -1,9 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Button, ConfigProvider, Input, Select, Table, Tooltip } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
 import { MdDelete, MdEdit } from "react-icons/md";
-import { Course } from "../../types/main";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { statusCodes } from "../../types/statusCodes";
@@ -11,55 +10,78 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 import { CiExport, CiImport, CiSearch } from "react-icons/ci";
 import { TbTrash } from "react-icons/tb";
-import { DEPARTMENTS_OPTIONS } from "../../../info";
+import { colorCombos, DEPARTMENTS_OPTIONS } from "../../../info";
 
-interface CoreType {
-  key: React.Key;
+export interface CoreType {
   name: string;
   code: string;
   credits: number;
+  department: string;
   hoursperweek: number;
   bfactor: number;
 }
 
-const colorCombos: Record<string, string>[] = [
-  { textColor: "#FFFFFF", backgroundColor: "#000000" },
-  { textColor: "#333333", backgroundColor: "#FFFBCC" },
-  { textColor: "#1D3557", backgroundColor: "#A8DADC" },
-  { textColor: "#F2F2F2", backgroundColor: "#00796B" },
-  { textColor: "#FFFFFF", backgroundColor: "#283593" },
-  { textColor: "#FFFFFF", backgroundColor: "#2C3E50" },
-  { textColor: "#000000", backgroundColor: "#F2F2F2" },
-  { textColor: "#F2F2F2", backgroundColor: "#424242" },
-  { textColor: "#000000", backgroundColor: "#F4E04D" },
-  { textColor: "#2F4858", backgroundColor: "#F8B400" },
-];
 const deptColors: Record<string, string> = {};
 let cnt = 0;
-
-const rowSelection: TableProps<CoreType>["rowSelection"] = {
-  onChange: (selectedRowKeys: React.Key[], selectedRows: CoreType[]) => {
-    console.log(
-      `selectedRowKeys: ${selectedRowKeys}`,
-      "selectedRows: ",
-      selectedRows
-    );
-  },
-  getCheckboxProps: (record: CoreType) => ({
-    disabled: record.name === "Disabled User",
-    name: record.name,
-  }),
-};
 
 const CoreTable = ({
   CoreData,
   setCoreData,
 }: {
-  CoreData: Course[];
-  setCoreData: React.Dispatch<React.SetStateAction<Course[]>>;
+  CoreData: CoreType[];
+  setCoreData: React.Dispatch<React.SetStateAction<CoreType[]>>;
 }) => {
   const navigate = useNavigate();
-  const [selectedCore, setSelectedCore] = useState<Course[]>([]);
+  const [selectedCore, setSelectedCore] = useState<CoreType[]>([]);
+  const [searchText, setSearchText] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState("Select a department");
+  const [hpw, setHpw] = useState(null);
+  function clearFilters() {
+    setDepartmentFilter("Select a department");
+    setHpw(null)
+    setSearchText(""); // Reset search text as well
+  }
+
+  const rowSelection: TableProps<CoreType>["rowSelection"] = {
+    onChange: (_: React.Key[], selectedRows: CoreType[]) => {
+      setSelectedCore(selectedRows)
+    }
+  };
+
+  function deleteSingleCore(core: CoreType) {
+    const res = axios
+      .delete(BACKEND_URL + "/courses", {
+        data: {
+          courseCode: core.code,
+          semester: Number(localStorage.getItem("semester")),
+          department: core.department
+        },
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+
+        switch (status) {
+          case statusCodes.OK:
+            setCoreData((prevTeachers) =>
+              prevTeachers.filter((t) => t.name !== core.name)
+            );
+            toast.success("Course deleted successfully");
+            break;
+          case statusCodes.BAD_REQUEST:
+            toast.error("Invalid request");
+            break;
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            toast.error("Server error");
+        }
+      });
+
+    toast.promise(res, {
+      loading: "Deleting the Course",
+    });
+  }
 
   CoreData?.forEach((core) => {
     if (core.department && !deptColors[core.department as string]) {
@@ -68,6 +90,22 @@ const CoreTable = ({
       cnt++;
     }
   });
+
+  const filteredCoreData = useMemo(() => {
+    let filtered = CoreData;
+    if (departmentFilter !== "Select a department") {
+      filtered = filtered.filter((t) => t.department === departmentFilter);
+    }
+    if (hpw !== null) {
+      console.log(hpw)
+      filtered = filtered.filter((t) => (t.credits == hpw));
+    }
+    if (searchText) {
+      filtered = filtered.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()));
+    }
+    return filtered;
+  }, [departmentFilter,hpw, searchText,CoreData]);
+
 
   const handleEditClick = (name: string, department: string) => {
     navigate(
@@ -110,10 +148,6 @@ const CoreTable = ({
       },
     },
     {
-      title: "Difficulty Rating ",
-      dataIndex: "bfactor",
-    },
-    {
       title: "",
       render: (record) => {
         return (
@@ -130,13 +164,14 @@ const CoreTable = ({
     },
     {
       title: "",
-      render: () => {
+      render: (record) => {
         return (
           <Tooltip title="Delete">
             <Button
               className="bg-red-400 "
               type="primary"
               shape="circle"
+              onClick={() => deleteSingleCore(record)}
               icon={<MdDelete />}
             />
           </Tooltip>
@@ -150,10 +185,14 @@ const CoreTable = ({
       toast.info("Select Core to delete !!");
       return;
     }
-    const res = axios
+    selectedCore.map((core)=>{
+
+      const res = axios
       .delete(BACKEND_URL + "/courses", {
         data: {
-          courseCode: selectedCore,
+          courseCode: core.code,
+          semester: Number(localStorage.getItem("semester")),
+          department: core.department
         },
         headers: {
           Authorization: localStorage.getItem("token"),
@@ -161,32 +200,45 @@ const CoreTable = ({
       })
       .then((res) => {
         const statusCode = res.status;
+        console.log(res.data)
         switch (statusCode) {
           case statusCodes.OK:
-            setCoreData((Core) => {
-              const newCore = Core.filter((t) => {
-                for (let i = 0; i < selectedCore.length; i++) {
-                  if (selectedCore[i].name == t.name) return false;
-                }
-                return true;
-              });
-              return newCore;
-            });
-            setSelectedCore([]);
-            toast.success("Core deleted successfully");
             break;
           case statusCodes.BAD_REQUEST:
             toast.error("Invalid request");
-            break;
+            return;
           case statusCodes.INTERNAL_SERVER_ERROR:
             toast.error("Server error");
+            return;
         }
       });
 
     toast.promise(res, {
-      loading: "Deleting Core ...",
+      loading: "Deleting Courses ...",
     });
+    })
+    setCoreData((Core) => {
+      const newCore = Core.filter((t) => {
+        for (let i = 0; i < selectedCore.length; i++) {
+          if (selectedCore[i].name == t.name) return false;
+        }
+        return true;
+      });
+      return newCore;
+    });
+    setSelectedCore([]);
+    toast.success("Courses deleted successfully");
   }
+
+  const dataWithKeys = filteredCoreData.map((core) => ({
+    ...core,
+    //@ts-ignore
+    key: core.id 
+  }));
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+  };
+
 
   return (
     <div>
@@ -205,6 +257,8 @@ const CoreTable = ({
           className="w-fit"
           addonBefore={<CiSearch />}
           placeholder="Course"
+          value={searchText}
+          onChange={(e) => handleSearch(e.target.value)}
         />
 
         <ConfigProvider
@@ -217,13 +271,20 @@ const CoreTable = ({
           }}
         >
           <div className="flex space-x-3">
-            <Select
-              defaultValue="Sort By"
-              style={{ width: 120 }}
-              options={[]}
-            />
-            <Select defaultValue="Departments" options={DEPARTMENTS_OPTIONS} />
-            <Select defaultValue="Hours per week" options={[]} />
+             <Select
+                          className="w-[300px]"
+                          defaultValue="All Departments"
+                          value={departmentFilter}
+                          options={DEPARTMENTS_OPTIONS}
+                          onChange={(e) => setDepartmentFilter(e)}
+                        />
+<Select
+  placeholder="Hours per week"
+  className="min-w-[100px]"
+  value={hpw}
+  onChange={(e) => setHpw(e)}
+  options={Array.from({ length: 10 }, (_, i) => ({ label: (i + 1).toString(), value: i + 1 }))}
+/>
           </div>
         </ConfigProvider>
         <div className="flex space-x-2">
@@ -234,13 +295,13 @@ const CoreTable = ({
             <TbTrash />
             Delete
           </Button>
-          <Button>Clear filters</Button>
+          <Button onClick={clearFilters}>Clear filters</Button>
         </div>
       </div>
       <Table<CoreType>
         rowSelection={{ type: "checkbox", ...rowSelection }}
         columns={columns}
-        dataSource={CoreData}
+        dataSource={dataWithKeys}
         pagination={{ pageSize: 5 }}
       />
     </div>

@@ -17,40 +17,10 @@ import Timetable from "../../../../components/timetable";
 import { fetchRooms, fetchTeachers } from "../lab/addlab";
 import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
-import { convertTableToString } from "../../../../utils/main";
+import { convertTableToString, fetchdept, formItemLayout, timeslots, weekdays } from "../../../../utils/main";
 import { buttonConvert } from "../../teacher/addteacher";
-import { fetchdept } from "../corecourse/corecoursedisplay";
 import { toast } from "sonner";
 import { statusCodes } from "../../../../types/statusCodes";
-
-
-const formItemLayout = {
-    labelCol: {
-      xs: { span: 24 },
-      sm: { span: 24 },
-    },
-    wrapperCol: {
-      xs: { span: 24 },
-      sm: { span: 24 },
-    },
-  };
-  
-  const weekdays = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const timeslots = [
-    "9:00-10:00",
-    "10:00-11:00",
-    "11:30-12:30",
-    "12:30-1:30",
-    "2:30-3:30",
-    "3:30-4:30",
-  ];
 
   
 const AddElectivepage: React.FC = () => {

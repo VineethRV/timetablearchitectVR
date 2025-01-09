@@ -18,15 +18,9 @@ const CoursesSidebar = () => {
   const [selected, setSelected] = useState("/core-courses");
   const [selectedSemester, setSelectedSemester] = useState<number | undefined>(undefined);
 
-  const isCoreCourseSelected =
-    pathname === "/dashboard/courses/core-courses" ||
-    pathname === "/dashboard/courses/core-courses/add";
-  const isElectiveSelected =
-    pathname === "/dashboard/courses/electives" ||
-    pathname === "/dashboard/courses/electives/add";
-  const isLabSelected =
-    pathname === "/dashboard/courses/labs" ||
-    pathname === "/dashboard/courses/labs/add";
+  const isCoreCourseSelected =pathname.includes("/dashboard/courses/core-courses");
+  const isElectiveSelected =pathname.includes("/dashboard/courses/electives" )
+  const isLabSelected =pathname.includes("/dashboard/courses/labs" )
 
   const handleClick1 = (url: string) => {
     setSelected(url);
@@ -140,14 +134,14 @@ const CoursesSidebar = () => {
         <div
           onClick={() => handleClick2("")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
-            pathname === `/dashboard/courses${selected}`
+            pathname === `/dashboard/courses${selected}`||pathname.includes(`/dashboard/courses${selected}/edit`)
               ? "text-[#636AE8FF] font-bold"
               : "text-[#565E6C]"
           }`}
         >
           <FaPenToSquare className="w-5 h-5" />
           <span>Modify Course</span>
-          {pathname === `/dashboard/courses${selected}` && (
+          {(pathname === `/dashboard/courses${selected}`||pathname.includes(`/dashboard/courses${selected}/edit`)) && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>

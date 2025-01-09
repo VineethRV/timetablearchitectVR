@@ -396,7 +396,6 @@ app.delete("/api/courses", async (req, res) => {
       message: "Token, course code, and semester are required",
     });
   }
-
   try {
     const result = await course.deleteCourse(
       token,

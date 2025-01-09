@@ -8,6 +8,7 @@ import {
   Tooltip,
   Upload,
   Radio,
+  message,
 } from "antd";
 import TimeTable from "../../../components/timetable"
 import { motion } from "framer-motion";
@@ -46,7 +47,13 @@ const AddRoomPage: React.FC = () => {
   function addClassRoom() {
     const className = form.getFieldValue('className');
     const lab = form.getFieldValue('lab')
-    const dept = form.getFieldValue('department')
+    const dept = admin
+      ? form.getFieldValue("department")
+      : userDepartment;
+    if ((className == undefined ||className == "" )|| (lab== undefined)|| (admin&&dept=="")) {
+      message.error("Fill all the required Fields");
+      return;
+    }
     const promise = axios.post(
       BACKEND_URL + "/rooms",
       {

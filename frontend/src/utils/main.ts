@@ -73,3 +73,51 @@ export const timeslots = [
       return null;
     }
   }
+
+  export const colorCombos: Record<string, string>[] = [
+    { textColor: "#FFFFFF", backgroundColor: "#000000" },
+    { textColor: "#333333", backgroundColor: "#FFFBCC" },
+    { textColor: "#1D3557", backgroundColor: "#A8DADC" },
+    { textColor: "#F2F2F2", backgroundColor: "#00796B" },
+    { textColor: "#FFFFFF", backgroundColor: "#283593" },
+    { textColor: "#FFFFFF", backgroundColor: "#2C3E50" },
+    { textColor: "#000000", backgroundColor: "#F2F2F2" },
+    { textColor: "#F2F2F2", backgroundColor: "#424242" },
+    { textColor: "#000000", backgroundColor: "#F4E04D" },
+    { textColor: "#2F4858", backgroundColor: "#F8B400" },
+  ];
+
+  export const getRandomColor = () => {
+    const letters = "0123456789ABCDEF";
+    let color = "#";
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  
+export const fetchdept = ()=> {
+  try {
+    axios.post(
+      BACKEND_URL + "/getPosition",
+      {},
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+      }
+    ).then((res)=>{
+    if (res.status === 200) {
+      return res.data.message.department;
+    } else {
+      return ""
+    }}
+  )
+  } catch (error) {
+    console.log(error);
+    return ""
+  }
+};
+  
+  

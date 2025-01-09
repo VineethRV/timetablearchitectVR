@@ -1,57 +1,21 @@
 import { CiImport } from "react-icons/ci";
-import { IoIosInformationCircleOutline } from "react-icons/io";
 import {
   Button,
   Form,
   Input,
-  Select,
-  Tooltip,
   Upload,
   InputNumber,
+  message,
 } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { semesterOptions } from "../../../../components/semester/semester";
-import RoomOptions from "../../../../components/general/roomoption";
 import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
-import { useEffect, useState } from "react";
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
 
 
-export const fetchdept = ()=> {
-  try {
-    axios.post(
-      BACKEND_URL + "/getPosition",
-      {},
-      {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      }
-    ).then((res)=>{
-    if (res.status === 200) {
-      return res.data.message.department;
-    } else {
-      return ""
-    }}
-  )
-  } catch (error) {
-    console.log(error);
-    return ""
-  }
-};
+
 const AddCoursepage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -59,40 +23,28 @@ const AddCoursepage: React.FC = () => {
   function clearFields() {
     form.setFieldValue('coursename', "");
     form.setFieldValue('coursecode', "");
-    form.setFieldValue('selectSem', "");
-    form.setFieldValue('hours',"");
+    form.setFieldValue('Hpc',"");
     form.setFieldValue('bfactor',"");
     form.setFieldsValue({rooms:null});
   }
-
-  const [department, setDepartment] = useState(fetchdept()); // State for department
-
-
-  useEffect(() => {
-    console.log(department) // Fetch department on component mount
-  }, []);
-  
   
   function addCourse() {
     const coursename = form.getFieldValue('coursename');
     const coursecode = form.getFieldValue('coursecode');
     const credits = form.getFieldValue('Hpc');
-     const sem = form.getFieldValue('selectSem');
-     const dept=department;
-     console.log(dept)
-    // const credits = form.getFieldValue('credits');
-    // const hours = form.getFieldValue('hours');
     const bfactor = form.getFieldValue('bfactor');
+    if ((coursename == undefined ||coursename == "" )|| (coursecode== undefined || coursecode=="")|| (credits==undefined)) {
+      message.error("Fill all the required Fields");
+      return;
+    }
     const promise = axios.post(
       BACKEND_URL + "/courses",
       {
         name: coursename,
         code: coursecode,
-        semester: sem,
+        semester: Number(localStorage.getItem("semester")),
         bfactor: bfactor,
         credits:credits,
-        department: dept,
-        
       },
       {
         headers: {
@@ -158,19 +110,12 @@ const AddCoursepage: React.FC = () => {
         }}
         className="flex mt-12 items-center pl-4"
       >
-        <Form {...formItemLayout} form={form} layout="vertical" requiredMark className="w-96">
+        <Form form={form} layout="vertical" requiredMark className="w-96">
           <Form.Item name="coursename" label="Course Name" required>
             <Input placeholder="Name" className="w-full font-normal" />
           </Form.Item>
           <Form.Item name="coursecode" label="Course Code" required>
             <Input placeholder="Course Code" className="font-normal" />
-          </Form.Item>
-          <Form.Item label="Semester" name="selectSem" required>
-            <Select
-              placeholder="Select a semester"
-              options={semesterOptions}
-              className="font-normal"
-            />
           </Form.Item>
           <Form.Item label="Hours per week" name="Hpc" required>
             <InputNumber
@@ -178,24 +123,6 @@ const AddCoursepage: React.FC = () => {
               placeholder="Hours per week"
               className="w-full font-normal"
             />
-          </Form.Item>
-          <Form.Item name="rooms"
-            label={
-              <span className="inline-flex items-center">
-                Any particular room to be used?
-                <Tooltip title="Select one or more rooms to indicate specific room preferences for this session.">
-                  <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
-                </Tooltip>
-              </span>
-            }
-          >
-            <Form.Item name="rooms" >
-  <RoomOptions
-    multiple={true}
-    value={form.getFieldValue("rooms")} 
-    onChange={(value) => form.setFieldsValue({ rooms: value })} 
-  />
-</Form.Item>
           </Form.Item>
           <Form.Item name="bfactor"label="Rate the subject from 1 to 5 based on the exhaustiveness of the subject">
             <InputNumber

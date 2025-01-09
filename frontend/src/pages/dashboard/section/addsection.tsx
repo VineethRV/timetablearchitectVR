@@ -19,13 +19,12 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import SectionAddTable, {
   courseList,
 } from "../../../components/SectionPage/sectionaddtable";
-import { convertTableToString, timeslots, weekdays } from "../../../utils/main";
+import { convertTableToString, fetchdept, timeslots, weekdays } from "../../../utils/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { buttonConvert } from "../teacher/addteacher";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
-import { fetchdept } from "../courses/corecourse/corecoursedisplay";
 import SwapTimetable from "../../../components/TimetableComponents/SwapTimetable";
 import SimpleSwapTimetable from "../../../components/TimetableComponents/SimpleSwapTT";
 
