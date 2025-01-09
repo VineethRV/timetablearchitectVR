@@ -20,10 +20,10 @@ const LabsTable = ({
   setLabsData: React.Dispatch<React.SetStateAction<Lab[]>>;
 }) => {
   const navigate = useNavigate();
-
+  const [searchText, setSearchText] = useState('');
   const handleEditClick = (name: string, department: string) => {
     navigate(
-      `/dashboard/labs/edit/${encodeURIComponent(
+      `/dashboard/courses/labs/edit/${encodeURIComponent(
         name
       )}/${encodeURIComponent(department)}`
     );
@@ -43,11 +43,12 @@ const LabsTable = ({
       
       // Create rows for each batch, teacher, and room pairing
       return Array.from({ length: maxLength }, (_, index) => ({
-        key: `${lab.name}-${index}`,  // Unique key for each row
+        key: `${lab.name}`,  // Unique key for each row
         name: index===0?lab.name.trim():"",
         batches: batches[index]?.trim() || "",
         teachers: teachers[index]?.trim() || "",
         rooms: rooms[index]?.trim() || "",
+        department:lab.department
       }));
     });
   };
@@ -57,19 +58,17 @@ const LabsTable = ({
     onChange: (_: React.Key[], selectedRows: Lab[]) => {
       setSelectedLabs(selectedRows);
     },
-    getCheckboxProps: (record: Lab) => ({
-      disabled: record.name === "Disabled User",
-      name: record.name,
-    }),
   };
 
   // Function to delete a single lab
   function deleteSingleLab(Lab: Lab) {
+    console.log(Lab)
     const Labs = [Lab];
+    console.log(Labs)
     const res = axios
       .delete(BACKEND_URL + "/labs", {
         data: {
-          Labs,
+          labs:Labs,
         },
         headers: {
           Authorization: localStorage.getItem("token"),
@@ -77,9 +76,19 @@ const LabsTable = ({
       })
       .then((res) => {
         const status = res.data.status;
-
+        console.log(res.data)
         switch (status) {
           case statusCodes.OK:
+            setLabsData((labs) => {
+              const newRooms = labs.filter((t) => {
+                for (let i = 0; i < selectedLabs.length; i++) {
+                  if (selectedLabs[i].name == t.name) return false;
+                }
+                return true;
+              });
+              return newRooms;
+            });
+            setSelectedLabs([]);
             toast.success("Lab deleted successfully");
             break;
           case statusCodes.BAD_REQUEST:
@@ -101,8 +110,7 @@ const LabsTable = ({
       title: "BatchSet",
       dataIndex: "name",
       key: "name",
-      render: (text: string, record: any, index: number) => {
-        // Check if the current cell is empty and merge with the previous non-empty cell
+      render: (text: string, _: any, index: number) => {
         if (text === "") {
           for (let i = index - 1; i >= 0; i--) {
             if (formattedLabData[i].name !== "") {
@@ -135,9 +143,12 @@ const LabsTable = ({
       },
     },
     {
+      title: "Courses",
+      dataIndex: "batches",
+    },
+    {
       title: "Teachers",
       dataIndex: "teachers",
-      key: "teachers",
       render: (_, { teachers }) => (
         <>
           {teachers?.split(",").map((tag) => (
@@ -162,37 +173,86 @@ const LabsTable = ({
         </>
       ),
     },
-   {
-  title: "",
-  render: (record) => {
-    return (
-        <Tooltip title="Edit">
+  {
+    title: "",
+    render: (text:any,record: any, index: number) => {
+      if (text.name !== "" || index === 0) {
+        let rowSpan = 1;
+        for (let i = index + 1; i < formattedLabData.length; i++) {
+          if (formattedLabData[i].name === "") {
+            rowSpan++;
+          } else {
+            break;
+          }
+        }
+        console.log("rec",record)
+        return {
+          children: (
+            <div className="flex space-x-2">
+              <Tooltip title="Edit">
           <Button
             type="primary"
-            onClick={() => deleteSingleLab(record)}
+            onClick={() => handleEditClick(record.name,record.department)}
             shape="circle"
             icon={<MdEdit />}
           />
         </Tooltip>
-    );
-    }
-  },
-    {
-      title: "",
-      render: (record) => {
-        return (
-          <Tooltip title="Delete">
-            <Button
-              className="bg-red-400 "
-              type="primary"
-              shape="circle"
-              onClick={() => deleteSingleLab(record)}
-              icon={<MdDelete />}
-            />
-          </Tooltip>
-        );
-      },
+            </div>
+          ),
+          props: {
+            rowSpan,
+          },
+        };
+      } else {
+        return {
+          children: null,
+          props: {
+            rowSpan: 0, // Merge this row with the previous one
+          },
+        };
+      }
     },
+  },
+  {
+    title: "",
+    render: (text:any,record: any, index: number) => {
+      if (text.name !== "" || index === 0) {
+        let rowSpan = 1;
+        for (let i = index + 1; i < formattedLabData.length; i++) {
+          if (formattedLabData[i].name === "") {
+            rowSpan++;
+          } else {
+            break;
+          }
+        }
+        return {
+          children: (
+            <div className="flex space-x-2">
+              <Tooltip title="Delete">
+                <Button
+                  className="bg-red-400"
+                  type="primary"
+                  shape="circle"
+                  onClick={() => deleteSingleLab(record)}
+                  icon={<MdDelete />}
+                />
+              </Tooltip>
+            </div>
+          ),
+          props: {
+            rowSpan,
+          },
+        };
+      } else {
+        return {
+          children: null,
+          props: {
+            rowSpan: 0, // Merge this row with the previous one
+          },
+        };
+      }
+    },
+  }
   ];
 
   // Function to handle deleting multiple labs

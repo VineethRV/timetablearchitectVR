@@ -15,82 +15,17 @@ import {
 import { motion } from "framer-motion";
 import Timetable from "../../../../components/timetable";
 import { useNavigate } from "react-router-dom";
-import LabAddTable from "../../../../components/CoursePage/Labaddtable";
+import LabAddTable, { BatchField } from "../../../../components/CoursePage/Labaddtable";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../../config";
-import { timeslots, weekdays } from "../../../../utils/main";
+import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, fetchElectives,formItemLayout, timeslots, weekdays } from "../../../../utils/main";
 import { toast } from "sonner";
 import SwapTimetable from "../../../../components/TimetableComponents/SwapTimetable";
-
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
-
-export const fetchTeachers = async (setTeacherOptions: (options: string[]) => void) => {
-  try {
-    const response = await axios.get(BACKEND_URL + "/teachers", {
-      headers: {
-        authorization: localStorage.getItem("token"),
-      },
-    });
-
-    if (response.data && response.data.message) {
-      const teacherNames = response.data.message.map((item: any) => item.name);
-      setTeacherOptions(teacherNames);
-    } else {
-      console.warn("No teachers found in the response.");
-      setTeacherOptions([]);
-    }
-  } catch (error) {
-    console.error("Failed to fetch teachers:", error);
-    message.error("Error fetching teacher data.");
-  }
-};
-
-interface BatchField {
-  key: string;
-  courseSet: string;
-  course: string;
-  teachers: string[];
-  rooms: string[];
-}
-export const convertToTimetable = (
-  setButtonStatus1: (value: React.SetStateAction<string[][]>) => void,
-  time: string
-) => {
-  setButtonStatus1(
-    time
-      .split(";")
-      .map((row) =>
-        row.split(",").map((value) => (value === "0" ? "Free" : value))
-      )
-  );
-};
-
-export const fetchRooms = async (setRoomOptions: (options: string[]) => void) => {
-  try {
-    const response = await axios.get(BACKEND_URL + "/rooms", {
-      headers: {
-        authorization: localStorage.getItem("token"),
-      },
-    });
-    setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
-  } catch (error) {
-    console.error("Failed to fetch rooms:", error);
-    message.error("Error fetching room data.");
-  }
-};
+import { convertStringToTable } from "../../section/addsection";
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [department, setDepartment] = useState("");
+  const [department, setDepartment] = useState(fetchdept());
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
@@ -98,7 +33,6 @@ const AddLabPage: React.FC = () => {
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
-  const semester = Number(localStorage.getItem("semester"));
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
@@ -114,29 +48,6 @@ const AddLabPage: React.FC = () => {
   );
 
   const navigate = useNavigate();
-
-  const fetchdept = ()=> {
-    try {
-      axios.post(
-        BACKEND_URL + "/getPosition",
-        {},
-        {
-          headers: {
-            authorization: localStorage.getItem("token"),
-          },
-        }
-      ).then((res)=>{
-      if (res.status === 200) {
-       setDepartment( res.data.message.department);
-      } else {
-        return ""
-      }}
-    )
-    } catch (error) {
-      console.log(error);
-      return ""
-    }
-  };
 
   const handleOpenModal = () => {
     const currentBatches = form.getFieldValue("numberOfBatches");
@@ -174,50 +85,13 @@ const AddLabPage: React.FC = () => {
     setFormFields(updatedFields);
   };
 
-  const fetchElectives = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        message.error("Authorization token is missing!");
-        return;
-      }
-      const response = await axios.get(BACKEND_URL + "/electives", {
-        headers: {
-          authorization: token,
-        },
-        params: {
-          semester,
-        },
-      });
-      if (response.data.status === 200) {
-        setElectiveOptions(response.data.message); // Assuming `message` contains the array of electives
-      } else {
-        message.error(response.data.message || "Failed to fetch electives.");
-      }
-    } catch (error) {
-      message.error("An error occurred while fetching electives.");
-      console.error(error);
-    }
-  };
 
   useEffect(() => {
     fetchTeachers(setTeacherOptions);
     fetchRooms(setRoomOptions);
-    fetchElectives();
-    fetchdept();
+    fetchElectives(setElectiveOptions);
     setTableData(tableData);
   }, [tableData]);
-
-  function convertTableToString(timetable: string[][] | null): string {
-    if (timetable) {
-      return timetable
-        .map((row) =>
-          row.map((cell) => (cell === "Free" ? "0" : cell)).join(",")
-        )
-        .join(";");
-    }
-    return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0";
-  }
 
   const handleModalSubmit = () => {
     const currentBatches = form.getFieldValue("numberOfBatches");
@@ -315,7 +189,7 @@ const AddLabPage: React.FC = () => {
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
-        convertToTimetable(setButtonStatus1, response.data.timetable);
+        setButtonStatus1(convertStringToTable(response.data.timetable))
       } else {
         message.error(
           response.data.message || "Failed to fetch recommendations."
@@ -386,7 +260,7 @@ const AddLabPage: React.FC = () => {
       BACKEND_URL + "/labs",
       {
         name: form.getFieldValue("batchSetName"),
-        semester: semester,
+        semester: Number(localStorage.getItem("semester")),
         batches: courseSets,
         teachers: teachers,
         rooms: rooms,
@@ -664,3 +538,4 @@ const AddLabPage: React.FC = () => {
 };
 
 export default AddLabPage;
+

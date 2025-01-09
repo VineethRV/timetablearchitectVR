@@ -3,7 +3,7 @@ import type { TableProps } from "antd";
 import { useEffect, useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 
-interface BatchFields {
+export interface BatchField {
   key: string;
   courseSet: string;
   course: string;
@@ -12,9 +12,9 @@ interface BatchFields {
 }
 
 interface LabAddTableProps {
-  data: BatchFields[];
+  data: BatchField[];
   batchsize: number;
-  onEditClick?: (record: BatchFields[]) => void;
+  onEditClick?: (record: BatchField[]) => void;
 }
 
 const LabAddTable: React.FC<LabAddTableProps> = ({
@@ -29,7 +29,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     setData(data)
   },[data])
 
-  const handleDelete = (record: BatchFields) => {
+  const handleDelete = (record: BatchField) => {
       setData((prevData) =>
         prevData.filter(
           (item) =>
@@ -41,7 +41,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
       )
 };
 
-  const calculateRowSpan = (data: BatchFields[], index: number, key: keyof BatchFields) => {
+  const calculateRowSpan = (data: BatchField[], index: number, key: keyof BatchField) => {
     if (index === 0 || data[index][key] !== data[index - 1][key]) {
       let span = 1;
       for (let i = index + 1; i < data.length; i++) {
@@ -56,7 +56,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     return 0;
   };
 
-  const columns: TableProps<BatchFields>["columns"] = [
+  const columns: TableProps<BatchField>["columns"] = [
     {
       title: "Course Set",
       dataIndex: "courseSet",
@@ -147,7 +147,7 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
 
   return (
     <div>
-      <Table<BatchFields> columns={columns} dataSource={ldata} pagination={false} />
+      <Table<BatchField> columns={columns} dataSource={ldata} pagination={false} />
     </div>
   );
 };

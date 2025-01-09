@@ -1,63 +1,65 @@
-import React from "react";
-import { Table, Button } from "antd";
+import React, { useState } from "react";
+import { Table, Button, Input } from "antd";
+import { timeslots, weekdays } from "../utils/main";
 
-// Define the type for the button status state
 interface TimetableProps {
-  buttonStatus: string[][]; // Array of arrays with "Free" or "Busy"
-  setButtonStatus: (status: string[][]) => void; // Function to update button status
+  buttonStatus: string[][];
+  setButtonStatus: (status: string[][]) => void;
 }
 
-const weekdays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-const timeslots = [
-  "9:00-10:00",
-  "10:00-11:00",
-  "11:30-12:30",
-  "12:30-1:30",
-  "2:30-3:30",
-  "3:30-4:30",
-];
-
 const Timetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) => {
-  // Handle button click to toggle status
+  const [editingCell, setEditingCell] = useState<{ row: number, col: number } | null>(null);
+  const [inputValue, setInputValue] = useState<string>("");
+
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
+    setEditingCell({ row: rowIndex, col: colIndex });
+    setInputValue(buttonStatus[rowIndex][colIndex]);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleInputBlur = (rowIndex: number, colIndex: number) => {
     const updatedStatus = buttonStatus.map((row, rIdx) =>
       rIdx === rowIndex
         ? row.map((status, cIdx) =>
-            cIdx === colIndex ? (status === "Free" ? "Busy" : "Free") : status
+            cIdx === colIndex ? inputValue : status
           )
         : row
     );
     setButtonStatus(updatedStatus);
+    setEditingCell(null);
   };
 
-  // Data source for the table
   const dataSource = weekdays.map((day, rowIndex) => ({
     key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
-      <Button
-        key={colIndex}
-        className={`w-20 h-8 m-1 text-sm font-semibold rounded-md ${
-          buttonStatus[rowIndex][colIndex] === "Free"
-            ? "text-[#636AE8FF] bg-[#F2F2FDFF]"
-            : "text-[#F2F2FDFF] bg-[#636AE8FF]"
-        }`}
-        onClick={() => handleButtonClick(rowIndex, colIndex)}
-      >
-        {buttonStatus[rowIndex][colIndex]}
-      </Button>
+      editingCell?.row === rowIndex && editingCell?.col === colIndex ? (
+        <Input
+          key={colIndex}
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={() => handleInputBlur(rowIndex, colIndex)}
+          autoFocus
+        />
+      ) : (
+        <Button
+          key={colIndex}
+          className={`w-20 h-8 m-1 text-sm font-semibold rounded-md ${
+            buttonStatus[rowIndex][colIndex] === "Free"
+              ? "text-[#636AE8FF] bg-[#F2F2FDFF]"
+              : "text-[#F2F2FDFF] bg-[#636AE8FF]"
+          }`}
+          onClick={() => handleButtonClick(rowIndex, colIndex)}
+        >
+          {buttonStatus[rowIndex][colIndex]}
+        </Button>
+      )
     )),
   }));
 
-  // Columns for the table
   const columns = [
     {
       title: "Timeslots",

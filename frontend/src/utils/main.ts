@@ -1,5 +1,6 @@
 import axios from "axios";
 import { BACKEND_URL } from "../../config";
+import { message } from "antd";
 
 export function convertTableToString(timetable: string[][]): string {
   const s = timetable.map((row) => {
@@ -120,4 +121,64 @@ export const fetchdept = ()=> {
   }
 };
   
+
+export const fetchTeachers = async (setTeacherOptions: (options: string[]) => void) => {
+  try {
+    const response = await axios.get(BACKEND_URL + "/teachers", {
+      headers: {
+        authorization: localStorage.getItem("token"),
+      },
+    });
+
+    if (response.data && response.data.message) {
+      const teacherNames = response.data.message.map((item: any) => item.name);
+      setTeacherOptions(teacherNames);
+    } else {
+      console.warn("No teachers found in the response.");
+      setTeacherOptions([]);
+    }
+  } catch (error) {
+    console.error("Failed to fetch teachers:", error);
+    message.error("Error fetching teacher data.");
+  }
+};
   
+export const fetchRooms = async (setRoomOptions: (options: string[]) => void) => {
+  try {
+    const response = await axios.get(BACKEND_URL + "/rooms", {
+      headers: {
+        authorization: localStorage.getItem("token"),
+      },
+    });
+    setRoomOptions(response.data.message.map((item: any) => item.name)); // Assume response.data.message is an array of teacher names
+  } catch (error) {
+    console.error("Failed to fetch rooms:", error);
+    message.error("Error fetching room data.");
+  }
+};
+
+export  const fetchElectives = async (setElectiveOptions: (options: string[]) => void) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        return;
+      }
+      const response = await axios.get(BACKEND_URL + "/electives", {
+        headers: {
+          authorization: token,
+        },
+        params: {
+          semester:Number(localStorage.getItem("semester")),
+        },
+      });
+      if (response.data.status === 200) {
+        setElectiveOptions(response.data.message); // Assuming `message` contains the array of electives
+      } else {
+        message.error(response.data.message || "Failed to fetch electives.");
+      }
+    } catch (error) {
+      message.error("An error occurred while fetching electives.");
+      console.error(error);
+    }
+  };
