@@ -10,7 +10,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 
 const stats = [
-  { title: "Sections formed", number: 54 },
+  { title: "Sections formed", number: 36 },
   { title: "Core courses allocated", number: 12 },
   { title: "Allotted labs", number: 84 },
 ];
@@ -19,7 +19,7 @@ const AdminPanel = () => {
   const [topTeachers, setTopTeachers] = useState([]);
   const [topRooms, setTopRooms] = useState([]);
   const [topLabs, setTopLabs] = useState([]);
-
+  const [accessCode, setAccessCode] = useState("");
   useEffect(() => {
     async function fetchData() {
       const { data: teachersData } = await axios.get(
@@ -81,8 +81,16 @@ const AdminPanel = () => {
           score: labsData.score[index],
           lab: true,
         }));
-
+      
       setTopLabs(formattedLabsData);
+
+      const accessCode = await axios.get(
+        BACKEND_URL + "/accessCode",
+        {
+          headers: { Authorization: localStorage.getItem("token") },
+        }
+      );
+      setAccessCode(accessCode.data.accessCode);
     }
 
     fetchData();
@@ -120,7 +128,7 @@ const AdminPanel = () => {
           ))}
         </Row>
         <CapacityCard />
-        <RequestAccessWrapper />
+        <RequestAccessWrapper accessCode={accessCode}/>
         <GridDisplay teachers={topTeachers} rooms={topRooms} labs={topLabs} />
       </Content>
     </Layout>
