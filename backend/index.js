@@ -888,10 +888,10 @@ app.post("/api/recommendCourse", async (req, res) => {
   }
 });
 
-app.post("/api/getElectiveIntersection", async (req, res) => {
+
+app.post("/api/getIntersection", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { teachers, rooms } = req.body;
-  console.log(teachers,rooms)
   if (!token || !teachers || !rooms) {
     return res.status(200).json({
       status: 400,
@@ -900,8 +900,8 @@ app.post("/api/getElectiveIntersection", async (req, res) => {
   }
 
   try {
-    const intersection = electiveF.getIntersection(teachers, rooms);
-    res.status(200).json({ status: 200, intersection });
+    const result = await electiveF.getIntersection(teachers, rooms);
+    res.status(200).json({ status: result.status, intersection: result.intersection });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

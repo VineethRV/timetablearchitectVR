@@ -1,5 +1,6 @@
 import { Teacher,Room } from "../types/main";
 import { scoreRooms, scoreTeachers } from "./common";
+import PrismaClientManager from "../pgConnect";
 
 
 export const weekdays = [
@@ -20,11 +21,22 @@ export const timeslots = [
     "3:30-4:30",
 ];
 
+const prisma = PrismaClientManager.getInstance().getPrismaClient();
 
-export function getIntersection(teachers: Teacher[], rooms: Room[]): number[][] {
+export async function getIntersection(teachers: string[], rooms: string[]): Promise<{status:number,intersection:number[][]}> {
+  try{
+      const teacherObjects = await prisma.teacher.findMany({
+      where: {
+        name: { in: teachers },
+      },
+      select: {
+        timetable: true,
+        labtable: true,
+      }
+    });
     const intersection: number[][] = weekdays.map(() => timeslots.map(() => 0));
-  
-    teachers.map((teacher) => {
+    
+    teacherObjects.map((teacher) => {
       const teacherScore: number[][] = scoreTeachers(
         teacher.timetable,
         teacher.labtable
@@ -36,13 +48,23 @@ export function getIntersection(teachers: Teacher[], rooms: Room[]): number[][] 
         });
       });
     });
-  
-    rooms.map((room) => {
+    const roomObjects = await prisma.room.findMany({
+      where: {
+        name: { in: rooms },
+      },
+      select: {
+        timetable: true,
+      }
+    });
+    roomObjects.map((room) => {
       const roomScore: number[][] = scoreRooms(room.timetable);
       intersection.map((row, i) =>
         row.map((value, j) => (roomScore[i][j] < 0 ? -1 : value))
       );
     });
-  
-    return intersection;
+    return {intersection: intersection,status:200};
   }
+  catch(err){
+    return {intersection:[],status:500};
+  }
+}
