@@ -76,6 +76,7 @@ function getIntersection(teachers, rooms) {
                 case 1:
                     teacherObjects = _a.sent();
                     intersection_1 = exports.weekdays.map(function () { return exports.timeslots.map(function () { return 0; }); });
+                    console.log("teacherobjs", teacherObjects);
                     teacherObjects.map(function (teacher) {
                         var teacherScore = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
                         intersection_1.map(function (row, i) {
@@ -96,6 +97,7 @@ function getIntersection(teachers, rooms) {
                         })];
                 case 2:
                     roomObjects = _a.sent();
+                    console.log("roomobjs", roomObjects);
                     roomObjects.map(function (room) {
                         var roomScore = (0, common_1.scoreRooms)(room.timetable);
                         intersection_1.map(function (row, i) {

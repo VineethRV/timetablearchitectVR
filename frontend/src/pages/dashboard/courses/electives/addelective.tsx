@@ -104,10 +104,11 @@ const AddElectivepage: React.FC = () => {
       //     },
       //   }
       // )
-       const teachers = eledata.map((elective) => elective.teachers);
-       const rooms = eledata.map((ele)=>ele.rooms)
+      console.log(eledata)
+       const teachers = eledata[0].teachers;
+       const rooms = eledata[0].rooms
       const response=axios.post(
-        BACKEND_URL+"/getElectiveIntersection",{
+        BACKEND_URL+"/getIntersection",{
           teachers: teachers,
           rooms: rooms,
         },

@@ -2,7 +2,7 @@ import React from "react";
 import { Table, Button } from "antd";
 
 // Define the type for the button status state
-interface UnEditableTimetableProps {
+interface TimetableProps {
   buttonStatus: string[][]; // Array of arrays with "Free" or "Busy"
   setButtonStatus: (status: string[][]) => void; // Function to update button status
 }
@@ -25,7 +25,7 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const UnEditableTimetable: React.FC<UnEditableTimetableProps> = ({ buttonStatus, setButtonStatus }) => {
+const Timetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) => {
   // Handle button click to toggle status
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
     const updatedStatus = buttonStatus.map((row, rIdx) =>
@@ -96,4 +96,4 @@ const UnEditableTimetable: React.FC<UnEditableTimetableProps> = ({ buttonStatus,
   );
 };
 
-export default UnEditableTimetable;
+export default Timetable;

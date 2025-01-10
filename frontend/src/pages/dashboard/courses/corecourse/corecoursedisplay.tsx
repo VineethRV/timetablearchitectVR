@@ -4,8 +4,8 @@ import { BACKEND_URL } from "../../../../../config";
 import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import Loading from "../../../../components/Loading/Loading";
-import CoreTable, { CoreType } from "../../../../components/CoursePage/CoreTable";
 import { fetchdept } from "../../../../utils/main";
+import CoreTable, { CoreType } from "../../../../components/CoursePage/coreTable";
 
 
 function page() {
