@@ -509,7 +509,7 @@ export async function saveTimetable(
 export async function getTimetable(
     JWTtoken: string,
     semester: number
-): Promise<{ status: number; section: Section[] | null }>{
+): Promise<{ status: number; section: any[] | null }>{
     try{
          const { status, user } = await auth.getPosition(JWTtoken);
         
@@ -521,8 +521,7 @@ export async function getTimetable(
             }
         
             if (status == statusCodes.OK && user) {
-              let   section:  Section[];
-                section = await prisma.section.findMany({
+                 let section = await prisma.section.findMany({
                   where: {
                     orgId: user.orgId,
                     semester: semester,

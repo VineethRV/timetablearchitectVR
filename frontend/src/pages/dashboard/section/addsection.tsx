@@ -693,7 +693,7 @@ const AddSectionPage: React.FC = () => {
                     return mostFrequent === "0" ? acc : mostFrequent;
                   }, "0"): item.room))}
                  
-                  
+                  roomTT={roomTT}
                   setRoomTT={setRoomTT}
                   // timetableScore={timetableScore}
                 ></SimpleSwapTimetable>
