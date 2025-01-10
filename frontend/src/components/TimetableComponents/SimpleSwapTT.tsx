@@ -14,6 +14,7 @@ interface TimetableProps {
   teachers:string[];
   rooms: string[]; // Array of courses, teachers, and rooms
   setRoomTT: (status: string) => void; 
+  roomTT: string;
 }
 const weekdays = [
   "Monday",
@@ -32,7 +33,7 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus,courses,teachers,rooms,setRoomTT }) => {
+const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus,courses,teachers,rooms,setRoomTT,roomTT }) => {
   const [selectedSlot, setSelectedSlot] = useState<{
     rowIndex: number;
     colIndex: number;
@@ -61,7 +62,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             BACKEND_URL + "/recommendCourse",
             {
               teacher: teacher,
-              room: room == "0" ? null : room,
+              room: room == "-" ? null : room,
               blocks: convertTableToString(buttonStatus),
             },
             {
@@ -108,6 +109,21 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
           return course;
         })
       );
+      let table=convertStringToTable(roomTT).map((row, rIdx) =>
+        row.map((course, cIdx) => {
+          if (
+            rIdx === selectedSlot.rowIndex &&
+            cIdx === selectedSlot.colIndex
+          ) {
+            return convertStringToTable(roomTT)[rowIndex][colIndex]; // Swap with the new selection
+          }
+          if (rIdx === rowIndex && cIdx === colIndex) {
+            return convertStringToTable(roomTT)[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
+          }
+          return course;
+        })
+      );
+      setRoomTT(convertTableToString(table));
       setButtonStatus(updatedStatus);
       setSelectedSlot(null); // Reset the selected slot
     }
