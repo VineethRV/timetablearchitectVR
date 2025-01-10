@@ -78,14 +78,19 @@ function getIntersection(teachers, rooms) {
                     intersection_1 = exports.weekdays.map(function () { return exports.timeslots.map(function () { return 0; }); });
                     teacherObjects.map(function (teacher) {
                         var teacherScore = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
-                        intersection_1.map(function (row, i) {
-                            row.map(function (value, j) {
-                                if (teacherScore[i][j] < 0 || value < 0)
-                                    return -1;
-                                return value + teacherScore[i][j];
-                            });
-                        });
+                        for (var i = 0; i < 6; i++) {
+                            for (var j = 0; j < 6; j++) {
+                                if (teacherScore[i][j] < 0) {
+                                    intersection_1[i][j] = -1;
+                                }
+                                else if (intersection_1[i][j] >= 0) {
+                                    intersection_1[i][j] += teacherScore[i][j];
+                                }
+                            }
+                        }
                     });
+                    console.log(teacherObjects);
+                    console.log("intersection: ", intersection_1);
                     return [4 /*yield*/, prisma.room.findMany({
                             where: {
                                 name: { in: rooms },
@@ -96,12 +101,18 @@ function getIntersection(teachers, rooms) {
                         })];
                 case 2:
                     roomObjects = _a.sent();
+                    console.log(roomObjects);
                     roomObjects.map(function (room) {
                         var roomScore = (0, common_1.scoreRooms)(room.timetable);
-                        intersection_1.map(function (row, i) {
-                            return row.map(function (value, j) { return (roomScore[i][j] < 0 ? -1 : value); });
-                        });
+                        for (var i = 0; i < 6; i++) {
+                            for (var j = 0; j < 6; j++) {
+                                if (roomScore[i][j] < 0) {
+                                    intersection_1[i][j] = -1;
+                                }
+                            }
+                        }
                     });
+                    console.log("intersection: ", intersection_1);
                     return [2 /*return*/, { intersection: intersection_1, status: 200 }];
                 case 3:
                     err_1 = _a.sent();
