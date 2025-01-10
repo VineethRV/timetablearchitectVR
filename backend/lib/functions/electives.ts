@@ -41,13 +41,19 @@ export async function getIntersection(teachers: string[], rooms: string[]): Prom
         teacher.timetable,
         teacher.labtable
       );
-      intersection.map((row, i) => {
-        row.map((value, j) => {
-          if (teacherScore[i][j] < 0 || value < 0) return -1;
-          return value + teacherScore[i][j];
-        });
-      });
+      for(let i=0;i<6;i++){
+        for(let j=0;j<6;j++){
+          if(teacherScore[i][j]<0){
+            intersection[i][j] = -1;
+          }
+          else if(intersection[i][j] >= 0){
+            intersection[i][j] += teacherScore[i][j];
+          }
+        }
+      }
     });
+    console.log(teacherObjects);
+    console.log("intersection: ",intersection);
     const roomObjects = await prisma.room.findMany({
       where: {
         name: { in: rooms },
@@ -56,12 +62,18 @@ export async function getIntersection(teachers: string[], rooms: string[]): Prom
         timetable: true,
       }
     });
+    console.log(roomObjects);
     roomObjects.map((room) => {
       const roomScore: number[][] = scoreRooms(room.timetable);
-      intersection.map((row, i) =>
-        row.map((value, j) => (roomScore[i][j] < 0 ? -1 : value))
-      );
+      for(let i=0;i<6;i++){
+        for(let j=0;j<6;j++){
+          if(roomScore[i][j]<0){
+            intersection[i][j] = -1;
+          }
+        }
+      }
     });
+    console.log("intersection: ",intersection);
     return {intersection: intersection,status:200};
   }
   catch(err){
