@@ -20,6 +20,7 @@ import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, formItemLay
 import { buttonConvert } from "../../teacher/addteacher";
 import { toast } from "sonner";
 import { statusCodes } from "../../../../types/statusCodes";
+import UnEditableTimetable from "../../../../components/uneditableTimetable";
 
   
 const AddElectivepage: React.FC = () => {
@@ -29,6 +30,7 @@ const AddElectivepage: React.FC = () => {
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [editingRecord, setEditingRecord] = useState<Elective | null>(null);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
+  const[displayTT,setDisplayTT]=useState<Boolean>(false)
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
@@ -48,6 +50,7 @@ const AddElectivepage: React.FC = () => {
     const handleCloseModal = () => {
       setIsModalOpen(false);
       form.resetFields(); 
+      setDisplayTT(false)
       setEditingRecord(null);
     };
   
@@ -82,18 +85,31 @@ const AddElectivepage: React.FC = () => {
     const handleSubmit=async ()=>{
       //name, courses, teachers, rooms, semester, timetable, department 
       const courses = eledata.map((elective) => elective.course).join(";");
-      const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
-      const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
+      // const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
+      // const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
       const department= await fetchdept()
+      // const response=axios.post(
+      //   BACKEND_URL+"/electives",{
+      //     name: form.getFieldValue("clusterName"),
+      //     courses: courses,
+      //     teachers: teachers,
+      //     rooms: rooms,
+      //     semester:Number(localStorage.getItem("semester")),
+      //     timetable: convertTableToString(buttonStatus),
+      //     department: department
+      //   },
+      //   {
+      //     headers: {
+      //       authorization: localStorage.getItem("token"),
+      //     },
+      //   }
+      // )
+       const teachers = eledata.map((elective) => elective.teachers);
+       const rooms = eledata.map((ele)=>ele.rooms)
       const response=axios.post(
-        BACKEND_URL+"/electives",{
-          name: form.getFieldValue("clusterName"),
-          courses: courses,
+        BACKEND_URL+"/getElectiveIntersection",{
           teachers: teachers,
           rooms: rooms,
-          semester:Number(localStorage.getItem("semester")),
-          timetable: convertTableToString(buttonConvert(buttonStatus)),
-          department: department
         },
         {
           headers: {
@@ -101,7 +117,6 @@ const AddElectivepage: React.FC = () => {
           },
         }
       )
-      
     toast.promise(response, {
       loading: "Adding Electives...",
       success: (res) => {
@@ -184,7 +199,7 @@ const AddElectivepage: React.FC = () => {
                 onOk={handleModalSubmit}
                 width={1000}
               >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" >
                 <div
                       style={{
                         marginBottom: "16px",
@@ -199,6 +214,7 @@ const AddElectivepage: React.FC = () => {
                           display: "flex",
                           gap: "16px",
                           flexWrap: "wrap",
+                          justifyContent:"normal"
                         }}
                       >
                       <Form.Item
@@ -246,6 +262,17 @@ const AddElectivepage: React.FC = () => {
                             style={{ flex: "1 1 30%" }}
                           />
                         </Form.Item>
+                        <Form.Item label="Select the timeslot for the course">
+                              <Tooltip title="Click on the timeslots where to the teacher is busy to set them to busy">
+                                <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
+                              </Tooltip>
+                              <div>
+            <UnEditableTimetable
+              buttonStatus={buttonStatus}
+              setButtonStatus={setButtonStatus}
+            />
+          </div>
+                        </Form.Item>
                     </div>
                   </Form.Item>
                   </div>
@@ -268,7 +295,7 @@ const AddElectivepage: React.FC = () => {
           }/>
           <br/><br/>
           <label className="flex items-center">
-            <span>Select the timeslot for the subject</span>
+            <span>Timetable for this Cluster</span>
             <Tooltip title="Click on the timeslots where to the teacher is busy to set them to busy">
               <IoIosInformationCircleOutline className="ml-2 text-[#636AE8FF]" />
             </Tooltip>

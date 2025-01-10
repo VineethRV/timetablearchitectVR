@@ -12,6 +12,15 @@ import { TbTrash } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { Lab } from "../../types/main";
 
+interface labs{
+    key: string;
+    name: string;
+    batches: string;
+    teachers: string;
+    rooms: string;
+    department: string | null;
+}
+
 const LabsTable = ({
   labData,
   setLabsData,
@@ -29,7 +38,7 @@ const LabsTable = ({
     );
   };
 
-  const [selectedLabs, setSelectedLabs] = useState<Lab[]>([]);
+  const [selectedLabs, setSelectedLabs] = useState<labs[]>([]);
 
   // Format lab data to split values by ';' and display each in separate rows
   const formatLabData = (labData: Lab[]) => {
@@ -54,14 +63,14 @@ const LabsTable = ({
   };
   const formattedLabData = React.useMemo(() => formatLabData(labData), [labData]);
   // Row Selection logic by ant design
-  const rowSelection: TableProps<Lab>["rowSelection"] = {
-    onChange: (_: React.Key[], selectedRows: Lab[]) => {
+  const rowSelection: TableProps<labs>["rowSelection"] = {
+    onChange: (_: React.Key[], selectedRows: labs[]) => {
       setSelectedLabs(selectedRows);
     },
   };
 
   // Function to delete a single lab
-  function deleteSingleLab(Lab: Lab) {
+  function deleteSingleLab(Lab: labs) {
     console.log(Lab)
     const Labs = [Lab];
     console.log(Labs)
@@ -105,7 +114,7 @@ const LabsTable = ({
   }
 
   // Columns configuration for the table
-  const columns: TableColumnsType<Lab> = [
+  const columns: TableColumnsType<labs> = [
     {
       title: "BatchSet",
       dataIndex: "name",
@@ -256,7 +265,7 @@ const LabsTable = ({
   ];
 
   // Function to handle deleting multiple labs
-  function deleteLabsHandler(Labs: Lab[]) {
+  function deleteLabsHandler(Labs: labs[]) {
     if (selectedLabs.length == 0) {
       toast.info("Select Labs to delete !!");
       return;
@@ -314,7 +323,7 @@ const LabsTable = ({
         </div>
       </div>
 
-      <Table<Lab>
+      <Table<labs>
         rowSelection={{ type: "checkbox", ...rowSelection }}
         columns={columns}
         dataSource={formattedLabData}

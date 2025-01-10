@@ -4,6 +4,7 @@ const teacher = require("./lib/actions/teacher.js");
 const room = require("./lib/actions/room.js");
 const lab = require("./lib/actions/lab.js");
 const elective = require("./lib/actions/electives.js");
+const electiveF=require("./lib/functions/electives.js")
 const course = require("./lib/actions/course.js");
 const cors = require("cors");
 const app = express();
@@ -890,6 +891,7 @@ app.post("/api/recommendCourse", async (req, res) => {
 app.post("/api/getElectiveIntersection", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { teachers, rooms } = req.body;
+  console.log(teachers,rooms)
   if (!token || !teachers || !rooms) {
     return res.status(200).json({
       status: 400,
@@ -898,7 +900,7 @@ app.post("/api/getElectiveIntersection", async (req, res) => {
   }
 
   try {
-    const intersection = getIntersection(teachers, rooms);
+    const intersection = electiveF.getIntersection(teachers, rooms);
     res.status(200).json({ status: 200, intersection });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
