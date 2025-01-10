@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-import TimeTable from "../../../components/timetable";
+import TimeTable from "../../../components/TimetableComponents/timetable";
 import { DEPARTMENTS_OPTIONS } from "../../../../info";
 import axios from "axios";
 import { statusCodes } from "../../../types/statusCodes";
@@ -48,7 +48,7 @@ const AddTeacherpage = () => {
     const department = admin
       ? form.getFieldValue("department")
       : userDepartment;
-    if ((name == undefined ||name == "" )||(initials == undefined ||initials == "")|| (admin&&department=="")) {
+    if ((!name)||(!initials)|| (admin&&department=="")) {
       message.error("Fill all the required Fields");
       return;
     }

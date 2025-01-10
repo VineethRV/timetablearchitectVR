@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Table, Button, Input } from "antd";
-import { timeslots, weekdays } from "../utils/main";
+import { timeslots, weekdays } from "../../utils/main";
 
 interface TimetableProps {
   buttonStatus: string[][];

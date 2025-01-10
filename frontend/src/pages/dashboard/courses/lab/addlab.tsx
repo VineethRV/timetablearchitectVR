@@ -13,7 +13,7 @@ import {
   Modal,
 } from "antd";
 import { motion } from "framer-motion";
-import Timetable from "../../../../components/timetable";
+import Timetable from "../../../../components/TimetableComponents/timetable";
 import { useNavigate } from "react-router-dom";
 import LabAddTable, { BatchField } from "../../../../components/CoursePage/Labaddtable";
 import axios from "axios";

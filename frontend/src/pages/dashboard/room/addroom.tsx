@@ -10,7 +10,7 @@ import {
   Radio,
   message,
 } from "antd";
-import TimeTable from "../../../components/timetable"
+import TimeTable from "../../../components/TimetableComponents/timetable"
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import {useNavigate } from "react-router-dom";
@@ -50,7 +50,7 @@ const AddRoomPage: React.FC = () => {
     const dept = admin
       ? form.getFieldValue("department")
       : userDepartment;
-    if ((className == undefined ||className == "" )|| (lab== undefined)|| (admin&&dept=="")) {
+    if (!className|| !lab|| (admin&&dept=="")) {
       message.error("Fill all the required Fields");
       return;
     }

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button, Form, Input, Select, Tooltip, Upload, Radio, message } from "antd";
-import TimeTable from "../../../components/timetable";
+import TimeTable from "../../../components/TimetableComponents/timetable";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { useNavigate, useParams } from "react-router-dom";
@@ -101,7 +101,7 @@ const EditRoomPage: React.FC = () => {
     const name = form.getFieldValue("className");
     const lab = form.getFieldValue("lab") === 1 ? true : false;
     const department = admin ? form.getFieldValue("department") : olddepartment;
-    if ((name == undefined ||name == "" )|| (lab== undefined)|| (admin&&department=="")) {
+    if (!name|| !lab|| (admin&&department=="")) {
       message.error("Fill all the required Fields");
       return;
     }

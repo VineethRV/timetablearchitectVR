@@ -85,7 +85,7 @@ const EditCoursepage: React.FC = () => {
     const coursecode = form.getFieldValue('coursecode');
     const credits = form.getFieldValue('Hpc');
     const bfactor=form.getFieldValue("bfactor");
-    if ((coursename == undefined ||coursename == "" )|| (coursecode== undefined || coursecode=="")|| (credits==undefined)) {
+    if(!coursename||!coursecode|| !credits) {
       message.error("Fill all the required Fields");
       return;
     }
