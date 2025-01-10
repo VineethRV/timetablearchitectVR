@@ -62,7 +62,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             BACKEND_URL + "/recommendCourse",
             {
               teacher: teacher,
-              room: room == "0" ? null : room,
+              room: room == "-" ? null : room,
               blocks: convertTableToString(buttonStatus),
             },
             {
