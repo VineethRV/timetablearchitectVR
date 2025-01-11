@@ -521,12 +521,13 @@ const AddLabPage: React.FC = () => {
               </Button>
             </div>
           </div>
-
           {showTT ? (
             <SwapTimetable
-              timetableScore={timetableScore}
               buttonStatus={buttonStatus1}
               setButtonStatus={setButtonStatus1}
+              course={getCourseData(tableData).courseSets}
+              teachers= {getCourseData(tableData).teachers}
+              rooms= {getCourseData(tableData).rooms}
             ></SwapTimetable>
           ) : (
             <></>

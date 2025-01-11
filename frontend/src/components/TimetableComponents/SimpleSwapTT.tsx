@@ -45,7 +45,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
     if (!selectedSlot) {
       console.log("inside first select");
       // Select the first slot
-      if (buttonStatus[rowIndex][colIndex] != "Free" && buttonStatus[rowIndex][colIndex] != "Busy") {
+      if (courses.includes(buttonStatus[rowIndex][colIndex])) {
         console.log("inside click");
         setSelectedSlot({ rowIndex, colIndex });
         const selectedIndex = courses.indexOf(buttonStatus[rowIndex][colIndex]);
