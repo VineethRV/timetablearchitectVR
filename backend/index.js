@@ -756,6 +756,7 @@ app.post("/api/getLabRecommendation", async (req, res) => {
 app.post("/api/recommendLab", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { Lteachers, Lrooms, blocks } = req.body;
+  console.log("token:",token,"Teachers: ",Lteachers,"Labs: ",Lrooms,blocks)
   if (!token || !Lteachers || !Lrooms) {
     return res.status(200).json({
       status: 400,

@@ -27,9 +27,10 @@
 **[ ] Moving allotted timeslot does not work(Vineeth)**
 [ ] Buttons in table can be bigger and table can be on the side rather than down
 `[ ] Deleting and modifying lab is giving invalid request`
-**[ ] Lab creation changes not reflected in teachers and rooms**
+**[ ] Lab creation changes not reflected in teachers and rooms()**
 
 # CORE:
 ~~[ ] Semester option in core course redundant~~
 ~~`[ ] Particular classroom still contains dummy data`~~
 ~~[ ] Editing courses load forever~~
+[ ] Core allocation should reflect changes in teachers and rooms

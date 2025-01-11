@@ -1,12 +1,19 @@
-// Updated React component
 import React, { useState } from "react";
 import { Table, Button } from "antd";
+import { convertStringToTable } from "../../pages/dashboard/section/addsection";
+import { toast } from "sonner";
+import axios from "axios";
+import { BACKEND_URL } from "../../../config";
+import { convertTableToString } from "../../utils/main";
+import { button, col } from "framer-motion/client";
 
 // Define the type for the timetable props
 interface TimetableProps {
   buttonStatus: string[][];
-  setButtonStatus: (status: string[][]) => void;
-  timetableScore: number[][];
+  setButtonStatus: React.Dispatch<React.SetStateAction<string[][]>>;
+  course: string[];
+  teachers: string[][];
+  rooms: string[][];
 }
 
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -23,129 +30,127 @@ const timeslots = [
 const SwapTimetable: React.FC<TimetableProps> = ({
   buttonStatus,
   setButtonStatus,
-  timetableScore,
+  course,
+  teachers,
+  rooms,
 }) => {
   const [selectedSlot, setSelectedSlot] = useState<{
     rowIndex: number;
     colIndex: number;
   } | null>(null);
-
-  const [swapping, setSwapping] = useState<{
-    firstSlot: { rowIndex: number; colIndex: number } | null;
-    secondSlot: { rowIndex: number; colIndex: number } | null;
-  }>({ firstSlot: null, secondSlot: null });
-
+  const [score, setScore] = useState<number[][]>(
+    Array(6).fill(null).map(() => 
+    Array(6).fill(null).map(() => (Math.random()*2-1))
+  ));
+  
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
-    if (timetableScore[rowIndex][colIndex] < 0) return;
-
+    console.log("button clicked");
     if (!selectedSlot) {
-      setSelectedSlot({ rowIndex, colIndex });
+      console.log("inside first select");
+      if(course.includes(buttonStatus[rowIndex][colIndex])) {
+        console.log("inside click");
+        if(colIndex%2){
+          setSelectedSlot({ rowIndex, colIndex:colIndex-1});
+        }
+        else{
+          setSelectedSlot({ rowIndex, colIndex: colIndex });
+        }
+        const selectedIndex = course.indexOf(buttonStatus[rowIndex][colIndex]);
+        let teacher = teachers[selectedIndex];
+        let room = rooms[selectedIndex];
+        console.log("course", buttonStatus[rowIndex][colIndex]);
+        console.log("teacher", teacher);
+        console.log("room", room);
+        const dummy = convertStringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
+        setScore(dummy)
+        console.log("Sending request to backend");
+        toast.promise(
+          axios.post(
+            BACKEND_URL + "/recommendLab",
+            {
+              Lteachers: teacher,
+              Lrooms: room,
+            },
+            {
+              headers: {
+              authorization: localStorage.getItem("token"),
+              },
+            }
+          ),
+          {
+            loading: "Finding optimal slots...",
+            success: (response) => {
+              console.log("response", response);
+              if (response.status === 200) {
+                const newScore = convertStringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
+                console.log("Course recommendation received", newScore);
+                setScore(newScore);
+                return "Optimal slots found!";
+              } else {
+                console.error("Failed to get course recommendation");
+                return "Failed to get course recommendation";
+              }
+            },
+            error: (error) => {
+              console.error("Error:", error.response?.data || error.message);
+              return "Failed to get course recommendation";
+            },
+          }
+        );
+      }
     } else {
-      const firstSlot = selectedSlot;
-      const secondSlot = { rowIndex, colIndex };
-
-      setSwapping({ firstSlot, secondSlot });
-
+      console.log(buttonStatus[rowIndex][colIndex]);
+      colIndex = colIndex%2 ? colIndex-1 : colIndex;
       const updatedStatus = buttonStatus.map((row, rIdx) =>
         row.map((course, cIdx) => {
-          if (rIdx === firstSlot.rowIndex && cIdx === firstSlot.colIndex) {
-            return buttonStatus[rowIndex][colIndex];
+          if (
+            (rIdx === selectedSlot.rowIndex) &&
+            (cIdx === selectedSlot.colIndex || cIdx === selectedSlot.colIndex+1)
+          ) {
+            return buttonStatus[rowIndex][colIndex]; // Swap with the new selection
           }
-          if (rIdx === rowIndex && cIdx === colIndex) {
-            return buttonStatus[firstSlot.rowIndex][firstSlot.colIndex];
+          if ((rIdx === rowIndex && (cIdx === colIndex || cIdx === colIndex+1))) {
+            return buttonStatus[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
           }
           return course;
         })
       );
-
-      setTimeout(() => {
-        setButtonStatus(updatedStatus);
-        setSelectedSlot(null);
-        setSwapping({ firstSlot: null, secondSlot: null });
-      }, 400);
+      setButtonStatus(updatedStatus);
+      setSelectedSlot(null);
     }
   };
-
+  console.log("score: ",score)
+  console.log("ButtonMatrix: ",buttonStatus)
+  console.log("dataSource: ",score.map((row,rowIndex) => row.map((_,colIndex) => (score[rowIndex][(Math.floor(colIndex/2))*2] < 0))))
   const dataSource = weekdays.map((day, rowIndex) => ({
     key: rowIndex.toString(),
-    day,
-    buttons: timeslots.map((_, colIndex) => {
-      const score = timetableScore[rowIndex][colIndex];
-
-      let buttonStyle = {
-        backgroundColor: "#FFFFFF",
-        color: "#000000",
-        borderColor: "#D9D9D9",
-      };
-
-      if (score > 90) {
-        buttonStyle = {
-          backgroundColor: "#004d00",
-          color: "#FFFFFF",
-          borderColor: "#004d00",
-        };
-      } else if (score > 60) {
-        buttonStyle = {
-          backgroundColor: "#228B22",
-          color: "#FFFFFF",
-          borderColor: "#228B22",
-        };
-      } else if (score > 40) {
-        buttonStyle = {
-          backgroundColor: "#32CD32",
-          color: "#000000",
-          borderColor: "#32CD32",
-        };
-      } else if (score > 20) {
-        buttonStyle = {
-          backgroundColor: "#00FA9A",
-          color: "#000000",
-          borderColor: "#00FA9A",
-        };
-      } else if (score > 0) {
-        buttonStyle = {
-          backgroundColor: "#E6FCE6",
-          color: "#000000",
-          borderColor: "#E6FCE6",
-        };
-      } else if (score < 0) {
-        buttonStyle = {
-          backgroundColor: "#FF5722",
-          color: "#FFFFFF",
-          borderColor: "#FF5722",
-        };
-      }
-
-      const isSwapping =
-        (swapping.firstSlot &&
-          swapping.firstSlot.rowIndex === rowIndex &&
-          swapping.firstSlot.colIndex === colIndex) ||
-        (swapping.secondSlot &&
-          swapping.secondSlot.rowIndex === rowIndex &&
-          swapping.secondSlot.colIndex === colIndex);
-
-      return (
-        <Button
-          key={colIndex}
-          className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden transform transition-all duration-300 ease-in-out ${
-            selectedSlot?.rowIndex === rowIndex &&
-            selectedSlot?.colIndex === colIndex
-              ? "border-4 border-blue-500 scale-105 shadow-lg"
-              : ""
-          } ${isSwapping ? "animate-pulse bg-yellow-300 scale-110 shadow-md" : ""}`}
-          onClick={() => handleButtonClick(rowIndex, colIndex)}
-          style={{
-            ...buttonStyle,
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-            overflow: "hidden",
-          }}
-          disabled={score < 0}
-        >
-          {buttonStatus[rowIndex][colIndex]}
-        </Button>
-      );
-    }),
+    day: day,
+    buttons: timeslots.map((_, colIndex) => (
+      <Button
+        key={colIndex}
+        className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
+          selectedSlot
+            ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
+              ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
+              : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
+            : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
+        }`}
+        onClick={() => handleButtonClick(rowIndex, colIndex)}
+        disabled={
+          (selectedSlot ? true : false) &&
+          (score[rowIndex][(Math.floor(colIndex/2))*2] < 0 || (buttonStatus[rowIndex][colIndex] != "Free" && buttonStatus[rowIndex][colIndex] != "0" ))
+        }
+        style={{
+          whiteSpace: "nowrap",
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          borderColor: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0" )? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
+          borderWidth: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0") ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
+        }}
+      >
+        {buttonStatus[rowIndex][colIndex]}
+      </Button>
+    )),
   }));
 
   const columns = [
@@ -153,29 +158,33 @@ const SwapTimetable: React.FC<TimetableProps> = ({
       title: "Timeslots",
       dataIndex: "day",
       key: "day",
-      render: (text: string) => <strong style={{ fontFamily: "Inter" }}>{text}</strong>,
+      render: (text: string) => (
+        <strong className="text-normal" style={{ fontFamily: "Inter" }}>
+          {text}
+        </strong>
+      ),
     },
     ...timeslots.map((slot, index) => ({
       title: slot,
       dataIndex: `button${index}`,
       key: `button${index}`,
       render: (_: any, record: { buttons: React.ReactNode[] }) => (
-        <span style={{ fontFamily: "Inter" }}>{record.buttons[index]}</span>
+        <span className="text-normal" style={{ fontFamily: "Inter" }}>
+          {record.buttons[index]}
+        </span>
       ),
     })),
   ];
 
   return (
-    <div className="flex justify-center p-5">
-      <div className="max-w-[800px] w-full">
-        <Table
-          dataSource={dataSource}
-          columns={columns}
-          pagination={false}
-          bordered
-          size="middle"
-        />
-      </div>
+    <div className="flex justify-center p-4">
+      <Table
+        dataSource={dataSource}
+        columns={columns}
+        bordered
+        pagination={false}
+        size="middle"
+      />
     </div>
   );
 };
