@@ -8,17 +8,18 @@ interface EleTimetableProps {
   setButtonStatus: (status: string[][]) => void;
   courseName:string;
   score: number[][]
+  max:number;
 }
 
-const EleTimetable: React.FC<EleTimetableProps> = ({ buttonStatus, setButtonStatus,courseName,score }) => {
+const EleTimetable: React.FC<EleTimetableProps> = ({ buttonStatus, setButtonStatus,courseName,score,max }) => {
   // Handle button click to toggle status
-
+  
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
-    console.log(rowIndex,colIndex,courseName)
+    console.log(score)
     const updatedStatus = buttonStatus.map((row, rIdx) =>
       rIdx === rowIndex
         ? row.map((status, cIdx) =>
-            cIdx === colIndex ? (status==courseName?`${score[rowIndex][colIndex]}`:(Number(status) > 0 ? courseName: status)) : status
+            cIdx === colIndex ? (status==courseName?`${score[rowIndex][colIndex]}`:(score[rowIndex][colIndex] > 0 ? courseName: status)) : status
           )
         : row
     );
@@ -38,11 +39,11 @@ const EleTimetable: React.FC<EleTimetableProps> = ({ buttonStatus, setButtonStat
             whiteSpace: "nowrap",
             textOverflow: "ellipsis",
             overflow: "hidden",
-           backgroundColor: buttonStatus[rowIndex][colIndex]==courseName?"#636AE8FF":(Number(buttonStatus[rowIndex][colIndex]) > 0? `rgb(0, ${255 * Number(buttonStatus[rowIndex][colIndex])}, 0)` : "rgb(220,220,220)"),
+           backgroundColor: buttonStatus[rowIndex][colIndex]==courseName?"#636AE8FF":(score[rowIndex][colIndex] > 0? `rgb(0, ${255 * (score[rowIndex][colIndex])/max}, 0)` : "rgb(220,220,220)"),
            color: buttonStatus[rowIndex][colIndex]==courseName?"white":"black",
           }}
       >
-        {(buttonStatus[rowIndex][colIndex]==courseName?courseName:Number(buttonStatus[rowIndex][colIndex])>0?"Available":"Unavailable")}
+        {(buttonStatus[rowIndex][colIndex]==courseName?courseName:score[rowIndex][colIndex]>0?"Available":"Unavailable")}
       </Button>
     )),
   }));
