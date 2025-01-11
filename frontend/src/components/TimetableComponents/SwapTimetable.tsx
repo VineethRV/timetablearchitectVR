@@ -5,14 +5,15 @@ import { toast } from "sonner";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 import { convertTableToString } from "../../utils/main";
+import { button, col } from "framer-motion/client";
 
 // Define the type for the timetable props
 interface TimetableProps {
   buttonStatus: string[][];
   setButtonStatus: React.Dispatch<React.SetStateAction<string[][]>>;
   course: string[];
-  teachers: string[];
-  rooms: string[];
+  teachers: string[][];
+  rooms: string[][];
 }
 
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -49,10 +50,10 @@ const SwapTimetable: React.FC<TimetableProps> = ({
       if(course.includes(buttonStatus[rowIndex][colIndex])) {
         console.log("inside click");
         if(colIndex%2){
-          setSelectedSlot({ rowIndex, colIndex });
+          setSelectedSlot({ rowIndex, colIndex:colIndex-1});
         }
         else{
-          setSelectedSlot({ rowIndex, colIndex: colIndex-1 });
+          setSelectedSlot({ rowIndex, colIndex: colIndex });
         }
         const selectedIndex = course.indexOf(buttonStatus[rowIndex][colIndex]);
         let teacher = teachers[selectedIndex];
@@ -62,13 +63,13 @@ const SwapTimetable: React.FC<TimetableProps> = ({
         console.log("room", room);
         const dummy = convertStringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
         setScore(dummy)
+        console.log("Sending request to backend");
         toast.promise(
           axios.post(
             BACKEND_URL + "/recommendLab",
             {
-              teacher: teacher,
-              room: room == "-" ? null : room,
-              blocks: convertTableToString(buttonStatus),
+              Lteachers: teacher,
+              Lrooms: room,
             },
             {
               headers: {
@@ -79,7 +80,7 @@ const SwapTimetable: React.FC<TimetableProps> = ({
           {
             loading: "Finding optimal slots...",
             success: (response) => {
-              console.log("response", response.data.timetable);
+              console.log("response", response);
               if (response.status === 200) {
                 const newScore = convertStringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
                 console.log("Course recommendation received", newScore);
@@ -98,12 +99,29 @@ const SwapTimetable: React.FC<TimetableProps> = ({
         );
       }
     } else {
+      console.log(buttonStatus[rowIndex][colIndex]);
+      colIndex = colIndex%2 ? colIndex-1 : colIndex;
+      const updatedStatus = buttonStatus.map((row, rIdx) =>
+        row.map((course, cIdx) => {
+          if (
+            (rIdx === selectedSlot.rowIndex) &&
+            (cIdx === selectedSlot.colIndex || cIdx === selectedSlot.colIndex+1)
+          ) {
+            return buttonStatus[rowIndex][colIndex]; // Swap with the new selection
+          }
+          if ((rIdx === rowIndex && (cIdx === colIndex || cIdx === colIndex+1))) {
+            return buttonStatus[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
+          }
+          return course;
+        })
+      );
+      setButtonStatus(updatedStatus);
       setSelectedSlot(null);
     }
   };
   console.log("score: ",score)
   console.log("ButtonMatrix: ",buttonStatus)
-  console.log("dataSource: ",score.map((row,rowIndex) => row.map((_,colIndex) => (score[rowIndex][(Math.floor(colIndex/2))*2] > 0))))
+  console.log("dataSource: ",score.map((row,rowIndex) => row.map((_,colIndex) => (score[rowIndex][(Math.floor(colIndex/2))*2] < 0))))
   const dataSource = weekdays.map((day, rowIndex) => ({
     key: rowIndex.toString(),
     day: day,
@@ -120,14 +138,14 @@ const SwapTimetable: React.FC<TimetableProps> = ({
         onClick={() => handleButtonClick(rowIndex, colIndex)}
         disabled={
           (selectedSlot ? true : false) &&
-          (score[rowIndex][(Math.floor(colIndex/2))*2] < 0 || buttonStatus[rowIndex][colIndex] != "Free")
+          (score[rowIndex][(Math.floor(colIndex/2))*2] < 0 || (buttonStatus[rowIndex][colIndex] != "Free" && buttonStatus[rowIndex][colIndex] != "0" ))
         }
         style={{
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
           overflow: "hidden",
-          borderColor: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && buttonStatus[rowIndex][colIndex] == "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
-          borderWidth: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && buttonStatus[rowIndex][colIndex] == "Free" ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
+          borderColor: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0" )? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
+          borderWidth: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0") ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
         }}
       >
         {buttonStatus[rowIndex][colIndex]}
