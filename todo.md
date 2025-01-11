@@ -13,6 +13,7 @@
 ~~**[ ] labtable is becoming null when doing edit teachers**~~
 **[ ] Moving Subjects in Edit Teachers**
 [ ] Disable auto filling
+**[ ] Alternate department**
 
 # ROOM ADDING:
 ~~**[ ] 1 0 problem**~~
@@ -33,4 +34,8 @@
 ~~[ ] Semester option in core course redundant~~
 ~~`[ ] Particular classroom still contains dummy data`~~
 ~~[ ] Editing courses load forever~~
-[ ] Core allocation should reflect changes in teachers and rooms
+
+# SECTION :
+**[ ] Core allocation should reflect changes in teachers and rooms**
+[ ] Should be able to delete default room
+[ ] ToolTip should display room allocated
