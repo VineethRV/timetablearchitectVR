@@ -12,6 +12,11 @@ import { TbTrash } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { Elective } from "../../types/main";
 
+interface Ele
+{
+  key: string;name: string; courses: string; rooms: string; teachers: string;
+}
+
 const ElectivesTable = ({
   ElectiveData,
   setElectivesData,
@@ -21,47 +26,41 @@ const ElectivesTable = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleEditClick = (name: string, department: string) => {
-    navigate(
-      `/dashboard/electives/edit/${encodeURIComponent(
-        name
-      )}/${encodeURIComponent(department)}`
-    );
-  };
+  // const handleEditClick = (name: string, department: string) => {
+  //   navigate(
+  //     `/dashboard/electives/edit/${encodeURIComponent(
+  //       name
+  //     )}/${encodeURIComponent(department)}`
+  //   );
+  // };
 
-  const [selectedElectives, setSelectedElectives] = useState<Elective[]>([]);
+  const [selectedElectives, setSelectedElectives] = useState<Ele[]>([]);
 
-  // Format Elective data to split values by ';' and display each in separate rows
-  const formatElectiveData = (ElectiveData: Elective[]) => {
-    return ElectiveData.flatMap((Elective) => {
+  const formatElectiveData = (ElectiveData: Elective[]): Ele[] => {
+    return ElectiveData.map((Elective) => {
       const names = Elective.name.split(";");
       const courses = Elective.courses?.split(";") || [];
       const rooms = Elective.rooms?.split(";") || [];
       const teachers = Elective.teachers?.split(";") || [];
-      
-      const maxLength = Math.max(courses.length, rooms.length, teachers.length);
-      
-      // Create rows for each batch, teacher, and room pairing
+  
+      const maxLength = Math.max(names.length, courses.length, rooms.length, teachers.length);
+  
       return Array.from({ length: maxLength }, (_, index) => ({
-        key: `${Elective.name}-${index}`,  // Unique key for each row
+        key: `${Elective.name}`, 
         name: index===0?Elective.name.trim():"",
         courses: courses[index]?.trim() || "",
-        teachers: teachers[index]?.trim() || "",
         rooms: rooms[index]?.trim() || "",
+        teachers: teachers[index]?.trim() || "",
       }));
-    });
+    }).flat(); 
   };
+  
   const formattedElectiveData = React.useMemo(() => formatElectiveData(ElectiveData), [ElectiveData]);
-  // Row Selection logic by ant design
-  console.log("ele",ElectiveData)
-  const rowSelection: TableProps<Elective>["rowSelection"] = {
-    onChange: (_: React.Key[], selectedRows: Elective[]) => {
+  console.log(formattedElectiveData)
+  const rowSelection: TableProps<Ele>["rowSelection"] = {
+    onChange: (_: React.Key[], selectedRows: Ele[]) => {
       setSelectedElectives(selectedRows);
-    },
-    getCheckboxProps: (record: Elective) => ({
-      disabled: record.name === "Disabled User",
-      name: record.name,
-    }),
+    }
   };
 
   // Function to delete a single Elective
@@ -97,14 +96,13 @@ const ElectivesTable = ({
   }
 
   // Columns configuration for the table
-  const columns: TableColumnsType<Elective> = [
+  const columns: TableColumnsType<Ele> = [
     {
       title: "BatchSet",
       dataIndex: "name",
       key: "name",
-      render: (text: string, record: any, index: number) => {
-        // Check if the current cell is empty and merge with the previous non-empty cell
-        if (text === "") {
+      render: (_: string, record: any, index: number) => {
+        if (record.name === "") {
           for (let i = index - 1; i >= 0; i--) {
             if (formattedElectiveData[i].name !== "") {
               return {
@@ -120,7 +118,9 @@ const ElectivesTable = ({
         // For non-empty cells, calculate the rowSpan
         let rowSpan = 1;
         for (let i = index + 1; i < formattedElectiveData.length; i++) {
+          console.log("f",formattedElectiveData[i])
           if (formattedElectiveData[i].name === "") {
+            console.log(2)
             rowSpan++;
           } else {
             break;
@@ -128,12 +128,15 @@ const ElectivesTable = ({
         }
     
         return {
-          children: text, 
+          children: record.name, 
           props: {
             rowSpan, 
           },
         };
       },
+    },
+    {title: "Courses",
+      dataIndex:"courses"
     },
     {
       title: "Teachers",
@@ -164,40 +167,88 @@ const ElectivesTable = ({
       ),
     },
    {
-  title: "",
-  render: (record) => {
-    return (
-        <Tooltip title="Edit">
-          <Button
-            type="primary"
-            onClick={() => deleteSingleElective(record)}
-            shape="circle"
-            icon={<MdEdit />}
-          />
-        </Tooltip>
-    );
-    }
-  },
-    {
       title: "",
-      render: (record) => {
-        return (
-          <Tooltip title="Delete">
+      render: (text:any,_: any, index: number) => {
+        if (text.name !== "" || index === 0) {
+          let rowSpan = 1;
+          for (let i = index + 1; i < formattedElectiveData.length; i++) {
+            if (formattedElectiveData[i].name === "") {
+              rowSpan++;
+            } else {
+              break;
+            }
+          }
+          return {
+            children: (
+              <div className="flex space-x-2">
+                <Tooltip title="Edit">
             <Button
-              className="bg-red-400 "
               type="primary"
+              //onClick={() => handleEditClick(record.name,record.department)}
               shape="circle"
-              onClick={() => deleteSingleElective(record)}
-              icon={<MdDelete />}
+              icon={<MdEdit />}
             />
           </Tooltip>
-        );
+              </div>
+            ),
+            props: {
+              rowSpan,
+            },
+          };
+        } else {
+          return {
+            children: null,
+            props: {
+              rowSpan: 0, // Merge this row with the previous one
+            },
+          };
+        }
       },
     },
+    {
+       title: "",
+       render: (text:any,record: any, index: number) => {
+         if (text.name !== "" || index === 0) {
+           let rowSpan = 1;
+           for (let i = index + 1; i < formattedElectiveData.length; i++) {
+             if (formattedElectiveData[i].name === "") {
+               rowSpan++;
+             } else {
+               break;
+             }
+           }
+           return {
+             children: (
+               <div className="flex space-x-2">
+                 <Tooltip title="Delete">
+                   <Button
+                     className="bg-red-400"
+                     type="primary"
+                     shape="circle"
+                     onClick={() => deleteSingleElective(record)}
+                     icon={<MdDelete />}
+                   />
+                 </Tooltip>
+               </div>
+             ),
+             props: {
+               rowSpan,
+             },
+           };
+         } else {
+           return {
+             children: null,
+             props: {
+               rowSpan: 0, // Merge this row with the previous one
+             },
+           };
+         }
+       },
+     }
   ];
 
   // Function to handle deleting multiple Electives
-  function deleteElectivesHandler(Electives: Elective[]) {
+  function deleteElectivesHandler(Electives: Ele[]) {
     if (selectedElectives.length == 0) {
       toast.info("Select Electives to delete !!");
       return;
@@ -255,7 +306,7 @@ const ElectivesTable = ({
         </div>
       </div>
 
-      <Table<Elective>
+      <Table<Ele>
         rowSelection={{ type: "checkbox", ...rowSelection }}
         columns={columns}
         dataSource={formattedElectiveData}

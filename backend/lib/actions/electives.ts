@@ -236,21 +236,17 @@ export async function getElectives(
           name: true,
           department: true,
           orgId: true,
+          courses:true,
+          teachers:true,
+          rooms:true,
+          semester:true,
+          timetable:true
         },
       });
 
-      const modifiedElectives = electives.map((elective) => ({
-        ...elective,
-        courses: null,
-        teachers: null,
-        rooms: null,
-        semester: null,
-        timetable: null,
-      }));
-
       return {
         status: statusCodes.OK,
-        electives: modifiedElectives,
+        electives: electives,
       };
     }
     return {
