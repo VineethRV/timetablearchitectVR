@@ -7,10 +7,12 @@ interface EleTimetableProps {
   buttonStatus: string[][]; // Array of arrays with "Free" or "Busy"
   setButtonStatus: (status: string[][]) => void;
   courseName:string;
+  score: number[][]
 }
 
-const EleTimetable: React.FC<EleTimetableProps> = ({ buttonStatus, setButtonStatus,courseName }) => {
+const EleTimetable: React.FC<EleTimetableProps> = ({ buttonStatus, setButtonStatus,courseName,score }) => {
   // Handle button click to toggle status
+
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
     console.log(rowIndex,colIndex,courseName)
     const updatedStatus = buttonStatus.map((row, rIdx) =>

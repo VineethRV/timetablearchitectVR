@@ -32,6 +32,8 @@ const AddElectivepage: React.FC = () => {
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const[displayTT,setDisplayTT]=useState<Boolean>(false)
   const[courseName,setCourseName]=useState("")
+  const [score, setScore] = useState(
+    weekdays.map(() => timeslots.map(() => 0)));
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free")));
     const [buttonStatusele, setButtonStatusele] = useState(
@@ -207,6 +209,8 @@ const AddElectivepage: React.FC = () => {
             setDisplayTT(true);
             const TT=res.data.intersection
             console.log(TT)
+            const scoreTT=res.data.intersection.map((ele:any)=>{ele.map((tt:string)=>{Number(tt)})})
+            console.log(scoreTT)
             setButtonStatusele(TT)
             return "Fetched Recommendation successfully!";
           case statusCodes.BAD_REQUEST:
@@ -366,6 +370,7 @@ const AddElectivepage: React.FC = () => {
               buttonStatus={buttonStatusele}
               setButtonStatus={setButtonStatusele}
               courseName={courseName}
+              score={score}
             />
           </div>       </Form.Item>
           

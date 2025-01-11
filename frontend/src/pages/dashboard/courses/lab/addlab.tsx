@@ -18,10 +18,9 @@ import { useNavigate } from "react-router-dom";
 import LabAddTable, { BatchField } from "../../../../components/CoursePage/Labaddtable";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../../config";
-import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, fetchElectives,formItemLayout, timeslots, weekdays } from "../../../../utils/main";
+import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, fetchElectives,formItemLayout, timeslots, weekdays, stringToTable } from "../../../../utils/main";
 import { toast } from "sonner";
 import SwapTimetable from "../../../../components/TimetableComponents/SwapTimetable";
-import { convertStringToTable } from "../../section/addsection";
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -189,7 +188,7 @@ const AddLabPage: React.FC = () => {
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
-        setButtonStatus1(convertStringToTable(response.data.timetable))
+        setButtonStatus1(stringToTable(response.data.timetable))
       } else {
         message.error(
           response.data.message || "Failed to fetch recommendations."

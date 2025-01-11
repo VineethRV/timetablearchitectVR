@@ -19,13 +19,12 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import SectionAddTable, {
   courseList,
 } from "../../../components/SectionPage/sectionaddtable";
-import { convertTableToString, fetchdept, timeslots, weekdays } from "../../../utils/main";
+import { convertTableToString, fetchdept, stringToTable, timeslots, weekdays } from "../../../utils/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { buttonConvert } from "../teacher/addteacher";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
-import SwapTimetable from "../../../components/TimetableComponents/SwapTimetable";
 import SimpleSwapTimetable from "../../../components/TimetableComponents/SimpleSwapTT";
 
 const formItemLayout = {
@@ -38,13 +37,6 @@ const formItemLayout = {
     sm: { span: 24 },
   },
 };
-
-export function convertStringToTable(timetableString: string|null): string[][] {
-  if(timetableString)
-      return timetableString.split(";").map((row) => row.split(","));
-  else
-      return "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0".split(";").map((row) => row.split(","));
-}
 
 const AddSectionPage: React.FC = () => {
   const [form] = Form.useForm();
@@ -253,7 +245,7 @@ const AddSectionPage: React.FC = () => {
           }
         );
         if (res.status === 200) {
-          const eleTT = convertStringToTable(res.data.message.timetable);
+          const eleTT = stringToTable(res.data.message.timetable);
           console.log(eleTT);
   
           for (let i = 0; i < eleTT.length; i++) {
@@ -289,7 +281,7 @@ const AddSectionPage: React.FC = () => {
         );
         console.log("lab",resl.status)
         if (resl.status === 200) {
-          const labTT = convertStringToTable(resl.data.message.timetable);
+          const labTT = stringToTable(resl.data.message.timetable);
           console.log(labTT);
   
           for (let i = 0; i < labTT.length; i++) {
