@@ -145,7 +145,7 @@ const AddLabPage: React.FC = () => {
         return;
       }
       // console.log(courseSets,teachers,rooms,convertTableToString(buttonStatus))
-      const response = await axios.post(
+      const promise = axios.post(
         BACKEND_URL + "/getLabRecommendation",
         {
           courses: courseSets,
@@ -155,10 +155,27 @@ const AddLabPage: React.FC = () => {
         },
         {
           headers: {
-            authorization: localStorage.getItem("token"),
+        authorization: localStorage.getItem("token"),
           },
         }
       );
+
+      toast.promise(promise, {
+        loading: "Generating lab timetable...",
+        success: (response) => {
+          console.log(response.status, response.data);
+          if (response.data.status === 200) {
+        SetshowTT(true);
+        setButtonStatus1(stringToTable(response.data.timetable))
+        return "Timetable generated successfully!";
+          } else {
+        return "Failed to generate timetable.";
+          }
+        },
+        error: "Failed to generate lab timetable. Please try again!"
+      });
+
+      const response = await promise;
       const flattenedTeachers = teachers.flat();
       const flattenedRooms = rooms.flat();
 

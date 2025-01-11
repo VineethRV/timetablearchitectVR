@@ -138,7 +138,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
               ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
               : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
-            : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
+            : "border text-[#636AE8] hover:bg-[#D9D9F3]"
         }`}
         onClick={() => handleButtonClick(rowIndex, colIndex)}
         disabled={
@@ -149,12 +149,13 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
           overflow: "hidden",
-          borderColor: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] == "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
-          borderWidth: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] == "Free" ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
+          backgroundColor: buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(0, 0, 0)" : "#F2F2FD",
+          borderColor: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
+          borderWidth: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `${1 + 2 * score[rowIndex][colIndex]}px` : "1px",
         }}
       >
         {buttonStatus[rowIndex][colIndex]}
-      </Button>
+    </Button>
     )),
   }));
   const columns = [
