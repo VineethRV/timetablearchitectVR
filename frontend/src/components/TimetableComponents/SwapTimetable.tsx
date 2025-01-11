@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Table, Button } from "antd";
-import { convertStringToTable } from "../../pages/dashboard/section/addsection";
 import { toast } from "sonner";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
-import { convertTableToString } from "../../utils/main";
+import { convertTableToString, stringToTable } from "../../utils/main";
 import { button, col } from "framer-motion/client";
 
 // Define the type for the timetable props
@@ -61,7 +60,7 @@ const SwapTimetable: React.FC<TimetableProps> = ({
         console.log("course", buttonStatus[rowIndex][colIndex]);
         console.log("teacher", teacher);
         console.log("room", room);
-        const dummy = convertStringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
+        const dummy = stringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
         setScore(dummy)
         console.log("Sending request to backend");
         toast.promise(
@@ -82,7 +81,7 @@ const SwapTimetable: React.FC<TimetableProps> = ({
             success: (response) => {
               console.log("response", response);
               if (response.status === 200) {
-                const newScore = convertStringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
+                const newScore = stringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
                 console.log("Course recommendation received", newScore);
                 setScore(newScore);
                 return "Optimal slots found!";

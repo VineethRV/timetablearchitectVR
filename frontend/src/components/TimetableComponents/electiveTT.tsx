@@ -18,7 +18,7 @@ const EleTimetable: React.FC<EleTimetableProps> = ({ buttonStatus, setButtonStat
     const updatedStatus = buttonStatus.map((row, rIdx) =>
       rIdx === rowIndex
         ? row.map((status, cIdx) =>
-            cIdx === colIndex ? (status==courseName?buttonStatus[rowIndex][colIndex]:(Number(status) > 0 ? courseName: status)) : status
+            cIdx === colIndex ? (status==courseName?`${score[rowIndex][colIndex]}`:(Number(status) > 0 ? courseName: status)) : status
           )
         : row
     );

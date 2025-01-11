@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Table, Button } from "antd";
-import { button } from "framer-motion/client";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
-import { convertTableToString } from "../../utils/main";
-import { convertStringToTable } from "../../pages/dashboard/section/addsection";
+import { convertTableToString, stringToTable } from "../../utils/main";
 import { toast } from "sonner";
 // Define the type for the timetable props
 interface TimetableProps {
@@ -54,7 +52,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
         console.log("course", buttonStatus[rowIndex][colIndex]);
         console.log("teacher", teacher);
         console.log("room", room);
-        const dummy = convertStringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
+        const dummy = stringToTable("-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;-1,-1,-1,-1,-1,-1;").map(row => row.map(value => parseFloat(value)));
         setScore(dummy)
         //get score
         toast.promise(
@@ -76,7 +74,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             success: (response) => {
               console.log("response", response.data.timetable);
               if (response.status === 200) {
-          const newScore = convertStringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
+          const newScore = stringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
           console.log("Course recommendation received", newScore);
           setScore(newScore);
           return "Optimal slots found!";
@@ -109,16 +107,16 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
           return course;
         })
       );
-      let table=convertStringToTable(roomTT).map((row, rIdx) =>
+      let table=stringToTable(roomTT).map((row, rIdx) =>
         row.map((course, cIdx) => {
           if (
             rIdx === selectedSlot.rowIndex &&
             cIdx === selectedSlot.colIndex
           ) {
-            return convertStringToTable(roomTT)[rowIndex][colIndex]; // Swap with the new selection
+            return stringToTable(roomTT)[rowIndex][colIndex]; // Swap with the new selection
           }
           if (rIdx === rowIndex && cIdx === colIndex) {
-            return convertStringToTable(roomTT)[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
+            return stringToTable(roomTT)[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
           }
           return course;
         })
