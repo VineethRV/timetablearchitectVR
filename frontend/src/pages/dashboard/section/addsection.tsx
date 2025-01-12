@@ -19,7 +19,7 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import SectionAddTable, {
   courseList,
 } from "../../../components/SectionPage/sectionaddtable";
-import { convertTableToString, fetchdept, stringToTable, timeslots, weekdays } from "../../../utils/main";
+import { convertTableToString, fetchCourse, fetchdept, fetchElectives, fetchlabs, fetchRooms, fetchTeachers, stringToTable, timeslots, weekdays } from "../../../utils/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { buttonConvert } from "../teacher/addteacher";
@@ -106,119 +106,13 @@ const AddSectionPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchTeachers();
-    fetchRooms();
-    fetchCourse();
-    fetchElectives();
-    fetchlabs();
+    fetchTeachers(setTeacherOptions);
+    fetchRooms(setRoomOptions);
+    fetchCourse(setCourseOptions);
+    fetchElectives(setElectiveOptions);
+    fetchlabs(setLabOptions);
   }, []);
-
-  const fetchTeachers = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + "/teachers", {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      });
-      setTeacherOptions(response.data.message.map((item: any) => item.name));
-    } catch (error) {
-      console.error("Failed to fetch teachers:", error);
-      message.error("Error fetching teacher data.");
-    }
-  };
-
-  const fetchElectives = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const semester = localStorage.getItem("semester");
-      if (!token) {
-        message.error("Authorization token is missing!");
-        return;
-      }
-      const response = await axios.get(BACKEND_URL + "/electives", {
-        headers: {
-          authorization: token,
-        },
-        params: {
-          semester,
-        },
-      });
-      if (response.data.status === 200) {
-        setElectiveOptions(response.data.message.map((elective: { name: string }) => elective.name)); 
-      } else {
-        message.error(response.data.message || "Failed to fetch electives.");
-      }
-    } catch (error) {
-      message.error("An error occurred while fetching electives.");
-      console.error(error);
-    }
-  };
-
   
-  const fetchlabs = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const semester = localStorage.getItem("semester");
-      if (!token) {
-        message.error("Authorization token is missing!");
-        return;
-      }
-      const response = await axios.get(BACKEND_URL + "/labs", {
-        headers: {
-          authorization: token,
-        },
-        params: {
-          semester,
-        },
-      });
-      if (response.data.status === 200) {
-        setLabOptions(response.data.message.map((lab: { name: string }) => lab.name)); 
-      } else {
-        message.error(response.data.message || "Failed to fetch electives.");
-      }
-    } catch (error) {
-      message.error("An error occurred while fetching electives.");
-      console.error(error);
-    }
-  };
-
-  const fetchRooms = async () => {
-    try {
-      const response = await axios.get(BACKEND_URL + "/rooms", {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      });
-      setRoomOptions(response.data.message.map((item: any) => item.name));
-    } catch (error) {
-      console.error("Failed to fetch rooms:", error);
-      message.error("Error fetching room data.");
-    }
-  };
-
-  const fetchCourse = async () => {
-    const department=fetchdept();
-    const semester = localStorage.getItem("semester");
-    axios
-      .get(BACKEND_URL + "/courses", {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-        params: {
-          semester,
-          department,
-        },
-      })
-      .then((res) => {
-        const status = res.data.status;
-        console.log(res.data.message);
-        if (status == statusCodes.OK) {
-          setCourseOptions(res.data.message.map((item: any) => item.name));
-        } else {
-          message.error("Failed to fetch courses !!");
-        }
-      });
-  };
   async function getRecommendation() {
     const block = buttonConvert(buttonStatus);
     const courses = tableData.map((item) => item.course);

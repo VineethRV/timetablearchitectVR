@@ -21,7 +21,9 @@
 [ ] Searching for department problem for admins 
 
 # ELECTIVE:
-**[ ] Elective problem (not displayed)**
+~~**[ ] Elective problem (not displayed)**~~
+`[] Elective delete and modify`
+`[] elective modifications based on role`
 
 # LABS:
 [ ] Clicking generate should be responsive
@@ -39,3 +41,4 @@
 **[ ] Core allocation should reflect changes in teachers and rooms**
 [ ] Should be able to delete default room
 [ ] ToolTip should display room allocated
+[ ] Changes as per role
