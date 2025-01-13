@@ -21,6 +21,7 @@ import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, fetchElecti
 import { toast } from "sonner";
 import SwapTimetable from "../../../../components/TimetableComponents/SwapTimetable";
 import UneditableTimeTable from "../../../../components/TimetableComponents/uneditableTimetable";
+import { statusCodes } from "../../../../types/statusCodes";
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -133,6 +134,41 @@ const AddLabPage: React.FC = () => {
   const getRecommendation = async () => {
     try {
       const { courseSets, teachers, rooms } = getCourseData(tableData);
+      const elective=form.getFieldValue("Electives")
+      const block=buttonStatus
+      if (elective !== undefined) {
+        try {
+          const res = await axios.post(
+            BACKEND_URL + "/electives/peek",
+            {
+              name: elective,
+              semester: Number(localStorage.getItem("semester")),
+            },
+            {
+              headers: {
+                authorization: localStorage.getItem("token"),
+              },
+            }
+          );
+          if (res.status === 200) {
+            const eleTT = stringToTable(res.data.message.timetable);
+            console.log(eleTT);
+    
+            for (let i = 0; i < eleTT.length; i++) {
+              for (let j = 0; j < eleTT[i].length; j++) {
+                if (eleTT[i][j] !== "Free") {
+                  block[i][j] = eleTT[i][j];
+                }
+              }
+            }
+          } else {
+            return statusCodes.BAD_REQUEST;
+          }
+        } catch (error) {
+          console.error("Error fetching elective data:", error);
+          return "Failed to fetch elective data";
+        }
+      }
       if (!courseSets.length || !teachers.length || !rooms.length) {
         message.error("Please ensure all fields are filled!");
         return;
@@ -144,7 +180,7 @@ const AddLabPage: React.FC = () => {
           courses: courseSets,
           teachers: teachers,
           rooms: rooms,
-          blocks: convertTableToString(buttonStatus),
+          blocks: convertTableToString(block),
         },
         {
           headers: {
@@ -573,7 +609,7 @@ const AddLabPage: React.FC = () => {
             }}
           />
           <br />
-          <Form.Item label="Electives and Common time courses" className="w-96">
+          <Form.Item name="Electives" label="Electives and Common time courses" className="w-96">
             <Select
               options={electiveOptions.map((elective) => ({
                 value: elective,

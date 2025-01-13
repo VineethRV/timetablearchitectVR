@@ -26,6 +26,7 @@ import { buttonConvert } from "../teacher/addteacher";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import SimpleSwapTimetable from "../../../components/TimetableComponents/SimpleSwapTT";
+import UneditableTimeTable from "../../../components/TimetableComponents/uneditableTimetable";
 
 const formItemLayout = {
   labelCol: {
@@ -114,7 +115,7 @@ const AddSectionPage: React.FC = () => {
   }, []);
   
   async function getRecommendation() {
-    const block = buttonConvert(buttonStatus);
+    const block = buttonStatus.map((row) => [...row]); // Create a deep copy of buttonStatus
     const courses = tableData.map((item) => item.course);
     const teachers = tableData.map((item) => item.teacher);
     const rooms = tableData.map((item) => (item.room === "--" ? "0" : item.room));
@@ -123,10 +124,10 @@ const AddSectionPage: React.FC = () => {
     const elective = form.getFieldValue("Electives");
     const lab = form.getFieldValue("Labs");
   
-    // Wait for elective data if elective is defined
-    if (elective !== undefined) {
-      try {
-        const res = await axios.post(
+    try {
+      // Process elective timetable if defined
+      if (elective !== undefined) {
+        const electiveResponse = await axios.post(
           BACKEND_URL + "/electives/peek",
           {
             name: elective,
@@ -138,30 +139,25 @@ const AddSectionPage: React.FC = () => {
             },
           }
         );
-        if (res.status === 200) {
-          const eleTT = stringToTable(res.data.message.timetable);
-          console.log(eleTT);
   
+        if (electiveResponse.status === 200) {
+          const eleTT = stringToTable(electiveResponse.data.message.timetable);
           for (let i = 0; i < eleTT.length; i++) {
             for (let j = 0; j < eleTT[i].length; j++) {
-              if (eleTT[i][j] !== "0") {
+              if (eleTT[i][j] !== "Free") {
                 block[i][j] = eleTT[i][j];
               }
             }
           }
         } else {
-          return statusCodes.BAD_REQUEST;
+          console.error("Failed to fetch elective timetable");
+          return;
         }
-      } catch (error) {
-        console.error("Error fetching elective data:", error);
-        return "Failed to fetch elective data";
       }
-    }
   
-    console.log(lab)
-    if (lab !== undefined) {
-      try {
-        const resl = await axios.post(
+      // Process lab timetable if defined
+      if (lab !== undefined) {
+        const labResponse = await axios.post(
           BACKEND_URL + "/labs/peek",
           {
             name: lab,
@@ -173,75 +169,75 @@ const AddSectionPage: React.FC = () => {
             },
           }
         );
-        console.log("lab",resl.status)
-        if (resl.status === 200) {
-          const labTT = stringToTable(resl.data.message.timetable);
-          console.log(labTT);
   
+        if (labResponse.status === 200) {
+          const labTT = stringToTable(labResponse.data.message.timetable);
           for (let i = 0; i < labTT.length; i++) {
             for (let j = 0; j < labTT[i].length; j++) {
-              if (labTT[i][j] !== "0") {
+              if (labTT[i][j] !== "Free") {
                 block[i][j] = labTT[i][j];
               }
             }
           }
         } else {
-          return statusCodes.BAD_REQUEST;
+          console.error("Failed to fetch lab timetable");
+          return;
         }
-      } catch (error) {
-        console.error("Error fetching lab data:", error);
-        return "Failed to fetch lab data";
       }
-    }
-    // Proceed with the timetable generation after electives are processed
-    const promise = axios.post(
-      BACKEND_URL + "/suggestTimetable",
-      {
-        blocks: convertTableToString(block),
-        courses: courses,
-        teachers: teachers,
-        rooms: rooms,
-        semester: semester,
-        preferredRooms: Prefrooms,
-      },
-      {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
-      }
-    );
   
-    toast.promise(promise, {
-      loading: "Generating timetable...",
-      success: (res) => {
-        const statusCode = res.status;
-        switch (statusCode) {
-          case statusCodes.OK:
-            SetshowTT(true);
-            const convertedTimetable = res.data.returnVal.timetable.map(
-              (row: any[]) =>
-                row.map((value) =>
-                  value === "0" ? "Free" : value === "1" ? "Blocked" : value
-                )
-            );
-            console.log(convertedTimetable);
-            setRoomTT(convertTableToString(res.data.returnVal.roomtable));
-            setButtonStatus1(convertedTimetable);
-            return "Generated timetable!!";
-          case statusCodes.UNAUTHORIZED:
-            return "You are not authorized!";
-          case statusCodes.INTERNAL_SERVER_ERROR:
-            return "Internal server error";
-          default:
-            return "Failed to generate timetable";
+      // Generate the final timetable
+      const promise = axios.post(
+        BACKEND_URL + "/suggestTimetable",
+        {
+          blocks: convertTableToString(block),
+          courses: courses,
+          teachers: teachers,
+          rooms: rooms,
+          semester: semester,
+          preferredRooms: Prefrooms,
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
         }
-      },
-      error: (error) => {
-        console.error("Error:", error.response?.data || error.message);
-        return "Failed to generate timetable. Please try again!";
-      },
-    });
+      );
+  
+      toast.promise(promise, {
+        loading: "Generating timetable...",
+        success: (res) => {
+          const statusCode = res.status;
+          switch (statusCode) {
+            case statusCodes.OK:
+              SetshowTT(true);
+              const convertedTimetable = res.data.returnVal.timetable.map(
+                (row) =>
+                  row.map((value) =>
+                    value === "0" ? "Free" : value === "1" ? "Blocked" : value
+                  )
+              );
+              setRoomTT(convertTableToString(res.data.returnVal.roomtable));
+              setButtonStatus1(convertedTimetable);
+              return "Generated timetable!!";
+            case statusCodes.UNAUTHORIZED:
+              return "You are not authorized!";
+            case statusCodes.INTERNAL_SERVER_ERROR:
+              return "Internal server error";
+            default:
+              return "Failed to generate timetable";
+          }
+        },
+        error: (error) => {
+          console.error("Error:", error.response?.data || error.message);
+          return "Failed to generate timetable. Please try again!";
+        },
+      });
+    } catch (error) {
+      console.error("Error:", error.message);
+      toast.error("An error occurred while processing the timetable.");
+    }
   }
+  
   
   const handleEditClick = (record: courseList) => {
     handleOpenModal();
@@ -534,9 +530,10 @@ const AddSectionPage: React.FC = () => {
             </Tooltip>
           </label>
           <div className="flex justify-left">
-            <TimeTable
+            <UneditableTimeTable
               buttonStatus={buttonStatus}
               setButtonStatus={setButtonStatus}
+              editable={true}
             />
           </div>
           <div className="flex space-x-4 justify-end w-[55vm]">

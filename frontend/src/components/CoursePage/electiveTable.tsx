@@ -1,4 +1,3 @@
-"use client";
 import React, { useState } from "react";
 import { Button, ConfigProvider, Input, Table, Tag, Tooltip } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
