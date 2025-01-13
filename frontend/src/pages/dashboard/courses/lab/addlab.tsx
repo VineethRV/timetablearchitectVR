@@ -304,18 +304,21 @@ const AddLabPage: React.FC = () => {
             }
           );
           const teach=resT.data.message
-          const teacherTT=stringToTable(resT.data.message.labtable);
+          const teacherTT=stringToTable(resT.data.message.timetable);
+          const teacherlabTT=stringToTable(resT.data.message.labtable)
           for(let j=0;j<buttonStatus1.length;j++)
             {
               for(let k=0;k<buttonStatus1[j].length;k++)
               {
                 if(buttonStatus1[j][k]==courseSet)
                 {
+                  teacherlabTT[j][k]=course
                     teacherTT[j][k]=course;
                 }
               }
             }
-            teach.labtable=convertTableToString(teacherTT);
+            teach.labtable=convertTableToString(teacherlabTT);
+            teach.timetable=convertTableToString(teacherTT);
             axios.put(
               BACKEND_URL+"/teachers",{
                 originalName:teacher,
