@@ -159,7 +159,21 @@ const AddTeacherpage = () => {
               />
             </div>
           </Form.Item>
-
+          <Form.Item
+            name="altDepartment"
+          >
+            <div>
+              <span>Alternate Department</span>
+              <Select
+                showSearch
+                mode="tags"
+                placeholder="Select alternate departments"
+                optionFilterProp="label"
+                options={DEPARTMENTS_OPTIONS}
+                className="font-normal w-96"
+              />
+            </div>
+          </Form.Item>
           <label>
             <div className="flex items-center">
               <span>Schedule</span>
