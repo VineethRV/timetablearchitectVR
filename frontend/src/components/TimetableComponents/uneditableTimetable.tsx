@@ -1,33 +1,21 @@
 import React from "react";
 import { Table, Button } from "antd";
+import { timeslots, weekdays } from "../../utils/main";
 
 // Define the type for the button status state
-interface TimetableProps {
+interface UneditableTimeTableProps {
   buttonStatus: string[][]; // Array of arrays with "Free" or "Busy"
-  setButtonStatus: (status: string[][]) => void; // Function to update button status
+  setButtonStatus: (status: string[][]) => void; 
+  editable: Boolean
 }
 
-const weekdays = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
-const timeslots = [
-  "9:00-10:00",
-  "10:00-11:00",
-  "11:30-12:30",
-  "12:30-1:30",
-  "2:30-3:30",
-  "3:30-4:30",
-];
-
-const Timetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) => {
+const UneditableTimeTable: React.FC<UneditableTimeTableProps> = ({ buttonStatus, setButtonStatus,editable }) => {
   // Handle button click to toggle status
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
+    if(!editable)
+    {
+      return;
+    }
     const updatedStatus = buttonStatus.map((row, rIdx) =>
       rIdx === rowIndex
         ? row.map((status, cIdx) =>
@@ -96,4 +84,4 @@ const Timetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus }) 
   );
 };
 
-export default Timetable;
+export default UneditableTimeTable;

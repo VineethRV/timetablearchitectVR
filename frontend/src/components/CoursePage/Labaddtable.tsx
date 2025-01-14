@@ -1,9 +1,8 @@
 import { Button, Table, Tag, Tooltip } from "antd";
 import type { TableProps } from "antd";
-import { useEffect, useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 
-export interface BatchField {
+export interface Labs {
   key: string;
   courseSet: string;
   course: string;
@@ -11,62 +10,56 @@ export interface BatchField {
   rooms: string[];
 }
 
-interface LabAddTableProps {
-  data: BatchField[];
-  batchsize: number;
-  onEditClick?: (record: BatchField[]) => void;
-}
-
-const LabAddTable: React.FC<LabAddTableProps> = ({
-  data,
-  batchsize,
+const LabAddTable = ({
+  LabData,
+  setLabData,
   onEditClick
+}: {
+  LabData: Labs[];
+   onEditClick: (record: Labs[]) => void; 
+  setLabData: React.Dispatch<React.SetStateAction<Labs[]>>;
 }) => {
-  // Helper function to calculate rowSpan
-  const [ldata, setData] = useState(data)
 
-  useEffect(()=>{
-    setData(data)
-  },[data])
-
-  const handleDelete = (record: BatchField) => {
-      setData((prevData) =>
+  const handleDelete = (record: Labs) => {
+    console.log("rec",record)
+      setLabData((prevData) =>
         prevData.filter(
           (item) =>
             !(
-              parseInt(item.key) >= parseInt(record.key) &&
-              parseInt(item.key) < parseInt(record.key) + batchsize
+              (item.courseSet) == (record.courseSet) 
             )
         )
       )
 };
 
-  const calculateRowSpan = (data: BatchField[], index: number, key: keyof BatchField) => {
-    if (index === 0 || data[index][key] !== data[index - 1][key]) {
-      let span = 1;
-      for (let i = index + 1; i < data.length; i++) {
-        if (data[i][key] === data[index][key]) {
-          span++;
-        } else {
-          break;
-        }
-      }
-      return span;
-    }
-    return 0;
-  };
-
-  const columns: TableProps<BatchField>["columns"] = [
+  const columns: TableProps<Labs>["columns"] = [
     {
       title: "Course Set",
       dataIndex: "courseSet",
-      render: (_, record, index) => {
-        const rowSpan = calculateRowSpan(data, index, "courseSet");
-        return {
-          children: record.courseSet,
-          props: { rowSpan },
-        };
-      },
+      render:(_,record,index:any)=>{
+        if (record.key !='0') {
+              return {
+                props: {
+                  children:null,
+                  rowSpan: 0, // Merge the current cell with the previous cell
+                },
+              };
+            }
+        let rowSpan = 1;
+           for (let i = index + 1; i < LabData.length; i++) {
+             if (LabData[i].key!='0') {
+               rowSpan++;
+             } else {
+               break;
+             }
+           }
+           return {
+            children: record.courseSet, 
+            props: {
+              rowSpan, 
+            },
+          };
+      }
     },
     {
       title: "Course",
@@ -100,54 +93,90 @@ const LabAddTable: React.FC<LabAddTableProps> = ({
     },
     {
       title: "",
-      render: (record, _, index) => {
-        const rowSpan = calculateRowSpan(data, index, "courseSet");
-        return {
-          children: (
-            <Tooltip title="Edit">
-              <Button
-                type="primary"
-                shape="circle"
-                icon={<MdEdit />}
-                onClick={() => {
-                  const currentKey = parseInt(record.key); 
-                  const recordsToEdit = ldata.filter(
-                    (item) => parseInt(item.key) >= currentKey && parseInt(item.key) < currentKey + batchsize
-                  );
-                  onEditClick && onEditClick(recordsToEdit); 
-                }}
-              />
-            </Tooltip>
-          ),
-          props: { rowSpan },
-        };
-      },
-    },
+      render: (text:any,record: any, index: number) => {
+              if (text.key =='0' || index === 0) {
+                const recordsInGroup = [record];
+                let rowSpan = 1;
+                for (let i = index + 1; i < LabData.length; i++) {
+                  if (LabData[i].key!='0') {
+                    recordsInGroup.push(LabData[i])
+                    rowSpan++;
+                  } else {
+                    break;
+                  }
+                }
+                return {
+                  children: (
+                    <div className="flex space-x-2">
+                      <Tooltip title="Edit">
+                  <Button
+                    type="primary"
+                    onClick={() => onEditClick(recordsInGroup)}
+                    shape="circle"
+                    icon={<MdEdit />}
+                  />
+                </Tooltip>
+                    </div>
+                  ),
+                  props: {
+                    rowSpan,
+                  },
+                };
+              } else {
+                return {
+                  children: null,
+                  props: {
+                    rowSpan: 0, // Merge this row with the previous one
+                  },
+                };
+              }
+            },
+          },
     {
       title: "",
-      render: (record, _, index) => {
-        const rowSpan = calculateRowSpan(data, index, "courseSet");
-        return {
-          children: (
-            <Tooltip title="Delete">
-              <Button
-                className="bg-red-400"
-                type="primary"
-                shape="circle"
-                icon={<MdDelete />}
-                onClick={() => {handleDelete(record)}}
-              />
-            </Tooltip>
-          ),
-          props: { rowSpan },
-        };
-      },
-    },
+       render: (text:any,record: any, index: number) => {
+               if (text.key== "0" || index === 0) {
+                let rowSpan = 1;
+                for (let i = index + 1; i < LabData.length; i++) {
+                  if (LabData[i].key!='0') {
+                    rowSpan++;
+                  } else {
+                    break;
+                  }
+                }
+                 return {
+                   children: (
+                     <div className="flex space-x-2">
+                       <Tooltip title="Delete">
+                         <Button
+                           className="bg-red-400"
+                           type="primary"
+                           shape="circle"
+                           onClick={() => handleDelete(record)}
+                           icon={<MdDelete />}
+                         />
+                       </Tooltip>
+                     </div>
+                   ),
+                   props: {
+                     rowSpan,
+                   },
+                 };
+               } else {
+                 return {
+                   children: null,
+                   props: {
+                     rowSpan: 0, // Merge this row with the previous one
+                   },
+                 };
+               }
+             },
+           }
   ];
 
   return (
     <div>
-      <Table<BatchField> columns={columns} dataSource={ldata} pagination={false} />
+      <Table<Labs> columns={columns} dataSource={LabData} pagination={false} />
     </div>
   );
 };

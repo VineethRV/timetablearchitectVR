@@ -13,18 +13,14 @@ export interface Elective {
 const ElectiveAddTable = ({
   electiveData,
   setElectivesData,
-  onEditClick
+  onEditClick,
+  onDeleteClick,
 }: {
   electiveData: Elective[];
   setElectivesData: React.Dispatch<React.SetStateAction<Elective[]>>;
   onEditClick: (record: Elective) => void; 
+  onDeleteClick: (record: Elective) => void; 
 }) => {
-
-  const handleDeleteClick = (record: Elective) => {
-    setElectivesData((prevData) => prevData.filter((item) => item.course !== record.course));
-  };
-
-
 
   const columns: TableProps<Elective>['columns'] = [
     {
@@ -77,7 +73,7 @@ const ElectiveAddTable = ({
           <Button
             className="bg-red-400"
             type="primary"
-            onClick={() => handleDeleteClick(record)}
+            onClick={() => onDeleteClick(record)}
             shape="circle"
             icon={<MdDelete />}
           />

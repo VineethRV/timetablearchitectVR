@@ -13,14 +13,15 @@ import {
   Modal,
 } from "antd";
 import { motion } from "framer-motion";
-import Timetable from "../../../../components/TimetableComponents/timetable";
 import { useNavigate } from "react-router-dom";
-import LabAddTable, { BatchField } from "../../../../components/CoursePage/Labaddtable";
+import LabAddTable, { Labs } from "../../../../components/CoursePage/Labaddtable";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../../config";
 import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, fetchElectives,formItemLayout, timeslots, weekdays, stringToTable } from "../../../../utils/main";
 import { toast } from "sonner";
 import SwapTimetable from "../../../../components/TimetableComponents/SwapTimetable";
+import UneditableTimeTable from "../../../../components/TimetableComponents/uneditableTimetable";
+import { statusCodes } from "../../../../types/statusCodes";
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +29,7 @@ const AddLabPage: React.FC = () => {
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
   const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
-  const [formFields, setFormFields] = useState<BatchField[]>([]);
+  const [formFields, setFormFields] = useState<Labs[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
@@ -39,9 +40,8 @@ const AddLabPage: React.FC = () => {
   const [buttonStatus1, setButtonStatus1] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
-  const [tableData, setTableData] = useState<BatchField[]>([]);
-  const [editingRecord, setEditingRecord] = useState<BatchField[] | null>(null);
-
+  const [tableData, setTableData] = useState<Labs[]>([]);
+  const [editingRecord, setEditingRecord] = useState<Labs[] | null>(null);
   const [timetableScore, setTimetableScore] = useState(
     weekdays.map(() => timeslots.map(() => 0))
   );
@@ -70,7 +70,7 @@ const AddLabPage: React.FC = () => {
 
   const handleBatchChange = (
     index: number,
-    field: keyof BatchField,
+    field: keyof Labs,
     value: string
   ) => {
     const updatedFields = [...formFields];
@@ -98,7 +98,6 @@ const AddLabPage: React.FC = () => {
       { length: currentBatches || 1 },
       (_, index) => ({
         key: `${index}`,
-        courseSet: "",
         course: form1.getFieldValue(`course-${index}`),
         teachers: form1.getFieldValue(`teacher-${index}`),
         rooms: [form1.getFieldValue(`room-${index}`)],
@@ -106,29 +105,24 @@ const AddLabPage: React.FC = () => {
     );
 
     for (const field of newFormFields) {
-      // console.log(field);
       if (!field.course || !field.teachers || !field.rooms) {
-        toast.info("Please enter all fields to continue");
+        message.error("Fill all the required Fields");
         return;
       }
     }
 
     const courset = newFormFields.map((batch) => batch.course).join("/");
 
-    const updatedBatches = newFormFields.map((batch) => ({
+    const updatedBatches:Labs[] = newFormFields.map((batch) => ({
       ...batch,
       courseSet: courset,
     }));
-    // console.log(updatedBatches)
-    setFormFields(newFormFields);
     setTableData((prevData) => {
       if (editingRecord) {
         return prevData
-          .filter((data) => data.courseSet !== editingRecord[0].courseSet) // Remove old batches for the edited courseSet
+          .filter((data) => data.courseSet !== editingRecord[0].courseSet)
           .concat(updatedBatches); // Add the updated batches
       }
-
-      // If no editingRecord, add new records
       return [...prevData, ...updatedBatches];
     });
 
@@ -140,6 +134,41 @@ const AddLabPage: React.FC = () => {
   const getRecommendation = async () => {
     try {
       const { courseSets, teachers, rooms } = getCourseData(tableData);
+      const elective=form.getFieldValue("Electives")
+      const block=buttonStatus
+      if (elective !== undefined) {
+        try {
+          const res = await axios.post(
+            BACKEND_URL + "/electives/peek",
+            {
+              name: elective,
+              semester: Number(localStorage.getItem("semester")),
+            },
+            {
+              headers: {
+                authorization: localStorage.getItem("token"),
+              },
+            }
+          );
+          if (res.status === 200) {
+            const eleTT = stringToTable(res.data.message.timetable);
+            console.log(eleTT);
+    
+            for (let i = 0; i < eleTT.length; i++) {
+              for (let j = 0; j < eleTT[i].length; j++) {
+                if (eleTT[i][j] !== "Free") {
+                  block[i][j] = eleTT[i][j];
+                }
+              }
+            }
+          } else {
+            return statusCodes.BAD_REQUEST;
+          }
+        } catch (error) {
+          console.error("Error fetching elective data:", error);
+          return "Failed to fetch elective data";
+        }
+      }
       if (!courseSets.length || !teachers.length || !rooms.length) {
         message.error("Please ensure all fields are filled!");
         return;
@@ -151,7 +180,7 @@ const AddLabPage: React.FC = () => {
           courses: courseSets,
           teachers: teachers,
           rooms: rooms,
-          blocks: convertTableToString(buttonStatus),
+          blocks: convertTableToString(block),
         },
         {
           headers: {
@@ -218,7 +247,7 @@ const AddLabPage: React.FC = () => {
   };
 
   const getCourseData = (
-    tableData: BatchField[]
+    tableData: Labs[]
   ): { courseSets: string[]; teachers: string[][]; rooms: string[][] } => {
     // Reduce the tableData into a single record
     const courseData = tableData.reduce(
@@ -265,6 +294,7 @@ const AddLabPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    try{
     const token = localStorage.getItem("token");
     if (!token) {
       message.error("Authorization token is missing!");
@@ -292,10 +322,97 @@ const AddLabPage: React.FC = () => {
       }
     );
     if (response.data.status === 201) {
+      for(let i=0;i<tableData.length;i++)
+      {
+        const courseSet=tableData[i].courseSet;
+        const course=tableData[i].course;
+        const teachers=tableData[i].teachers;
+        teachers.forEach(async teacher=>{
+          const resT=await axios.post(
+            BACKEND_URL+"/teachers/peek",{
+              name:teacher,
+              department: department
+            },        
+            {
+              headers: {
+                authorization: localStorage.getItem("token"),
+              },
+            }
+          );
+          const teach=resT.data.message
+          const teacherTT=stringToTable(resT.data.message.timetable);
+          const teacherlabTT=stringToTable(resT.data.message.labtable)
+          for(let j=0;j<buttonStatus1.length;j++)
+            {
+              for(let k=0;k<buttonStatus1[j].length;k++)
+              {
+                if(buttonStatus1[j][k]==courseSet)
+                {
+                  teacherlabTT[j][k]=course
+                    teacherTT[j][k]=course;
+                }
+              }
+            }
+            teach.labtable=convertTableToString(teacherlabTT);
+            teach.timetable=convertTableToString(teacherTT);
+            axios.put(
+              BACKEND_URL+"/teachers",{
+                originalName:teacher,
+                teacher:teach
+              },        
+              {
+                headers: {
+                  authorization: localStorage.getItem("token"),
+                },
+              }
+            );
+        })
+        const room=tableData[i].rooms[0]
+        const resR=await axios.post(
+          BACKEND_URL+"/rooms/peek",{
+            name:room,
+          },        
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+        const roomfetch=resR.data.message
+        const roomTT=stringToTable(resR.data.message.timetable);
+        for(let j=0;j<buttonStatus1.length;j++)
+          {
+            for(let k=0;k<buttonStatus1[j].length;k++)
+            {
+              if(buttonStatus1[j][k]==courseSet)
+              {
+                  roomTT[j][k]=course;
+              }
+            }
+          }
+        roomfetch.timetable=convertTableToString(roomTT);
+        const resRR=await axios.put(
+          BACKEND_URL+"/rooms",{
+            originalName:room,
+            originalDepartment:department,
+            room:roomfetch
+          },        
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            },
+          }
+        );
+      }
       message.success("Added successfully!");
     } else {
       message.error(response.data.message || "Failed to add");
     }
+  }
+  catch(error)
+  {
+    message.error("Failed to add");
+  }
   };
 
   return (
@@ -467,14 +584,8 @@ const AddLabPage: React.FC = () => {
           </label>
           <br></br>
           <LabAddTable
-            data={tableData.map((batch, index) => ({
-              key: `${index}`,
-              courseSet: batch.courseSet,
-              course: batch.course,
-              teachers: batch.teachers,
-              rooms: batch.rooms,
-            }))}
-            batchsize={numberOfBatches}
+            LabData={tableData}
+            setLabData={setTableData}
             onEditClick={(records) => {
               for (let index = 0; index < records.length; index++) {
                 form1.setFieldValue(`course-${index}`, records[index].course);
@@ -482,11 +593,12 @@ const AddLabPage: React.FC = () => {
                   `teacher-${index}`,
                   records[index].teachers
                 );
-                form1.setFieldValue(`room-${index}`, records[index].rooms);
+                console.log("ehfd",records[index].rooms[0])
+                form1.setFieldValue(`room-${index}`, records[index].rooms[0]);
                 handleOpenModal();
               }
               setEditingRecord(
-                records.map((record: BatchField) => ({
+                records.map((record: Labs) => ({
                   ...record,
                   teachers: record.teachers.flatMap((teacher: string) => {
                     // console.log(teacher); // Inspect each teacher value
@@ -497,7 +609,7 @@ const AddLabPage: React.FC = () => {
             }}
           />
           <br />
-          <Form.Item label="Electives and Common time courses" className="w-96">
+          <Form.Item name="Electives" label="Electives and Common time courses" className="w-96">
             <Select
               options={electiveOptions.map((elective) => ({
                 value: elective,
@@ -514,9 +626,10 @@ const AddLabPage: React.FC = () => {
               </span>
             </div>
           </label>
-          <Timetable
+          <UneditableTimeTable
             buttonStatus={buttonStatus}
             setButtonStatus={setButtonStatus}
+            editable={true}
           />
           <div className="flex justify-end">
             <div className="flex space-x-4">

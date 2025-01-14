@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BACKEND_URL } from "../../config";
 import { message } from "antd";
+import { statusCodes } from "../types/statusCodes";
 
 export function convertTableToString(timetable: string[][]): string {
   const s = timetable.map((row) => {
@@ -157,9 +158,10 @@ export const fetchRooms = async (setRoomOptions: (options: string[]) => void) =>
   }
 };
 
-export  const fetchElectives = async (setElectiveOptions: (options: string[]) => void) => {
+  export const fetchElectives = async (setElectiveOptions: (options: string[]) => void) => {
     try {
       const token = localStorage.getItem("token");
+      const semester = localStorage.getItem("semester");
       if (!token) {
         message.error("Authorization token is missing!");
         return;
@@ -169,11 +171,64 @@ export  const fetchElectives = async (setElectiveOptions: (options: string[]) =>
           authorization: token,
         },
         params: {
-          semester:Number(localStorage.getItem("semester")),
+          semester,
         },
       });
       if (response.data.status === 200) {
-        setElectiveOptions(response.data.message); // Assuming `message` contains the array of electives
+        setElectiveOptions(response.data.message.map((elective: { name: string }) => elective.name)); 
+      } else {
+        message.error(response.data.message || "Failed to fetch electives.");
+      }
+    } catch (error) {
+      message.error("An error occurred while fetching electives.");
+      console.error(error);
+    }
+  };
+
+  
+  export const fetchCourse = async (setCourseOptions: (options: string[]) => void) => {
+    const department=fetchdept();
+    const semester = localStorage.getItem("semester");
+    axios
+      .get(BACKEND_URL + "/courses", {
+        headers: {
+          authorization: localStorage.getItem("token"),
+        },
+        params: {
+          semester,
+          department,
+        },
+      })
+      .then((res) => {
+        const status = res.data.status;
+        console.log(res.data.message);
+        if (status == statusCodes.OK) {
+          setCourseOptions(res.data.message.map((item: any) => item.name));
+        } else {
+          message.error("Failed to fetch courses !!");
+        }
+      });
+  };
+
+  
+  export const fetchlabs = async (setLabOptions: (options: string[]) => void) => {
+    try {
+      const token = localStorage.getItem("token");
+      const semester = localStorage.getItem("semester");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        return;
+      }
+      const response = await axios.get(BACKEND_URL + "/labs", {
+        headers: {
+          authorization: token,
+        },
+        params: {
+          semester,
+        },
+      });
+      if (response.data.status === 200) {
+        setLabOptions(response.data.message.map((lab: { name: string }) => lab.name)); 
       } else {
         message.error(response.data.message || "Failed to fetch electives.");
       }

@@ -194,7 +194,6 @@ const LabsTable = ({
             break;
           }
         }
-        console.log("rec",record)
         return {
           children: (
             <div className="flex space-x-2">

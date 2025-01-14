@@ -14,13 +14,13 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ElectiveAddTable, { Elective } from "../../../../components/CoursePage/electiveAddtable";
-import Timetable from "../../../../components/TimetableComponents/timetable";
 import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
-import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, formItemLayout, timeslots, weekdays } from "../../../../utils/main";
+import { convertTableToString, fetchdept, fetchRooms, fetchTeachers, formItemLayout, stringToTable, timeslots, weekdays } from "../../../../utils/main";
 import { toast } from "sonner";
 import { statusCodes } from "../../../../types/statusCodes";
 import EleTimetable from "../../../../components/TimetableComponents/electiveTT";
+import UneditableTimeTable from "../../../../components/TimetableComponents/uneditableTimetable";
 
   
 const AddElectivepage: React.FC = () => {
@@ -31,6 +31,7 @@ const AddElectivepage: React.FC = () => {
   const [editingRecord, setEditingRecord] = useState<Elective | null>(null);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const[displayTT,setDisplayTT]=useState<Boolean>(false)
+  const[max,setMax]=useState(-1)
   const[courseName,setCourseName]=useState("")
   const [score, setScore] = useState(
     weekdays.map(() => timeslots.map(() => 0)));
@@ -64,9 +65,15 @@ const AddElectivepage: React.FC = () => {
       const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
       const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
       const department= await fetchdept()
+      const name=form.getFieldValue("clusterName")
+      if(!name || !courses || !teachers||!rooms)
+      {
+        message.error("Fill all the required Fields");
+        return;
+      }
       const response=axios.post(
         BACKEND_URL+"/electives",{
-          name: form.getFieldValue("clusterName"),
+          name: name,
           courses: courses,
           teachers: teachers,
           rooms: rooms,
@@ -88,10 +95,89 @@ const AddElectivepage: React.FC = () => {
         console.log(res);
         switch (statusCode) {
           case statusCodes.OK:
-            setDisplayTT(true);
-            const TT=res.data.intersection
-            console.log(TT)
-            setButtonStatusele(TT)
+            for(let k=0;k<eledata.length;k++)
+            {
+              const course=eledata[k].course;
+              let courseTT=[]
+              for (let i = 0; i < buttonStatus.length; i++) {
+                for (let j = 0; j < buttonStatus[i].length; j++) {
+                  if (buttonStatus[i][j] === course) {
+                    courseTT.push({ row: i, col: j }); 
+                  }
+                }
+              }
+              const teachers=eledata[k].teachers
+              teachers.forEach(async teacher=>{
+                const resT=await axios.post(
+                  BACKEND_URL+"/teachers/peek",{
+                    name:teacher,
+                    department: department
+                  },        
+                  {
+                    headers: {
+                      authorization: localStorage.getItem("token"),
+                    },
+                  }
+                );
+                const teach=resT.data.message
+                const teacherTT=stringToTable(resT.data.message.timetable);
+                for(let i=0;i<courseTT.length;i++)
+                {
+                  teacherTT[courseTT[i].row][courseTT[i].col]=course;
+                }
+                teach.timetable=convertTableToString(teacherTT);
+                axios.put(
+                  BACKEND_URL+"/teachers",{
+                    originalName:teacher,
+                    teacher:teach
+                  },        
+                  {
+                    headers: {
+                      authorization: localStorage.getItem("token"),
+                    },
+                  }
+                );
+              })
+              const rooms=eledata[k].rooms
+              console.log("rooms",rooms)
+              rooms?.forEach(async room=>{
+                const resR=await axios.post(
+                  BACKEND_URL+"/rooms/peek",{
+                    name:room,
+                  },        
+                  {
+                    headers: {
+                      authorization: localStorage.getItem("token"),
+                    },
+                  }
+                );
+                const roomfetch=resR.data.message
+                console.log("roomfetch",roomfetch)
+                const roomTT=stringToTable(resR.data.message.timetable);
+                console.log("roomTT",roomTT)
+                for(let i=0;i<courseTT.length;i++)
+                {
+                  roomTT[courseTT[i].row][courseTT[i].col]=course;
+                }
+                console.log("after",roomTT)
+                roomfetch.timetable=convertTableToString(roomTT);
+                console.log("abc",roomfetch,room)
+                const resRR=await axios.put(
+                  BACKEND_URL+"/rooms",{
+                    originalName:room,
+                    originalDepartment:department,
+                    room:roomfetch
+                  },        
+                  {
+                    headers: {
+                      authorization: localStorage.getItem("token"),
+                    },
+                  }
+                );
+                console.log(resRR.data)
+              })
+
+            }
             return "Saved Elective Cluster Successfully";
           case statusCodes.BAD_REQUEST:
             return "Elective already exists!";
@@ -144,6 +230,21 @@ const AddElectivepage: React.FC = () => {
             item.course === editingRecord.course ? { ...item, ...newElective } : item
           )
         );
+        for(let i=0;i<buttonStatus.length;i++)
+        {for(let j=0;j<buttonStatus[i].length;j++)
+          {
+            if(editingRecord)
+            {
+              if(buttonStatus[i][j]==editingRecord.course)
+                buttonStatus[i][j]="Free";
+            }
+            else {
+            if(buttonStatus[i][j]==courseName)
+              buttonStatus[i][j]="Free";}
+            if(buttonStatusele[i][j]==courseName)
+              buttonStatus[i][j]=courseName;
+          }
+        }
       } else {
         SetEleData((prevEleData) => [...prevEleData, newElective]);
       }
@@ -158,27 +259,6 @@ const AddElectivepage: React.FC = () => {
       // };
     
     const getrecommendation=async ()=>{
-      //name, courses, teachers, rooms, semester, timetable, department 
-     // const courses = eledata.map((elective) => elective.course).join(";");
-      // const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
-      // const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
-      //const department= await fetchdept()
-      // const response=axios.post(
-      //   BACKEND_URL+"/electives",{
-      //     name: form.getFieldValue("clusterName"),
-      //     courses: courses,
-      //     teachers: teachers,
-      //     rooms: rooms,
-      //     semester:Number(localStorage.getItem("semester")),
-      //     timetable: convertTableToString(buttonStatus),
-      //     department: department
-      //   },
-      //   {
-      //     headers: {
-      //       authorization: localStorage.getItem("token"),
-      //     },
-      //   }
-      // )
       setCourseName(form.getFieldValue("course"))
       const teachers = form.getFieldValue("teachers");
       const rooms = form.getFieldValue("rooms");
@@ -200,7 +280,7 @@ const AddElectivepage: React.FC = () => {
         }
       )
     toast.promise(response, {
-      loading: "Adding Electives...",
+      loading: "Fetching Recommendation...",
       success: (res) => {
         const statusCode = res.status;
         console.log(res);
@@ -208,9 +288,22 @@ const AddElectivepage: React.FC = () => {
           case statusCodes.OK:
             setDisplayTT(true);
             const TT=res.data.intersection
-            console.log(TT)
-            const scoreTT=res.data.intersection.map((ele:any)=>{ele.map((tt:string)=>{Number(tt)})})
-            console.log(scoreTT)
+            let max = -1;
+            for(let i=0;i<TT.length;i++)
+            {
+              for(let j=0;j<TT[i].length;j++)
+              {
+                  if(buttonStatus[i][j]!="Free"){
+                    if(editingRecord && buttonStatus[i][j]==editingRecord.course)
+                    {console.log(i,j)
+                      continue;}
+                    TT[i][j]=-1;}
+                  if(TT[i][j]>max){
+                    max=TT[i][j];}
+              }
+            }
+            setScore(TT)
+            setMax(max);
             setButtonStatusele(TT)
             return "Fetched Recommendation successfully!";
           case statusCodes.BAD_REQUEST:
@@ -225,7 +318,7 @@ const AddElectivepage: React.FC = () => {
       },
       error: (error) => {
         console.error("Error:", error.response?.data || error.message);
-        return "Failed to add elective cluster. Please try again!";
+        return "Failed to fetch recommendation. Please try again!";
       },
     });
     }
@@ -371,6 +464,7 @@ const AddElectivepage: React.FC = () => {
               setButtonStatus={setButtonStatusele}
               courseName={courseName}
               score={score}
+              max={max}
             />
           </div>       </Form.Item>
           
@@ -399,7 +493,15 @@ const AddElectivepage: React.FC = () => {
               handleOpenModal();
               setEditingRecord(records);
             }
-          }/>
+          }
+          onDeleteClick={(records)=>{
+            SetEleData((prevData) => prevData.filter((item) => item.course !== records.course));
+            console.log("Hello")
+            const updatedStatus = buttonStatus.map(row =>
+              row.map(cell => (cell === records.course ? "Free" : cell))
+            );
+            setButtonStatus(updatedStatus);
+          }}/>
           <br/><br/>
           <label className="flex items-center">
             <span>Timetable for this Cluster</span>
@@ -408,9 +510,10 @@ const AddElectivepage: React.FC = () => {
             </Tooltip>
           </label>
           <div className="flex justify-left">
-            <Timetable
+            <UneditableTimeTable
               buttonStatus={buttonStatus}
               setButtonStatus={setButtonStatus}
+              editable={false}
             />
           </div>
           <div className="flex justify-end">
@@ -421,7 +524,7 @@ const AddElectivepage: React.FC = () => {
                 </Button>
               </Form.Item>
               <Form.Item>
-                <Button onClick={getrecommendation} className="bg-primary text-[#FFFFFF]">
+                <Button onClick={handleSubmit} className="bg-primary text-[#FFFFFF]">
                   Submit
                 </Button>
               </Form.Item>
