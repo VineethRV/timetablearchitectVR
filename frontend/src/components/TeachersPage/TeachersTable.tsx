@@ -188,9 +188,10 @@ const TeachersTable = ({
   }, [departmentFilter, searchText, teachersData]);
 
   // Data with unique keys for table
-  const dataWithKeys = filteredTeachersData.map((teacher) => ({
+  const dataWithKeys = filteredTeachersData?.map((teacher) => ({
     ...teacher,
-    key: teacher.email, 
+    //@ts-ignore
+    key: teacher.id, 
   }));
 
   // Handle search text change
