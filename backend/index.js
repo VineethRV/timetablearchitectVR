@@ -100,29 +100,26 @@ app.post("/api/getPosition", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
-
 // Create a new teacher
 app.post("/api/teachers", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const {
     name,
     initials,
-    email,
+    email, 
     department,
     alternateDepartments,
     timetable,
-    labtable,
+    labtable
   } = req.body;
 
-  // Check if token or name is missing
   if (!token || !name) {
     return res
-      .status(400)
+      .status(200)
       .json({ status: 400, message: "Token and name are required" });
   }
 
   try {
-    // Assuming teacher.createTeachers is a function that handles the teacher creation
     const result = await teacher.createTeachers(
       token,
       name,
@@ -135,10 +132,7 @@ app.post("/api/teachers", async (req, res) => {
     );
     res.status(200).json({ status: result.status, message: result.teacher });
   } catch (error) {
-    console.error("Error creating teacher:", error); // Log the error for debugging
-    res
-      .status(500)
-      .json({ status: 500, message: error.message || "Internal server error" });
+    res.status(200).json({ status: 500, message: "Server error" });
   }
 });
 
@@ -149,14 +143,14 @@ app.put("/api/teachers", async (req, res) => {
   if (!token || !originalName || !teacherData) {
     return res.status(200).json({
       status: 400,
-      message: "Token, original name, and teacher data are required",
+      message: "Token, original name, and teacher data are required", 
     });
   }
 
   try {
     const result = await teacher.updateTeachers(
       token,
-      originalName,
+      originalName, 
       originalDepartment,
       teacherData
     );
@@ -180,7 +174,7 @@ app.post("/api/teachers/many", async (req, res) => {
     const result = await teacher.createManyTeachers(
       token,
       name,
-      initials,
+      initials, 
       email,
       department
     );
@@ -202,7 +196,7 @@ app.get("/api/teachers", async (req, res) => {
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }
-});3
+});
 
 // Peek a specific teacher
 app.post("/api/teachers/peek", async (req, res) => {
