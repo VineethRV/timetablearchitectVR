@@ -44,7 +44,7 @@ model Teacher {
   initials             String?
   email                String?
   department           String?
-  alternateDepartments String?
+  alternateDepartments Departments[] @relation("deparmentTeachers")
   timetable            String?
   labtable             String?
   organisation         Organisation @relation(fields: [orgId], references: [id])
@@ -108,6 +108,7 @@ model Organisation {
   invite_code         String?
   owner               User?           @relation("OrganisationOwner", fields: [ownerId], references: [id])
   ownerId             Int?            @unique
+
 }
 
 model AccessRequest {
@@ -134,4 +135,10 @@ model Section{
   organisation Organisation @relation(fields: [orgId], references: [id])
   orgId  Int
   timeTable String
+}
+model Departments{
+  id Int @id @default(autoincrement())
+  name String
+  orgId Int?
+  teachers Teacher[] @relation("deparmentTeachers")
 }

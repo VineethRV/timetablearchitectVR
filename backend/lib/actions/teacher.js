@@ -62,7 +62,7 @@ function convertTableToString(timetable) {
 }
 function createTeachers(JWTtoken_1, name_1) {
     return __awaiter(this, arguments, void 0, function (JWTtoken, name, initials, email, department, alternateDepartments, timetable, labtable) {
-        var _a, status_1, user, teachers, teacher, _b;
+        var _a, status_1, user_1, teachers, teacher, teacherCreated, departments, _b;
         if (initials === void 0) { initials = null; }
         if (email === void 0) { email = null; }
         if (department === void 0) { department = null; }
@@ -72,23 +72,23 @@ function createTeachers(JWTtoken_1, name_1) {
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _c.trys.push([0, 6, , 7]);
+                    _c.trys.push([0, 10, , 11]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
-                    _a = _c.sent(), status_1 = _a.status, user = _a.user;
-                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                    _a = _c.sent(), status_1 = _a.status, user_1 = _a.user;
+                    if ((user_1 === null || user_1 === void 0 ? void 0 : user_1.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                                 teacher: null,
                             }];
                     }
-                    if (!(status_1 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 5];
-                    if (!(user.role != "viewer")) return [3 /*break*/, 4];
+                    if (!(status_1 == statusCodes_1.statusCodes.OK && user_1)) return [3 /*break*/, 9];
+                    if (!(user_1.role != "viewer")) return [3 /*break*/, 8];
                     return [4 /*yield*/, prisma.teacher.findFirst({
                             where: {
                                 name: name,
-                                department: department ? department : user.department,
-                                orgId: user.orgId,
+                                department: department ? department : user_1.department,
+                                orgId: user_1.orgId,
                             },
                         })];
                 case 2:
@@ -106,8 +106,8 @@ function createTeachers(JWTtoken_1, name_1) {
                         email: email,
                         department: department
                             ? department
-                            : user.department
-                                ? user.department
+                            : user_1.department
+                                ? user_1.department
                                 : "no department",
                         alternateDepartments: alternateDepartments,
                         timetable: timetable
@@ -116,64 +116,114 @@ function createTeachers(JWTtoken_1, name_1) {
                         labtable: labtable
                             ? convertTableToString(labtable)
                             : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
-                        orgId: user.orgId,
+                        orgId: user_1.orgId,
                     };
                     return [4 /*yield*/, prisma.teacher.create({
-                            data: teacher,
+                            data: { name: name,
+                                initials: initials,
+                                email: email,
+                                department: department
+                                    ? department
+                                    : user_1.department
+                                        ? user_1.department
+                                        : "no department",
+                                timetable: timetable
+                                    ? convertTableToString(timetable)
+                                    : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
+                                labtable: labtable
+                                    ? convertTableToString(labtable)
+                                    : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
+                                orgId: user_1.orgId, },
                         })];
                 case 3:
+                    teacherCreated = _c.sent();
+                    if (department) {
+                        alternateDepartments === null || alternateDepartments === void 0 ? void 0 : alternateDepartments.push(department);
+                    }
+                    if (!alternateDepartments) return [3 /*break*/, 7];
+                    return [4 /*yield*/, prisma.departments.createMany({
+                            data: alternateDepartments.map(function (dept) { return ({
+                                name: dept,
+                                orgId: user_1.orgId,
+                            }); }),
+                            skipDuplicates: true,
+                        })];
+                case 4:
                     _c.sent();
-                    return [2 /*return*/, {
-                            status: statusCodes_1.statusCodes.CREATED,
-                            teacher: teacher,
-                        }];
-                case 4: 
+                    return [4 /*yield*/, prisma.departments.findMany({
+                            where: {
+                                name: {
+                                    in: alternateDepartments
+                                },
+                                orgId: user_1.orgId
+                            }
+                        })];
+                case 5:
+                    departments = _c.sent();
+                    return [4 /*yield*/, prisma.teacher.update({
+                            where: {
+                                id: teacherCreated.id
+                            },
+                            data: {
+                                alternateDepartments: {
+                                    connect: departments.map(function (dept) { return ({ id: dept.id }); })
+                                }
+                            }
+                        })];
+                case 6:
+                    _c.sent();
+                    _c.label = 7;
+                case 7: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.CREATED,
+                        teacher: teacher,
+                    }];
+                case 8: 
                 //if user is a viewer code will reach here
                 return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN,
                         teacher: null,
                     }];
-                case 5: 
+                case 9: 
                 //if status not ok
                 return [2 /*return*/, {
                         status: status_1,
                         teacher: null,
                     }];
-                case 6:
+                case 10:
                     _b = _c.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             teacher: null,
                         }];
-                case 7: return [2 /*return*/];
+                case 11: return [2 /*return*/];
             }
         });
     });
 }
 function updateTeachers(JWTtoken_1, originalName_1) {
     return __awaiter(this, arguments, void 0, function (JWTtoken, originalName, originalDepartment, teacher) {
-        var _a, status_2, user, teacherExists, updatedTeacher, _b;
+        var _a, status_2, user_2, teacherExists, departments, _b;
         if (originalDepartment === void 0) { originalDepartment = null; }
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    _c.trys.push([0, 6, , 7]);
+                    _c.trys.push([0, 9, , 10]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
-                    _a = _c.sent(), status_2 = _a.status, user = _a.user;
-                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                    _a = _c.sent(), status_2 = _a.status, user_2 = _a.user;
+                    if ((user_2 === null || user_2 === void 0 ? void 0 : user_2.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                                 teacher: null,
                             }];
                     }
-                    if (!(status_2 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 5];
-                    if (!(user.role != "viewer")) return [3 /*break*/, 4];
+                    if (!(status_2 == statusCodes_1.statusCodes.OK && user_2)) return [3 /*break*/, 8];
+                    if (!(user_2.role != "viewer")) return [3 /*break*/, 7];
                     return [4 /*yield*/, prisma.teacher.findFirst({
                             where: {
                                 name: originalName,
-                                department: user.role == "admin" ? originalDepartment : user.department,
-                                orgId: user.orgId,
+                                department: user_2.role == "admin" ? originalDepartment : user_2.department,
+                                orgId: user_2.orgId,
                             },
                         })];
                 case 2:
@@ -184,43 +234,67 @@ function updateTeachers(JWTtoken_1, originalName_1) {
                                 teacher: null,
                             }];
                     }
-                    return [4 /*yield*/, prisma.teacher.update({
-                            where: {
-                                id: teacherExists.id,
-                            },
-                            data: {
-                                name: teacher.name,
-                                initials: teacher.initials,
-                                email: teacher.email,
-                                department: user.role == "admin" && teacher.department
-                                    ? teacher.department
-                                    : user.department,
-                                alternateDepartments: teacher.alternateDepartments,
-                                timetable: teacher.timetable,
-                                labtable: teacher.labtable,
-                            },
+                    departments = void 0;
+                    if (!teacher.alternateDepartments) return [3 /*break*/, 5];
+                    return [4 /*yield*/, prisma.departments.createMany({
+                            data: teacher.alternateDepartments.map(function (dept) { return ({
+                                name: dept,
+                                orgId: user_2.orgId,
+                            }); }),
+                            skipDuplicates: true,
                         })];
                 case 3:
-                    updatedTeacher = _c.sent();
+                    _c.sent();
+                    return [4 /*yield*/, prisma.departments.findMany({
+                            where: {
+                                name: {
+                                    in: teacher.alternateDepartments
+                                },
+                                orgId: user_2.orgId
+                            }
+                        })];
+                case 4:
+                    departments = _c.sent();
+                    _c.label = 5;
+                case 5: return [4 /*yield*/, prisma.teacher.update({
+                        where: {
+                            id: teacherExists.id,
+                        },
+                        data: {
+                            name: teacher.name,
+                            initials: teacher.initials,
+                            email: teacher.email,
+                            department: user_2.role == "admin" && teacher.department
+                                ? teacher.department
+                                : user_2.department,
+                            alternateDepartments: {
+                                connect: departments === null || departments === void 0 ? void 0 : departments.map(function (dept) { return ({ id: dept.id }); })
+                            },
+                            timetable: teacher.timetable,
+                            labtable: teacher.labtable,
+                        },
+                    })];
+                case 6:
+                    _c.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
-                            teacher: updatedTeacher,
+                            teacher: teacher,
                         }];
-                case 4: return [2 /*return*/, {
+                case 7: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN,
                         teacher: null,
                     }];
-                case 5: return [2 /*return*/, {
+                case 8: return [2 /*return*/, {
                         status: status_2,
                         teacher: null,
                     }];
-                case 6:
+                case 9:
                     _b = _c.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             teacher: null,
                         }];
-                case 7: return [2 /*return*/];
+                case 10: return [2 /*return*/];
             }
         });
     });
@@ -318,29 +392,32 @@ function getTeachers(JWTtoken) {
                     }
                     if (!(status_4 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
                     teachers = void 0;
-                    if (!(user.role != "admin")) return [3 /*break*/, 3];
-                    return [4 /*yield*/, prisma.teacher
-                            .findMany({
+                    if (!(user.role != "admin" && user.department)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.departments.findFirst({
                             where: {
-                                orgId: user.orgId,
-                                department: user.department,
+                                name: user.department,
+                                orgId: user.orgId
                             },
                             select: {
-                                id: true,
-                                name: true,
-                                department: true,
-                                initials: true,
-                                email: true,
-                                orgId: true,
-                            },
-                        })
-                            //convert the returned object into Teacher[] type
-                            .then(function (teachers) {
-                            return teachers.map(function (teacher) { return (__assign(__assign({}, teacher), { alternateDepartments: null, timetable: null, labtable: null })); });
+                                teachers: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        department: true,
+                                        initials: true,
+                                        email: true,
+                                        orgId: true,
+                                    }
+                                }
+                            }
                         })];
                 case 2:
-                    teachers = _c.sent();
-                    return [3 /*break*/, 5];
+                    teachers =
+                        _c.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            teachers: (teachers === null || teachers === void 0 ? void 0 : teachers.teachers) ? teachers === null || teachers === void 0 ? void 0 : teachers.teachers : null
+                        }];
                 case 3: return [4 /*yield*/, prisma.teacher
                         .findMany({
                         where: {
@@ -354,18 +431,14 @@ function getTeachers(JWTtoken) {
                             email: true,
                             orgId: true,
                         },
-                    })
-                        //convert the returned object into Teacher[] type
-                        .then(function (teachers) {
-                        return teachers.map(function (teacher) { return (__assign(__assign({}, teacher), { alternateDepartments: null, timetable: null, labtable: null })); });
                     })];
                 case 4:
                     teachers = _c.sent();
-                    _c.label = 5;
-                case 5: return [2 /*return*/, {
-                        status: statusCodes_1.statusCodes.OK,
-                        teachers: teachers,
-                    }];
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            teachers: teachers
+                        }];
+                case 5: return [3 /*break*/, 7];
                 case 6: return [2 /*return*/, {
                         status: status_4,
                         teachers: null,
@@ -411,7 +484,11 @@ function peekTeacher(token_1, name_1) {
                                 name: true,
                                 orgId: true,
                                 department: true,
-                                alternateDepartments: true,
+                                alternateDepartments: {
+                                    select: {
+                                        name: true
+                                    }
+                                },
                                 initials: true,
                                 email: true,
                                 labtable: true,
@@ -431,7 +508,11 @@ function peekTeacher(token_1, name_1) {
                             name: true,
                             orgId: true,
                             department: true,
-                            alternateDepartments: true,
+                            alternateDepartments: {
+                                select: {
+                                    name: true
+                                }
+                            },
                             initials: true,
                             email: true,
                             labtable: true,
@@ -445,7 +526,7 @@ function peekTeacher(token_1, name_1) {
                     if (teacher)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.OK,
-                                teacher: teacher,
+                                teacher: __assign(__assign({}, teacher), { alternateDepartments: teacher.alternateDepartments.map(function (dep) { return dep.name; }) })
                             }];
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.NOT_FOUND,

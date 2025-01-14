@@ -29,7 +29,7 @@ export type Teacher = {
   initials: string | null;
   email: string | null;
   department: string | null;
-  alternateDepartments: string | null;
+  alternateDepartments: string[] | null;
   timetable: string | null;
   labtable: string | null;
   orgId: number;
