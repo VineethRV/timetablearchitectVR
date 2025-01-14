@@ -81,12 +81,14 @@ var accessCode = function (token) { return __awaiter(void 0, void 0, void 0, fun
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 5, , 6]);
+                _b.trys.push([0, 7, , 8]);
                 console.log("inside access code");
                 jwtParsed = jwt.decode(token);
                 console.log("parsing succesfull");
                 userId = jwtParsed.id;
                 console.log("accessed ID", userId);
+                user = void 0;
+                if (!!jwtParsed.orgId) return [3 /*break*/, 2];
                 return [4 /*yield*/, prisma.user.findUnique({
                         where: {
                             id: userId,
@@ -94,16 +96,21 @@ var accessCode = function (token) { return __awaiter(void 0, void 0, void 0, fun
                     })];
             case 1:
                 user = _b.sent();
+                return [3 /*break*/, 3];
+            case 2:
+                user = { orgId: jwtParsed.orgId };
+                _b.label = 3;
+            case 3:
                 if (!user) {
                     console.log("breh\n");
                 }
-                if (!(user && user.orgId)) return [3 /*break*/, 3];
+                if (!(user === null || user === void 0 ? void 0 : user.orgId)) return [3 /*break*/, 5];
                 return [4 /*yield*/, prisma.organisation.findUnique({
                         where: {
-                            id: user.orgId,
+                            id: user === null || user === void 0 ? void 0 : user.orgId,
                         },
                     })];
-            case 2:
+            case 4:
                 organisation = _b.sent();
                 if (organisation) {
                     if (!organisation.invite_code) {
@@ -121,18 +128,18 @@ var accessCode = function (token) { return __awaiter(void 0, void 0, void 0, fun
                         status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                         accessCode: "organisation not found",
                     }];
-            case 3: return [2 /*return*/, {
+            case 5: return [2 /*return*/, {
                     status: statusCodes_1.statusCodes.NOT_FOUND,
                     accessCode: "user not found",
                 }];
-            case 4: return [3 /*break*/, 6];
-            case 5:
+            case 6: return [3 /*break*/, 8];
+            case 7:
                 _a = _b.sent();
                 return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                         accessCode: "error"
                     }];
-            case 6: return [2 /*return*/];
+            case 8: return [2 /*return*/];
         }
     });
 }); };
@@ -174,7 +181,8 @@ var login = function (email, pass) { return __awaiter(void 0, void 0, void 0, fu
                 token = jwt.sign({
                     email: user === null || user === void 0 ? void 0 : user.email,
                     id: user === null || user === void 0 ? void 0 : user.id,
-                    //consider adding organisation and role
+                    orgId: user === null || user === void 0 ? void 0 : user.orgId
+                    //consider adding organisation and role.orgId = 
                 }, secretKey);
                 return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.OK,
@@ -226,6 +234,7 @@ var register = function (name, email, password) { return __awaiter(void 0, void 
                 token = jwt.sign({
                     email: new_user.email,
                     id: new_user.id,
+                    orgId: new_user.orgId,
                 }, secretKey);
                 return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.CREATED,

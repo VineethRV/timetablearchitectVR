@@ -15,7 +15,7 @@ export async function createTeachers(
   initials: string | null = null,
   email: string | null = null,
   department: string | null = null,
-  alternateDepartments: string | null = null,
+  alternateDepartments: string[] | null = null,
   timetable: string[][] | null = null,
   labtable: string[][] | null = null
 ): Promise<{ status: number; teacher: Teacher | null }> {
@@ -66,9 +66,55 @@ export async function createTeachers(
             : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
           orgId: user.orgId,
         };
-        await prisma.teacher.create({
-          data: teacher,
+        let teacherCreated=await prisma.teacher.create({
+          data: {name: name,
+            initials: initials,
+            email: email,
+            department: department
+              ? department
+              : user.department
+              ? user.department
+              : "no department",
+            timetable: timetable
+              ? convertTableToString(timetable)
+              : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
+            labtable: labtable
+              ? convertTableToString(labtable)
+              : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
+            orgId: user.orgId,},
         });
+        if(department){
+          alternateDepartments?.push(department);
+        }
+        if (alternateDepartments) {
+          await prisma.departments.createMany({
+            data: alternateDepartments.map(dept => ({
+              name: dept,
+              orgId: user.orgId,
+            })),
+            skipDuplicates: true,
+          });
+
+          const departments = await prisma.departments.findMany({
+            where: {
+              name: {
+                in: alternateDepartments
+              },
+              orgId: user.orgId
+            }
+          });
+
+          await prisma.teacher.update({
+            where: {
+              id: teacherCreated.id
+            },
+            data: {
+              alternateDepartments: {
+                connect: departments.map(dept => ({ id: dept.id }))
+              }
+            }
+          });
+        }
         return {
           status: statusCodes.CREATED,
           teacher: teacher,
@@ -92,6 +138,7 @@ export async function createTeachers(
     };
   }
 }
+
 export async function updateTeachers(
   JWTtoken: string,
   originalName: string,
@@ -124,7 +171,25 @@ export async function updateTeachers(
             teacher: null,
           };
         }
-        const updatedTeacher = await prisma.teacher.update({
+        let departments;
+        if (teacher.alternateDepartments) {
+          await prisma.departments.createMany({
+            data: teacher.alternateDepartments.map(dept => ({
+              name: dept,
+              orgId: user.orgId,
+            })),
+            skipDuplicates: true,
+          });
+          departments = await prisma.departments.findMany({
+            where: {
+              name: {
+                in: teacher.alternateDepartments
+              },
+              orgId: user.orgId
+            }
+          });
+        }
+        await prisma.teacher.update({
           where: {
             id: teacherExists.id,
           },
@@ -136,14 +201,16 @@ export async function updateTeachers(
               user.role == "admin" && teacher.department
                 ? teacher.department
                 : user.department,
-            alternateDepartments: teacher.alternateDepartments,
+            alternateDepartments: {
+              connect: departments?.map(dept => ({ id: dept.id }))
+            },
             timetable: teacher.timetable,
             labtable: teacher.labtable,
           },
         });
         return {
           status: statusCodes.OK,
-          teacher: updatedTeacher,
+          teacher: teacher,
         };
       }
       return {
@@ -238,21 +305,18 @@ export async function createManyTeachers(
     };
   }
 }
-export type TeacherWithId = {
+export type retTeacher = {
   id: number;
   name: string;
   initials: string | null;
   email: string | null;
   department: string | null;
-  alternateDepartments: string | null;
-  timetable: string | null;
-  labtable: string | null;
   orgId: number;
 };
 //to display teachers list
 export async function getTeachers(
   JWTtoken: string
-): Promise<{ status: number; teachers: Teacher[] | null }> {
+): Promise<{ status: number; teachers: retTeacher[] | null }> {
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
 
@@ -265,34 +329,33 @@ export async function getTeachers(
 
     //if verification of roles is ok
     if (status == statusCodes.OK && user) {
-      let teachers: TeacherWithId[];
+      let teachers;
 
       //if role isnt admin, return teachers from same department
-      if (user.role != "admin") {
-        teachers = await prisma.teacher
-          .findMany({
+      if (user.role != "admin" && user.department) {
+        teachers = 
+          await prisma.departments.findFirst({
             where: {
-              orgId: user.orgId,
-              department: user.department,
+              name: user.department,
+              orgId: user.orgId
             },
             select: {
-              id: true,
-              name: true,
-              department: true,
-              initials: true,
-              email: true,
-              orgId: true,
-            },
+              teachers: {
+                select: {
+                  id: true,
+                  name: true,
+                  department: true,
+                  initials: true,
+                  email: true,
+                  orgId: true,
+                }
+              }
+            }
           })
-          //convert the returned object into Teacher[] type
-          .then((teachers) =>
-            teachers.map((teacher) => ({
-              ...teacher,
-              alternateDepartments: null,
-              timetable: null, // Default value, since it's not queried
-              labtable: null, // Default value, since it's not queried
-            }))
-          );
+        return {
+          status: statusCodes.OK,
+          teachers: teachers?.teachers?teachers?.teachers:null
+        };
       }
       //if role is admin, return teachers from all departments
       else {
@@ -310,20 +373,11 @@ export async function getTeachers(
               orgId: true,
             },
           })
-          //convert the returned object into Teacher[] type
-          .then((teachers) =>
-            teachers.map((teacher) => ({
-              ...teacher,
-              alternateDepartments: null,
-              timetable: null, // Default value, since it's not queried
-              labtable: null, // Default value, since it's not queried
-            }))
-          );
+        return {
+          status: statusCodes.OK,
+          teachers: teachers
+        };
       }
-      return {
-        status: statusCodes.OK,
-        teachers: teachers,
-      };
     } else {
       return {
         status: status,
@@ -367,7 +421,11 @@ export async function peekTeacher(
             name: true,
             orgId: true,
             department: true,
-            alternateDepartments: true,
+            alternateDepartments: {
+              select: {
+                name: true
+              }
+            },
             initials: true,
             email: true,
             labtable: true,
@@ -386,7 +444,11 @@ export async function peekTeacher(
             name: true,
             orgId: true,
             department: true,
-            alternateDepartments: true,
+            alternateDepartments: {
+              select: {
+                name: true
+              }
+            },
             initials: true,
             email: true,
             labtable: true,
@@ -397,7 +459,11 @@ export async function peekTeacher(
       if(teacher)
         return {
           status: statusCodes.OK,
-          teacher: teacher,
+          teacher: 
+                  {
+                    ...teacher,
+                    alternateDepartments: teacher.alternateDepartments.map(dep => dep.name)
+                  }
         };
       return{
         status:statusCodes.NOT_FOUND,

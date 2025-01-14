@@ -14,6 +14,7 @@
 **[ ] Moving Subjects in Edit Teachers**
 [ ] Disable auto filling
 **[ ] Alternate department**
+**[ ] Disconnecting existing departments from alternate departments**
 
 # ROOM ADDING:
 ~~**[ ] 1 0 problem**~~

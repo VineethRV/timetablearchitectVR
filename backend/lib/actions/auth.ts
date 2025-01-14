@@ -38,18 +38,24 @@ export const accessCode = async (token: string): Promise<{ status: number; acces
     console.log("parsing succesfull");
     const userId = jwtParsed.id;
     console.log("accessed ID",userId);
-    const user = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    let user;
+    if(!jwtParsed.orgId){
+      user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+    }
+    else{
+      user={orgId:jwtParsed.orgId};
+    }
     if(!user){
       console.log("breh\n");
     }
-    if (user && user.orgId) {
+    if (user?.orgId) {
       const organisation = await prisma.organisation.findUnique({
         where: {
-          id: user.orgId,
+          id: user?.orgId,
         },
       });
 
@@ -123,7 +129,8 @@ export const login = async (
       {
         email: user?.email,
         id: user?.id,
-        //consider adding organisation and role
+        orgId: user?.orgId
+        //consider adding organisation and role.orgId = 
       },
       secretKey
     );
@@ -180,6 +187,7 @@ export const register = async (
       {
         email: new_user.email,
         id: new_user.id,
+        orgId: new_user.orgId,
       },
       secretKey
     );
