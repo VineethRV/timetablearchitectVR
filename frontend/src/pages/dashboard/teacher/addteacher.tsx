@@ -45,6 +45,7 @@ const AddTeacherpage = () => {
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
+    const altdept=form.getFieldValue("altDepartment")
     const department = admin
       ? form.getFieldValue("department")
       : userDepartment;
@@ -52,7 +53,7 @@ const AddTeacherpage = () => {
       message.error("Fill all the required Fields");
       return;
     }
-
+    console.log(altdept)
     const promise = axios.post(
       BACKEND_URL + "/teachers",
       {
@@ -60,7 +61,7 @@ const AddTeacherpage = () => {
         initials: initials,
         email: email,
         department: department,
-        alternateDepartments: "",
+        alternateDepartments: altdept,
         timetable: buttonConvert(buttonStatus),
         labtable: null,
       },
@@ -160,10 +161,9 @@ const AddTeacherpage = () => {
             </div>
           </Form.Item>
           <Form.Item
+          label="Alternate Department"
             name="altDepartment"
           >
-            <div>
-              <span>Alternate Department</span>
               <Select
                 showSearch
                 mode="tags"
@@ -172,7 +172,6 @@ const AddTeacherpage = () => {
                 options={DEPARTMENTS_OPTIONS}
                 className="font-normal w-96"
               />
-            </div>
           </Form.Item>
           <label>
             <div className="flex items-center">

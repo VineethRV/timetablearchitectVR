@@ -112,7 +112,7 @@ app.post("/api/teachers", async (req, res) => {
     timetable,
     labtable
   } = req.body;
-
+  console.log(alternateDepartments)
   if (!token || !name) {
     return res
       .status(200)
