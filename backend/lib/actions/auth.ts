@@ -35,7 +35,7 @@ export const accessCode = async (token: string): Promise<{ status: number; acces
   try{
     console.log("inside access code");
     const jwtParsed = jwt.decode(token) as jwt.JwtPayload;
-    console.log("parsing succesfull");
+    console.log("toekn: ",jwtParsed);
     const userId = jwtParsed.id;
     console.log("accessed ID",userId);
     let user;

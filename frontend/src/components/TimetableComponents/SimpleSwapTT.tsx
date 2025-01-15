@@ -141,18 +141,20 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             : "border text-[#636AE8] hover:bg-[#D9D9F3]"
         }`}
         onClick={() => handleButtonClick(rowIndex, colIndex)}
-        disabled={
-          (selectedSlot ? true : false) &&
-          (score[rowIndex][colIndex] < 0 || buttonStatus[rowIndex][colIndex] !== "Free")
-        }
+       
         style={{
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
           overflow: "hidden",
-          backgroundColor: buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(0, 0, 0)" : "#F2F2FD",
+          backgroundColor: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(99,106,232)" : "#F2F2FD",
+          color: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "#F2F2FD" : "rgb(99,106,232)",
           borderColor: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
           borderWidth: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `${1 + 2 * score[rowIndex][colIndex]}px` : "1px",
         }}
+        disabled={
+          (selectedSlot ? true : false) &&
+          (score[rowIndex][colIndex] < 0 || buttonStatus[rowIndex][colIndex] !== "Free")
+        }
       >
         {buttonStatus[rowIndex][colIndex]}
     </Button>

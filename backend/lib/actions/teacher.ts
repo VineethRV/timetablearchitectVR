@@ -19,6 +19,7 @@ export async function createTeachers(
   timetable: string[][] | null = null,
   labtable: string[][] | null = null
 ): Promise<{ status: number; teacher: Teacher | null }> {
+  console.log("inside createTeachers");
   try {
     const { status, user } = await auth.getPosition(JWTtoken);
 
@@ -48,6 +49,7 @@ export async function createTeachers(
           };
         }
         //else
+        console.log("Alternate Departments: ", alternateDepartments);
         const teacher: Teacher = {
           name: name,
           initials: initials,
@@ -84,7 +86,12 @@ export async function createTeachers(
             orgId: user.orgId,},
         });
         if(department){
-          alternateDepartments?.push(department);
+          if(alternateDepartments){
+            alternateDepartments.push(department);
+          }
+          else{
+            alternateDepartments=[department];
+          }
         }
         if (alternateDepartments) {
           await prisma.departments.createMany({
@@ -94,7 +101,6 @@ export async function createTeachers(
             })),
             skipDuplicates: true,
           });
-
           const departments = await prisma.departments.findMany({
             where: {
               name: {
@@ -103,7 +109,6 @@ export async function createTeachers(
               orgId: user.orgId
             }
           });
-
           await prisma.teacher.update({
             where: {
               id: teacherCreated.id
@@ -160,8 +165,8 @@ export async function updateTeachers(
         const teacherExists = await prisma.teacher.findFirst({
           where: {
             name: originalName,
-            department:
-              user.role == "admin" ? originalDepartment : user.department,
+            // department:
+            //   user.role == "admin" ? originalDepartment : user.department,
             orgId: user.orgId,
           },
         });
@@ -411,51 +416,26 @@ export async function peekTeacher(
     //if verification of rules is okay, perform the following
     if (status == statusCodes.OK && user) {
       let teacher 
-      if(user.role=="admin"){
-        teacher=await prisma.teacher.findFirst({
-          where: {
-            name: name,
-            orgId: user.orgId,
+      teacher=await prisma.teacher.findFirst({
+        where: {
+          name: name,
+          orgId: user.orgId,
+        },
+        select: {
+          name: true,
+          orgId: true,
+          department: true,
+          alternateDepartments: {
+            select: {
+              name: true
+            }
           },
-          select: {
-            name: true,
-            orgId: true,
-            department: true,
-            alternateDepartments: {
-              select: {
-                name: true
-              }
-            },
-            initials: true,
-            email: true,
-            labtable: true,
-            timetable: true,
-          },
-        });
-      }
-      else{
-        teacher=await prisma.teacher.findFirst({
-          where: {
-            name: name,
-            department:user.department,
-            orgId: user.orgId,
-          },
-          select: {
-            name: true,
-            orgId: true,
-            department: true,
-            alternateDepartments: {
-              select: {
-                name: true
-              }
-            },
-            initials: true,
-            email: true,
-            labtable: true,
-            timetable: true,
-          },
-        });
-      }
+          initials: true,
+          email: true,
+          labtable: true,
+          timetable: true,
+        },
+      });
       if(teacher)
         return {
           status: statusCodes.OK,

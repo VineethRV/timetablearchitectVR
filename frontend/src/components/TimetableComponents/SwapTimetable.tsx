@@ -143,6 +143,8 @@ const SwapTimetable: React.FC<TimetableProps> = ({
           whiteSpace: "nowrap",
           textOverflow: "ellipsis",
           overflow: "hidden",
+          backgroundColor: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(99,106,232)" : "#F2F2FD",
+          color: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "#F2F2FD" : "rgb(99,106,232)",
           borderColor: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0" )? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
           borderWidth: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0") ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
         }}

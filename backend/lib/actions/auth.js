@@ -84,7 +84,7 @@ var accessCode = function (token) { return __awaiter(void 0, void 0, void 0, fun
                 _b.trys.push([0, 7, , 8]);
                 console.log("inside access code");
                 jwtParsed = jwt.decode(token);
-                console.log("parsing succesfull");
+                console.log("toekn: ", jwtParsed);
                 userId = jwtParsed.id;
                 console.log("accessed ID", userId);
                 user = void 0;
