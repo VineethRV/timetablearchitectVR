@@ -34,6 +34,7 @@ const EditTeacherpage = () => {
     form.setFieldValue("initials", "");
     form.setFieldValue("email", "");
     form.setFieldValue("department", "");
+    form.setFieldValue("altDepartment","");
     setButtonStatus(weekdays.map(() => timeslots.map(() => "Free")));
   };
 
@@ -99,12 +100,14 @@ const EditTeacherpage = () => {
               }
             }
             setLab(res.data.message.labtable)
+            console.log(res.data.message)
             setButtonStatus(finaltable);
             form.setFieldsValue({
               name: res.data.message.name,
               initials: res.data.message.initials,
               email: res.data.message.email,
               department: res.data.message.department,
+              altDepartment:res.data.message.alternateDepartments,
             });
             break;
           default:
@@ -129,7 +132,7 @@ const EditTeacherpage = () => {
       initials,
       email,
       department,
-      alternateDepartments: null,
+      alternateDepartments: form.getFieldValue("altDepartment"),
       timetable: convertTableToString(buttonStatus),
       labtable:lab,
       organisation: null,
@@ -234,11 +237,10 @@ const EditTeacherpage = () => {
           ) : (
             <></>
           )}
-            <Form.Item
+             <Form.Item
+          label="Alternate Department"
             name="altDepartment"
           >
-            <div>
-              <span>Alternate Department</span>
               <Select
                 showSearch
                 mode="tags"
@@ -247,7 +249,6 @@ const EditTeacherpage = () => {
                 options={DEPARTMENTS_OPTIONS}
                 className="font-normal w-96"
               />
-            </div>
           </Form.Item>
           {/* <Form.Item name="department" label="Department">
             <Select
