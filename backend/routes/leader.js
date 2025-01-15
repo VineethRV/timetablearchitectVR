@@ -167,7 +167,8 @@ leaderRouter.delete("/delete_org", async (req, res) => {
       status: statusCodes.OK,
       message: "Organisation deleted successfully.",
     });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error(error);
     return res.json({
       status: statusCodes.INTERNAL_SERVER_ERROR,

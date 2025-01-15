@@ -1,6 +1,7 @@
 # BACKGROUND
-[ ] Understand and make onboarding fluent
-[ ] Verify email
+~~[ ] Understand and make onboarding fluent~~
+~~[ ] Verify email~~
+[ ] Add verify email path after hosting
 [ ] admin panel sections formed, courses alloted and other stuff.
 *[ ] display joining code in admin panel(Vineeth)*
 [ ] disable requestAccess for editors
