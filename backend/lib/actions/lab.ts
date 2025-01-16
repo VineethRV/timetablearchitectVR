@@ -115,26 +115,33 @@ export async function getLabs(
   semester: number | null = null
 ): Promise<{ status: number; data: LabWithIds[] | null }> {
   try {
-    const { status, user } = await auth.getPosition(JWTtoken);
-
+    const { status, user } = await auth.getPosition(JWTtoken)
     if (user?.orgId == null) {
       return {
         status: statusCodes.BAD_REQUEST,
         data: null,
       };
     }
-
     if (status == statusCodes.OK && user) {
-      const labs = await prisma.lab.findMany({
-        where: {
-          orgId: user.orgId,
-          department:
-            user.role == "admin" && department ? department : user.department,
-          semester: semester,
-        },
-      });
-      return { status: statusCodes.OK, data: labs };
-    }
+      if(user.role=="admin"){ const labs = await prisma.lab.findMany({
+          where: {
+            orgId: user.orgId,
+            semester: semester,
+          },
+        });
+        return { status: statusCodes.OK, data: labs };
+      }
+      else{
+        const labs = await prisma.lab.findMany({
+          where: {
+            orgId: user.orgId,
+            department: user.department,
+            semester: semester,
+          },
+        });
+        return { status: statusCodes.OK, data: labs };
+      }
+  }
     return { status: status, data: null };
   } catch (error) {
     console.error(error);

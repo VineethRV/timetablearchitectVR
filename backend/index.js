@@ -89,6 +89,8 @@ app.post("/api/register", async (req, res) => {
 //get user position
 app.post("/api/getPosition", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
+  console.log("token is ")
+  console.log(req.headers.authorization?.split(" ")[1])
   if (!token) {
     return res.status(200).json({ status: 400, message: "Token is required" });
   }
@@ -914,6 +916,26 @@ app.get("/api/accessCode", async (req, res) => {
     res.status(200).json({ status: result.status, accessCode: result.accessCode });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+app.get("/api/sectionCount", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    console.log("here")
+    const result = await panel.getSectionCount(token);
+    console.log("why")
+    res.status(200).json({ 
+      status: result.status, 
+      section: result.section, 
+      electives: result.electives, 
+      lab: result.lab 
+    });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: error });
   }
 });
 app.get("/health", (_, res) => {

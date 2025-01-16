@@ -2,10 +2,10 @@
 ~~[ ] Understand and make onboarding fluent~~
 ~~[ ] Verify email~~
 [ ] Add verify email path after hosting
-[ ] admin panel sections formed, courses alloted and other stuff.
-*[ ] display joining code in admin panel(Vineeth)*
-[ ] disable requestAccess for editors
-[ ] top teachers free in editors too
+~~[ ] admin panel sections formed, courses alloted and other stuff.~~
+~~*[ ] display joining code in admin panel(Vineeth)*~~
+~~[ ] disable requestAccess for editors~~
+~~[ ] top teachers free in editors too~~
 
 # TEACHER:
 ~~**[ ] if editor deparment should be disabled and editor dep should be selected**~~
@@ -13,8 +13,8 @@
 ~~`[ ] Edit teacher lab table is not being displayed in the table`~~
 ~~**[ ] labtable is becoming null when doing edit teachers**~~
 **[ ] Moving Subjects in Edit Teachers**
-[ ] Disable auto filling
-**[ ] Alternate department**
+~~[ ] Disable auto filling~~
+~~**[ ] Alternate department**~~
 **[ ] Disconnecting existing departments from alternate departments**
 
 # ROOM ADDING:

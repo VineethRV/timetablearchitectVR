@@ -293,7 +293,7 @@ export async function createManyTeachers(
       await prisma.teacher.createMany({
         data: teachers,
       });
-
+      
       return {
         status: statusCodes.CREATED,
         teachers: teachers,

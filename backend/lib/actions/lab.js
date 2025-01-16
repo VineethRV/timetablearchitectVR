@@ -145,13 +145,13 @@ function deleteLabs(JWTtoken, labs) {
 }
 function getLabs(JWTtoken_1) {
     return __awaiter(this, arguments, void 0, function (JWTtoken, department, semester) {
-        var _a, status_3, user, labs, error_3;
+        var _a, status_3, user, labs, labs, error_3;
         if (department === void 0) { department = null; }
         if (semester === void 0) { semester = null; }
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 4, , 5]);
+                    _b.trys.push([0, 6, , 7]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _b.sent(), status_3 = _a.status, user = _a.user;
@@ -161,23 +161,33 @@ function getLabs(JWTtoken_1) {
                                 data: null,
                             }];
                     }
-                    if (!(status_3 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    if (!(status_3 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 5];
+                    if (!(user.role == "admin")) return [3 /*break*/, 3];
                     return [4 /*yield*/, prisma.lab.findMany({
                             where: {
                                 orgId: user.orgId,
-                                department: user.role == "admin" && department ? department : user.department,
                                 semester: semester,
                             },
                         })];
                 case 2:
                     labs = _b.sent();
                     return [2 /*return*/, { status: statusCodes_1.statusCodes.OK, data: labs }];
-                case 3: return [2 /*return*/, { status: status_3, data: null }];
+                case 3: return [4 /*yield*/, prisma.lab.findMany({
+                        where: {
+                            orgId: user.orgId,
+                            department: user.department,
+                            semester: semester,
+                        },
+                    })];
                 case 4:
+                    labs = _b.sent();
+                    return [2 /*return*/, { status: statusCodes_1.statusCodes.OK, data: labs }];
+                case 5: return [2 /*return*/, { status: status_3, data: null }];
+                case 6:
                     error_3 = _b.sent();
                     console.error(error_3);
                     return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, data: null }];
-                case 5: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     });

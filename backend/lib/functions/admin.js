@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTeacherPercentage = getTeacherPercentage;
 exports.getRoomPercentage = getRoomPercentage;
 exports.getLabPercentage = getLabPercentage;
+exports.getSectionCount = getSectionCount;
 var auth_1 = require("../actions/auth");
 var statusCodes_1 = require("../types/statusCodes");
 var client_1 = require("@prisma/client");
@@ -168,7 +169,7 @@ function getTeacherPercentage(token) {
                             percentage: percentage,
                             rank: rank,
                             score: rankScore,
-                            department: null
+                            department: new Array(10).fill(user.department)
                         }];
                 case 5: return [3 /*break*/, 7];
                 case 6: return [2 /*return*/, {
@@ -288,7 +289,7 @@ function getRoomPercentage(token) {
                             percentage: percentage,
                             rank: rank,
                             score: rankScore,
-                            department: null
+                            department: new Array(10).fill(user.department)
                         }];
                 case 5: return [3 /*break*/, 7];
                 case 6: return [2 /*return*/, {
@@ -408,7 +409,7 @@ function getLabPercentage(token) {
                             percentage: percentage,
                             rank: rank,
                             score: rankScore,
-                            department: null
+                            department: new Array(10).fill(user.department)
                         }];
                 case 5: return [3 /*break*/, 7];
                 case 6: return [2 /*return*/, {
@@ -419,6 +420,91 @@ function getLabPercentage(token) {
                         department: null
                     }];
                 case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getSectionCount(token) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status, user, sections, labs, electives, e_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, (0, auth_1.getPosition)(token)];
+                case 1:
+                    _a = _b.sent(), status = _a.status, user = _a.user;
+                    sections = [];
+                    labs = [];
+                    electives = [];
+                    console.log("init done");
+                    _b.label = 2;
+                case 2:
+                    _b.trys.push([2, 11, , 12]);
+                    if (!((user === null || user === void 0 ? void 0 : user.role) == 'admin' && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 6];
+                    console.log("admin getCount");
+                    return [4 /*yield*/, prisma.section.findMany({
+                            where: {
+                                orgId: user.orgId
+                            }
+                        })];
+                case 3:
+                    sections = _b.sent();
+                    console.log("adminSections:", sections);
+                    return [4 /*yield*/, prisma.lab.findMany({
+                            where: {
+                                orgId: user.orgId
+                            }
+                        })];
+                case 4:
+                    labs = _b.sent();
+                    console.log("adminLabs:", labs);
+                    return [4 /*yield*/, prisma.elective.findMany({
+                            where: {
+                                orgId: user.orgId
+                            }
+                        })];
+                case 5:
+                    electives = _b.sent();
+                    console.log("adminElectives:", electives);
+                    return [3 /*break*/, 10];
+                case 6:
+                    if (!(user === null || user === void 0 ? void 0 : user.orgId)) return [3 /*break*/, 10];
+                    console.log("editor getCount");
+                    return [4 /*yield*/, prisma.section.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                // department: user.department
+                            }
+                        })];
+                case 7:
+                    sections = _b.sent();
+                    console.log("editorSections:", sections);
+                    return [4 /*yield*/, prisma.lab.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                department: user.department
+                            }
+                        })];
+                case 8:
+                    labs = _b.sent();
+                    console.log("editorLabs:", labs);
+                    return [4 /*yield*/, prisma.elective.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                department: user.department
+                            }
+                        })];
+                case 9:
+                    electives = _b.sent();
+                    console.log("editorElectives:", electives);
+                    _b.label = 10;
+                case 10:
+                    console.log("returning", { status: statusCodes_1.statusCodes.OK, section: sections.length, electives: electives.length, lab: labs.length });
+                    return [2 /*return*/, { status: statusCodes_1.statusCodes.OK, section: sections.length, electives: electives.length, lab: labs.length }];
+                case 11:
+                    e_1 = _b.sent();
+                    console.log(e_1);
+                    return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, section: 0, electives: 0, lab: 0 }];
+                case 12: return [2 /*return*/];
             }
         });
     });

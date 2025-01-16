@@ -123,7 +123,7 @@ export async function getTeacherPercentage(token:string):Promise<{status:number,
                 percentage: percentage,
                 rank: rank,
                 score: rankScore,
-                department:null
+                department: new Array(10).fill(user.department)
             };
         }
     }
@@ -238,7 +238,7 @@ export async function getRoomPercentage(token: string): Promise<{ status: number
                 percentage: percentage,
                 rank: rank,
                 score: rankScore,
-                department: null
+                department: new Array(10).fill(user.department)
             };
         }
     } else {
@@ -353,7 +353,7 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
                 percentage: percentage,
                 rank: rank,
                 score: rankScore,
-                department: null
+                department: new Array(10).fill(user.department)
             };
         }
     } else {
@@ -364,5 +364,56 @@ export async function getLabPercentage(token: string): Promise<{ status: number,
             score: rankScore,
             department: null
         };
+    }
+}
+export async function getSectionCount(token: string):Promise<{status: number,section:number,electives:number,lab:number}>{
+    let { status, user } = await getPosition(token);
+    let sections: any[] = [];
+    let labs: any[] = [];
+    let electives: any[] = [];
+    console.log("init done")
+    try{
+        if(user?.role=='admin' && user?.orgId){
+            sections = await prisma.section.findMany({
+                where: {
+                    orgId: user.orgId
+                }
+            });
+            labs = await prisma.lab.findMany({
+                where: {
+                    orgId: user.orgId
+                }
+            });
+            electives = await prisma.elective.findMany({
+                where: {
+                    orgId: user.orgId
+                }
+            });
+        }
+        else if(user?.orgId){
+             sections = await prisma.section.findMany({
+                where: {
+                    orgId: user.orgId,
+                    // department: user.department
+                }
+            });
+             labs = await prisma.lab.findMany({
+                where: {
+                    orgId: user.orgId,
+                    department: user.department
+                }
+            });
+            electives = await prisma.elective.findMany({
+                where: {
+                    orgId: user.orgId,
+                    department: user.department
+                }
+            });
+        }
+        return { status: statusCodes.OK, section: sections.length, electives: electives.length, lab: labs.length };
+    }
+    catch(e){
+        console.log(e)
+        return {status:statusCodes.INTERNAL_SERVER_ERROR,section:0,electives:0,lab:0}
     }
 }

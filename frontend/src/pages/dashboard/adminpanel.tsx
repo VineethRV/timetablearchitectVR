@@ -9,25 +9,42 @@ const { Header, Content } = Layout;
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 
-const stats = [
-  { title: "Sections formed", number: 36 },
-  { title: "Core courses allocated", number: 12 },
-  { title: "Allotted labs", number: 84 },
-];
-
 const AdminPanel = () => {
   const [topTeachers, setTopTeachers] = useState([]);
   const [topRooms, setTopRooms] = useState([]);
   const [topLabs, setTopLabs] = useState([]);
   const [accessCode, setAccessCode] = useState("");
+  const [admin,setAdmin] = useState(false);
+  const [stats,setStats] =useState([
+    { title: "Sections formed", number: 0 },
+    { title: "Electives made", number: 0 },
+    { title: "Labs alloted", number: 0 },
+  ]);
+  
   useEffect(() => {
     async function fetchData() {
+      const sectionCountData = await axios.get(BACKEND_URL + "/sectionCount", {
+        headers: { Authorization: localStorage.getItem("token") },
+      });
+      console.log("sectuibCuynbg",sectionCountData);
+      if (sectionCountData.data.status === 200) {
+        setStats([
+          { title: "Sections formed", number: sectionCountData.data.section },
+          { title: "Electives made", number: sectionCountData.data.electives },
+          { title: "Labs alloted", number: sectionCountData.data.lab },
+        ]);
+      }
+      const userData = await axios.post(BACKEND_URL + "/getPosition", {}, {
+        headers: { Authorization: localStorage.getItem("token") },
+      })
+      setAdmin(userData.data.message.role=="admin")
       const { data: teachersData } = await axios.get(
         BACKEND_URL + "/teacherPercentage",
         {
           headers: { Authorization: localStorage.getItem("token") },
         }
       );
+      console.log("teacherData",teachersData)
       const formattedTeachersData = teachersData.rank
         .filter(
           (name: string, index: number) =>
@@ -128,7 +145,7 @@ const AdminPanel = () => {
           ))}
         </Row>
         <CapacityCard />
-        <RequestAccessWrapper accessCode={accessCode}/>
+        {admin?<RequestAccessWrapper accessCode={accessCode}/>:<></>}
         <GridDisplay teachers={topTeachers} rooms={topRooms} labs={topLabs} />
       </Content>
     </Layout>
