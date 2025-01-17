@@ -27,20 +27,22 @@
 `[] Elective delete and modify`
 `[] elective modifications based on role`
 
+
 # LABS:
-[ ] Clicking generate should be responsive
-**[ ] Moving allotted timeslot does not work(Vineeth)**
+~~[ ] Clicking generate should be responsive~~
+~~**[ ] Moving allotted timeslot does not work(Vineeth)**~~
 [ ] Buttons in table can be bigger and table can be on the side rather than down
 `[ ] Deleting and modifying lab is giving invalid request`
-**[ ] Lab creation changes not reflected in teachers and rooms()**
+~~**[ ] Lab creation changes not reflected in teachers and rooms()**~~
+**[ ] Lab Edit**
 
 # CORE:
 ~~[ ] Semester option in core course redundant~~
 ~~`[ ] Particular classroom still contains dummy data`~~
 ~~[ ] Editing courses load forever~~
 
-# SECTION :
-**[ ] Core allocation should reflect changes in teachers and rooms**
+# SECTION:
+~~**[ ] Core allocation should reflect changes in teachers and rooms**~~
 [ ] Should be able to delete default room
 [ ] ToolTip should display room allocated
 [ ] Changes as per role
