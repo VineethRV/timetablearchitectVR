@@ -101,7 +101,7 @@ const EditRoomPage: React.FC = () => {
     const name = form.getFieldValue("className");
     const lab = form.getFieldValue("lab") === 1 ? true : false;
     const department = admin ? form.getFieldValue("department") : olddepartment;
-    if (!name|| !lab|| (admin&&department=="")) {
+    if (!name|| lab==undefined|| (admin&&department=="")) {
       message.error("Fill all the required Fields");
       return;
     }

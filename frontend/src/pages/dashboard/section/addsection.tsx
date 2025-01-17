@@ -11,7 +11,6 @@ import {
   Modal,
   message,
 } from "antd";
-import TimeTable from "../../../components/TimetableComponents/timetable";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,6 @@ import SectionAddTable, {
 import { convertTableToString, fetchCourse, fetchdept, fetchElectives, fetchlabs, fetchRooms, fetchTeachers, stringToTable, timeslots, weekdays } from "../../../utils/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
-import { buttonConvert } from "../teacher/addteacher";
 import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import SimpleSwapTimetable from "../../../components/TimetableComponents/SimpleSwapTT";
@@ -211,8 +209,8 @@ const AddSectionPage: React.FC = () => {
             case statusCodes.OK:
               SetshowTT(true);
               const convertedTimetable = res.data.returnVal.timetable.map(
-                (row) =>
-                  row.map((value) =>
+                (row:any) =>
+                  row.map((value:any) =>
                     value === "0" ? "Free" : value === "1" ? "Blocked" : value
                   )
               );
@@ -232,7 +230,7 @@ const AddSectionPage: React.FC = () => {
           return "Failed to generate timetable. Please try again!";
         },
       });
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error:", error.message);
       toast.error("An error occurred while processing the timetable.");
     }
@@ -256,6 +254,7 @@ const AddSectionPage: React.FC = () => {
       const semester=Number(localStorage.getItem("semester"))
       const defaultRooms=form.getFieldValue("Room")
       const timetable= convertTableToString(buttonStatus1)
+      console.log(name,batch,courses,teachers,rooms,semester,timetable)
       const promise= axios.post(
         BACKEND_URL+"/saveTimetable",
         { 
@@ -279,6 +278,7 @@ const AddSectionPage: React.FC = () => {
         loading: "Saving timetable...",
         success: (res) => {
           const statusCode = res.status;
+          console.log(res.data)
           switch (statusCode) {
             case statusCodes.OK:
               form.resetFields();

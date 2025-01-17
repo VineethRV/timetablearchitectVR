@@ -36,6 +36,7 @@ const SectionTabledisplay = () => {
       })
       .then((res) => {
         const status = res.data.status;
+        console.log(res.data.message);
         if (status == statusCodes.OK) {
           setCoreData(res.data.message);
         } else {

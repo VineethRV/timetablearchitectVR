@@ -438,7 +438,7 @@ export async function saveTimetable(
                             return { status: statusCodes.INTERNAL_SERVER_ERROR  };
                         }
                         const tTeacherTT=convertStringToTable(teacherResponse.teacher.timetable)
-                        tTeacherTT[i][j]=tCourse;
+                        tTeacherTT[i][j]=name;
                         teacherResponse.teacher.timetable=convertTableToString(tTeacherTT)
                         const updateteacher=await updateTeachers(JWTtoken,tTeacher,department,teacherResponse.teacher)
                         if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
@@ -473,7 +473,7 @@ export async function saveTimetable(
                               };
                             }
                             const TT=convertStringToTable(existingRoom.timetable)
-                            TT[i][j]=tt[i][j]
+                            TT[i][j]=name
                             await prisma.room.update({
                               where: {
                                 id: existingRoom.id,
@@ -527,6 +527,7 @@ export async function getTimetable(
                     semester: semester,
                   },
                   select: {
+                    id: true,
                     name: true,
                     batch: true,
                     courses: true,
@@ -536,14 +537,7 @@ export async function getTimetable(
                     orgId:true,
                     timeTable:true,
                   },
-                }).then((section) =>
-                    section.map((section) => ({
-                      ...section,
-                      electives: null,
-                        labs: null, // Default value, since it's not queried
-                      defaultRoom: null, // Default value, since it's not queried
-                    }))
-                  );
+                })
               return {
                 status: statusCodes.OK,
                 section: section,
@@ -562,6 +556,40 @@ export async function getTimetable(
             section: null,
           };
     }
+}
+
+export async function deleteSection(
+    JWTtoken: string,
+    id: number
+): Promise<{ status: number }> {
+    try {
+        const { status, user } = await auth.getPosition(JWTtoken);
+        if (user?.orgId == null) {
+            return {
+                status: statusCodes.BAD_REQUEST,
+            };
+        }
+        if (status == statusCodes.OK && user) {
+            const section = await prisma.section.deleteMany({
+                where: {
+                    orgId: user.orgId,
+                    id: id
+                },
+            });
+            return {
+                status: statusCodes.OK,
+            };
+        } else {
+            return {
+                status: status,
+            };
+        }
+    } catch (error) {
+        return {
+            status: statusCodes.INTERNAL_SERVER_ERROR,
+        };
+    }
+
 }
 // export async function suggestLab(
 

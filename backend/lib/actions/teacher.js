@@ -267,25 +267,26 @@ function updateTeachers(JWTtoken_1, originalName_1) {
                 case 4:
                     departments = _c.sent();
                     _c.label = 5;
-                case 5: return [4 /*yield*/, prisma.teacher.update({
-                        where: {
-                            id: teacherExists.id,
-                        },
-                        data: {
-                            name: teacher.name,
-                            initials: teacher.initials,
-                            email: teacher.email,
-                            department: user_2.role == "admin" && teacher.department
-                                ? teacher.department
-                                : user_2.department,
-                            alternateDepartments: {
-                                set: [], // First clear existing connections
-                                connect: departments === null || departments === void 0 ? void 0 : departments.map(function (dept) { return ({ id: dept.id }); }) // Then add new ones
+                case 5:
+                    console.log("Alternate Departments: ", teacher.alternateDepartments);
+                    return [4 /*yield*/, prisma.teacher.update({
+                            where: {
+                                id: teacherExists.id,
                             },
-                            timetable: teacher.timetable,
-                            labtable: teacher.labtable,
-                        },
-                    })];
+                            data: {
+                                name: teacher.name,
+                                initials: teacher.initials,
+                                email: teacher.email,
+                                department: user_2.role == "admin" && teacher.department
+                                    ? teacher.department
+                                    : user_2.department,
+                                alternateDepartments: {
+                                    connect: departments === null || departments === void 0 ? void 0 : departments.map(function (dept) { return ({ id: dept.id }); }) // Then add new ones
+                                },
+                                timetable: teacher.timetable,
+                                labtable: teacher.labtable,
+                            },
+                        })];
                 case 6:
                     _c.sent();
                     return [2 /*return*/, {
