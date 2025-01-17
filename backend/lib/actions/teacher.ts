@@ -194,6 +194,7 @@ export async function updateTeachers(
             }
           });
         }
+        console.log("Alternate Departments: ", teacher.alternateDepartments);
         await prisma.teacher.update({
           where: {
             id: teacherExists.id,
@@ -204,10 +205,10 @@ export async function updateTeachers(
             email: teacher.email,
             department:
               user.role == "admin" && teacher.department
-                ? teacher.department
-                : user.department,
+          ? teacher.department
+          : user.department,
             alternateDepartments: {
-              connect: departments?.map(dept => ({ id: dept.id }))
+              connect: departments?.map(dept => ({ id: dept.id })) // Then add new ones
             },
             timetable: teacher.timetable,
             labtable: teacher.labtable,

@@ -141,4 +141,5 @@ model Departments{
   name String
   orgId Int?
   teachers Teacher[] @relation("deparmentTeachers")
+  @@unique([name, orgId])
 }

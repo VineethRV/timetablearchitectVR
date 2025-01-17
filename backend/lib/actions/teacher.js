@@ -232,6 +232,8 @@ function updateTeachers(JWTtoken_1, originalName_1) {
                     return [4 /*yield*/, prisma.teacher.findFirst({
                             where: {
                                 name: originalName,
+                                // department:
+                                //   user.role == "admin" ? originalDepartment : user.department,
                                 orgId: user_2.orgId,
                             },
                         })];
@@ -277,7 +279,8 @@ function updateTeachers(JWTtoken_1, originalName_1) {
                                 ? teacher.department
                                 : user_2.department,
                             alternateDepartments: {
-                                connect: departments === null || departments === void 0 ? void 0 : departments.map(function (dept) { return ({ id: dept.id }); })
+                                set: [], // First clear existing connections
+                                connect: departments === null || departments === void 0 ? void 0 : departments.map(function (dept) { return ({ id: dept.id }); }) // Then add new ones
                             },
                             timetable: teacher.timetable,
                             labtable: teacher.labtable,
