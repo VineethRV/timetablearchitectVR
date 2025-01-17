@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { TbTrash } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { Elective } from "../../types/main";
-
+import { stringToTable,convertTableToString } from "../../utils/main";
 interface Ele
 {
   key: string;name: string; courses: string; rooms: string; teachers: string;
@@ -63,12 +63,13 @@ const ElectivesTable = ({
   };
 
   // Function to delete a single Elective
-  function deleteSingleElective(Elective: Elective) {
-    const Electives = [Elective];
+  function deleteSingleElective(record: Ele[]) {
+    console.log("rec",record)
     const res = axios
       .delete(BACKEND_URL + "/electives", {
         data: {
-          Electives,
+          name: record[0].key,
+          semester: Number(localStorage.getItem("semester")),
         },
         headers: {
           Authorization: localStorage.getItem("token"),
@@ -76,10 +77,88 @@ const ElectivesTable = ({
       })
       .then((res) => {
         const status = res.data.status;
-
         switch (status) {
           case statusCodes.OK:
-            toast.success("Elective deleted successfully");
+            record.forEach(async (record) => {
+            const teachers=record.teachers.split(",");
+            const rooms=record.rooms.split(",");
+            teachers.forEach(async teacher=>{
+              const resT=await axios.post(
+                BACKEND_URL+"/teachers/peek",{
+                  name:teacher,
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+              const teach=resT.data.message
+                const teacherTT = stringToTable(resT.data.message.timetable);
+                teacherTT.forEach((day, i) => {
+                  day.forEach((hour, j) => {
+                    if (hour == record.courses) {
+                      teacherTT[i][j] = "Free";
+                    }
+                  });
+                });
+              teach.timetable=convertTableToString(teacherTT);
+              axios.put(
+                BACKEND_URL+"/teachers",{
+                  originalName:teacher,
+                  teacher:teach
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+            })
+            rooms.forEach(async room=>{
+              const resR=await axios.post(
+                BACKEND_URL+"/rooms/peek",{
+                  name:room,
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+              const roomfetch=resR.data.message
+                const roomTT = stringToTable(resR.data.message.timetable);
+                roomTT.forEach((day, i) => {
+                  day.forEach((hour, j) => {
+                    if (hour == record.courses) {
+                      roomTT[i][j] = "Free";
+                    }
+                  });
+                });
+              roomfetch.timetable=convertTableToString(roomTT);
+              console.log(roomfetch)
+              axios.put(
+                BACKEND_URL+"/rooms",{
+                  originalName:room,
+                  room:roomfetch
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+            })
+            setElectivesData((ele) => {
+              const newEles = ele.filter((t) => {
+                  if (record.key == t.name) return false;
+                return true;
+              });
+              return newEles;
+            });
+          },)
+            //setSelectedElectives([]);
+            toast.success("Elective Cluster deleted successfully");
             break;
           case statusCodes.BAD_REQUEST:
             toast.error("Invalid request");
@@ -90,9 +169,9 @@ const ElectivesTable = ({
       });
 
     toast.promise(res, {
-      loading: "Deleting the Elective",
+      loading: "Deleting the Electvie Cluster",
     });
-  }
+   }
 
   // Columns configuration for the table
   const columns: TableColumnsType<Ele> = [
@@ -205,45 +284,44 @@ const ElectivesTable = ({
       },
     },
     {
-       title: "",
-       render: (text:any,record: any, index: number) => {
-         if (text.name !== "" || index === 0) {
-           let rowSpan = 1;
-           for (let i = index + 1; i < formattedElectiveData.length; i++) {
-             if (formattedElectiveData[i].name === "") {
-               rowSpan++;
-             } else {
-               break;
-             }
-           }
-           return {
-             children: (
-               <div className="flex space-x-2">
-                 <Tooltip title="Delete">
-                   <Button
-                     className="bg-red-400"
-                     type="primary"
-                     shape="circle"
-                     onClick={() => deleteSingleElective(record)}
-                     icon={<MdDelete />}
-                   />
-                 </Tooltip>
-               </div>
-             ),
-             props: {
-               rowSpan,
-             },
-           };
-         } else {
-           return {
-             children: null,
-             props: {
-               rowSpan: 0, // Merge this row with the previous one
-             },
-           };
-         }
-       },
-     }
+      title: "",
+      render: (text: any, record: any, index: number) => {
+        if (text.name !== "" || index === 0) {
+          let rowSpan = 1;
+          const mergedRecords = [record];
+          for (let i = index + 1; i < formattedElectiveData.length; i++) {
+            if (formattedElectiveData[i].name === "") {
+              rowSpan++;
+              mergedRecords.push(formattedElectiveData[i]);
+            } else {
+              break;
+            }
+          }
+    
+          return {
+            children: (
+              <Button
+              shape="circle"
+              icon={<MdDelete />}
+              className="bg-red-400 "
+              type="primary"
+                onClick={() => deleteSingleElective(mergedRecords)}
+              >
+              </Button>
+            ),
+            props: {
+              rowSpan,
+            },
+          };
+        } else {
+          return {
+            props: {
+              rowSpan: 0,
+            },
+          };
+        }
+      },
+    }
   ];
 
   // Function to handle deleting multiple Electives

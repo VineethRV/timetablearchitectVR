@@ -132,6 +132,7 @@ app.post("/api/teachers", async (req, res) => {
       timetable,
       labtable
     );
+    console.log(result.teacher)
     res.status(200).json({ status: result.status, message: result.teacher });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
@@ -560,6 +561,7 @@ app.delete("/api/electives", async (req, res) => {
       semester,
       department
     );
+    console.log(name,semester)
     res.status(200).json({
       status: result.status,
       message: "Elective deleted successfully",
