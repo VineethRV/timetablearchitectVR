@@ -3,21 +3,7 @@ import { toast } from "sonner";
 import { statusCodes } from "../../../types/statusCodes";
 import { BACKEND_URL } from "../../../../config";
 import axios from "axios";
-import SectionTable from "../../../components/SectionPage/sectiondisplay";
-
-interface Section{
-  name: string;
-  batch : number;
-  courses: string[];
-  teachers: string[];
-  rooms: string[];
-  electives: string|null;
-  labs: string|null;
-  defaultRoom: string|null;
-  semester: number;
-  orgId:number;
-  timeTable:string;
-}
+import SectionTable, { Section } from "../../../components/SectionPage/sectiondisplay";
 
 const SectionTabledisplay = () => {
  const [coreData, setCoreData] = useState<Section[]>([]);

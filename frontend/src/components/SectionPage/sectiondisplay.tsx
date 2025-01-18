@@ -8,7 +8,7 @@ import { convertTableToString, stringToTable } from "../../utils/main";
 import { toast } from "sonner";
 
 
-interface Section
+export interface Section
 {
   id: number;
     name: string;
