@@ -17,7 +17,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable,recommendCourse } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -132,6 +132,7 @@ app.post("/api/teachers", async (req, res) => {
       timetable,
       labtable
     );
+    console.log(result.teacher)
     res.status(200).json({ status: result.status, message: result.teacher });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
@@ -560,6 +561,7 @@ app.delete("/api/electives", async (req, res) => {
       semester,
       department
     );
+    console.log(name,semester)
     res.status(200).json({
       status: result.status,
       message: "Elective deleted successfully",
@@ -783,6 +785,26 @@ app.get("/api/sections", async (req, res) => {
       parseInt(semester)
     );
     res.status(200).json({ status: result.status, message: result.section });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+//delete section
+app.delete("/api/sections", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { sectionid } = req.body;
+  if (!token || !sectionid) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token and sectionId are required" });
+  }
+
+  try {
+    const result = await deleteSection(token, sectionid);
+    res
+      .status(200)
+      .json({ status: result.status, message: "Section deleted successfully" });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

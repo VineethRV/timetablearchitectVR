@@ -50,7 +50,7 @@ const AddRoomPage: React.FC = () => {
     const dept = admin
       ? form.getFieldValue("department")
       : userDepartment;
-    if (!className|| !lab|| (admin&&dept=="")) {
+    if (!className|| lab==undefined|| (admin&&dept=="")) {
       message.error("Fill all the required Fields");
       return;
     }

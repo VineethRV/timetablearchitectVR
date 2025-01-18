@@ -120,6 +120,7 @@ const AddElectivepage: React.FC = () => {
                   }
                 );
                 const teach=resT.data.message
+                console.log("teach",teach)
                 const teacherTT=stringToTable(resT.data.message.timetable);
                 for(let i=0;i<courseTT.length;i++)
                 {

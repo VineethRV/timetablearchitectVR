@@ -45,7 +45,7 @@ const AddTeacherpage = () => {
     const name = form.getFieldValue("name");
     const initials = form.getFieldValue("initials");
     const email = form.getFieldValue("email");
-    const altdept=form.getFieldValue("altDepartment")
+    const altdept=form.getFieldValue("altDepartment")||null;
     const department = admin
       ? form.getFieldValue("department")
       : userDepartment;
@@ -76,10 +76,12 @@ const AddTeacherpage = () => {
       loading: "Creating teacher...",
       success: (res) => {
         const statusCode = res.status;
+        console.log("message is",res.data.message);
         console.log(statusCode);
         switch (statusCode) {
           case statusCodes.OK:
             clearFields();
+            
             return "Teacher added successfully!";
           case statusCodes.BAD_REQUEST:
             return "Teacher already exists!";
