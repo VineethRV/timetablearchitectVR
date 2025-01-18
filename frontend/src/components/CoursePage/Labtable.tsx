@@ -19,6 +19,7 @@ interface labs{
     batches: string;
     teachers: string;
     rooms: string;
+    semester: string;
     department: string | null;
 }
 
@@ -31,11 +32,11 @@ const LabsTable = ({
 }) => {
   const navigate = useNavigate();
   const [_searchText, _setSearchText] = useState('');
-  const handleEditClick = (name: string, department: string) => {
+  const handleEditClick = (name: string, department: string,semester:string) => {
     navigate(
       `/dashboard/courses/labs/edit/${encodeURIComponent(
         name
-      )}/${encodeURIComponent(department)}`
+      )}/${encodeURIComponent(department)}/${encodeURIComponent(semester)}`
     );
   };
 
@@ -48,7 +49,7 @@ const LabsTable = ({
       const batches = lab.batches?.split(";") || [];
       const rooms = lab.rooms?.split(";") || [];
       const teachers = lab.teachers?.split(";") || [];
-      
+      const semester=lab.semester
       const maxLength = Math.max(batches.length, rooms.length, teachers.length);
       
       // Create rows for each batch, teacher, and room pairing
@@ -58,6 +59,7 @@ const LabsTable = ({
         batches: batches[index]?.trim() || "",
         teachers: teachers[index]?.trim() || "",
         rooms: rooms[index]?.trim() || "",
+        semester:semester,
         department:lab.department
       }));
     });
@@ -278,7 +280,7 @@ const LabsTable = ({
               <Tooltip title="Edit">
           <Button
             type="primary"
-            onClick={() => handleEditClick(record.name,record.department)}
+            onClick={() => handleEditClick(record.name,record.department,record.semester)}
             shape="circle"
             icon={<MdEdit />}
           />
