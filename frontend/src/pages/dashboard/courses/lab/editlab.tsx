@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import SwapTimetable from "../../../../components/TimetableComponents/SwapTimetable";
 import UneditableTimeTable from "../../../../components/TimetableComponents/uneditableTimetable";
 import { statusCodes } from "../../../../types/statusCodes";
+import { Lab } from "../../../../types/main";
 
 const EditLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -103,7 +104,7 @@ const EditLabPage: React.FC = () => {
     fetchRooms(setRoomOptions);
     fetchElectives(setElectiveOptions);
     setTableData(tableData);
-  }, [tableData,oldname, olddepartment,oldsemester]);
+  }, [oldname, olddepartment,oldsemester]);
 
   const handleModalSubmit = () => {
     const currentBatches = form.getFieldValue("numberOfBatches");
@@ -316,18 +317,23 @@ const EditLabPage: React.FC = () => {
     }
     const name=form.getFieldValue("batchSetName");
     const { courseSets, teachers, rooms } = getCourseData(tableData);
-    const response = await axios.post(
+    const labo:Lab={
+      name:name,
+      department: olddepartment?olddepartment:null,
+      semester: Number(localStorage.getItem("semester")),
+      batches: courseSets.join(";"),
+      teachers: teachers.map((teacher) => teacher.join(",")).join(";"),
+      rooms: rooms.map((room) => room.join(",")).join(";"),
+      timetable: convertTableToString(buttonStatus1),
+    }
+    console.log(oldname,olddepartment,oldsemester,labo)
+    const response = await axios.put(
       BACKEND_URL + "/labs",
       {
-        name: name,
-        semester: Number(localStorage.getItem("semester")),
-        batches: courseSets,
-        teachers: teachers,
-        rooms: rooms,
-        timetables: buttonStatus1.map(row =>
-          row.map(value => value === "Free" ? "0" : value)
-        ),
-        department: department,
+        originalName: oldname,
+        originalSemester: Number(oldsemester),
+        lab:labo,
+        originalDepartment: olddepartment,
       },
       {
         headers: {
@@ -355,10 +361,16 @@ const EditLabPage: React.FC = () => {
           const teach=resT.data.message
           const teacherTT=stringToTable(resT.data.message.timetable);
           const teacherlabTT=stringToTable(resT.data.message.labtable)
+          console.log("cs",courseSet)
           for(let j=0;j<buttonStatus1.length;j++)
             {
               for(let k=0;k<buttonStatus1[j].length;k++)
               {
+                if(teacherlabTT[j][k]==oldname)
+                {
+                  teacherlabTT[j][k]="Free";
+                  teacherTT[j][k]="Free";
+                }
                 if(buttonStatus1[j][k]==courseSet)
                 {
                   teacherlabTT[j][k]=name;
@@ -397,6 +409,10 @@ const EditLabPage: React.FC = () => {
           {
             for(let k=0;k<buttonStatus1[j].length;k++)
             {
+              if(roomTT[j][k]==oldname)
+              {
+                  roomTT[j][k]="Free";
+              }
               if(buttonStatus1[j][k]==courseSet)
               {
                   roomTT[j][k]=name;
@@ -456,8 +472,31 @@ const EditLabPage: React.FC = () => {
 
              form.setFieldsValue({
               batchSetName: res.data.message.name,
-              numberOfBatches: (res.data.message.batches.split(";"))[0].split(",").length,
+              numberOfBatches: (res.data.message.batches.split(";"))[0].split("/").length,
             });
+            console.log(res.data.message.teachers)
+            const coursesSet = res.data.message.batches.split(";");
+            const courses = coursesSet.map((course: string) => course.split("/"));
+            const teachers = res.data.message.teachers.split(";").map((teacher: string) => teacher.split(","));
+            const rooms = res.data.message.rooms.split(";").map((room: string) => room.split(","));
+            
+            console.log(coursesSet, courses, teachers, rooms);
+            
+            const labs: Labs[] = [];
+            coursesSet.forEach((batch: string, index: number) => {
+              courses[index].forEach((course: string, courseIndex: number) => {
+                labs.push({
+                  key: `${courseIndex}`,
+                  courseSet: batch,
+                  course: course,
+                  teachers: teachers[index],
+                  rooms: rooms[index],
+                });
+              });
+            });
+            
+            console.log("labs", labs);
+            setTableData(labs);
             toast.success("Lab details fetched successfully!");
             break;
           default:

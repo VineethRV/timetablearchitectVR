@@ -608,6 +608,7 @@ app.put("/api/labs", async (req, res) => {
     lab: labData,
     originalDepartment,
   } = req.body;
+  console.log(originalName, originalSemester, labData, originalDepartment);
   if (!token || !originalName || originalSemester === undefined || !labData) {
     return res.status(200).json({
       status: 400,
