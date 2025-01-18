@@ -12,7 +12,7 @@ export const FileDownload: React.FC<FileDownloadProps> = ({
   fileUrl,
 }) => {
   const file_url = `${WEBSITE_URL}/templates/${fileName}`
-
+  console.log(fileUrl)
   return (
     <a
       href={file_url}

@@ -23,7 +23,7 @@ const ElectivesTable = ({
   ElectiveData: Elective[];
   setElectivesData: React.Dispatch<React.SetStateAction<Elective[]>>;
 }) => {
-  const navigate = useNavigate();
+  const _navigate = useNavigate();
 
   // const handleEditClick = (name: string, department: string) => {
   //   navigate(

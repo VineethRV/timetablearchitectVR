@@ -3,8 +3,7 @@ import { Table, Button } from "antd";
 import { toast } from "sonner";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
-import { convertTableToString, stringToTable } from "../../utils/main";
-import { button, col } from "framer-motion/client";
+import {  stringToTable } from "../../utils/main";
 
 // Define the type for the timetable props
 interface TimetableProps {

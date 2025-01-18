@@ -176,6 +176,7 @@ function createTeachers(JWTtoken_1, name_1) {
                             },
                             data: {
                                 alternateDepartments: {
+                                    set: [], // Clear existing connections
                                     connect: departments.map(function (dept) { return ({ id: dept.id }); })
                                 }
                             }

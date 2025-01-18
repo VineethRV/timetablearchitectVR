@@ -25,10 +25,10 @@ import { statusCodes } from "../../../../types/statusCodes";
 
 const AddLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [department, setDepartment] = useState(fetchdept());
+  const [department, _setDepartment] = useState(fetchdept());
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
-  const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
+  const [_numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
   const [formFields, setFormFields] = useState<Labs[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
@@ -42,7 +42,7 @@ const AddLabPage: React.FC = () => {
   );
   const [tableData, setTableData] = useState<Labs[]>([]);
   const [editingRecord, setEditingRecord] = useState<Labs[] | null>(null);
-  const [timetableScore, setTimetableScore] = useState(
+  const [_timetableScore, setTimetableScore] = useState(
     weekdays.map(() => timeslots.map(() => 0))
   );
 
@@ -391,7 +391,7 @@ const AddLabPage: React.FC = () => {
             }
           }
         roomfetch.timetable=convertTableToString(roomTT);
-        const resRR=await axios.put(
+        const _resRR=await axios.put(
           BACKEND_URL+"/rooms",{
             originalName:room,
             originalDepartment:department,

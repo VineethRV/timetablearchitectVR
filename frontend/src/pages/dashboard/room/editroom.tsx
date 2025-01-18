@@ -28,7 +28,7 @@ const EditRoomPage: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [admin, setAdmin] = useState<Boolean>(false);
-  const [userDepartment, setDepartment] = useState("");
+  const [_userDepartment, setDepartment] = useState("");
   const { oldname, olddepartment } = useParams();
 
   const [buttonStatus, setButtonStatus] = useState(

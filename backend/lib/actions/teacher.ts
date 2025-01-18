@@ -69,7 +69,8 @@ export async function createTeachers(
           orgId: user.orgId,
         };
         let teacherCreated=await prisma.teacher.create({
-          data: {name: name,
+          data: {
+            name: name,
             initials: initials,
             email: email,
             department: department
@@ -83,7 +84,8 @@ export async function createTeachers(
             labtable: labtable
               ? convertTableToString(labtable)
               : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
-            orgId: user.orgId,},
+            orgId: user.orgId
+          },
         });
         if(department){
           if(alternateDepartments){
@@ -109,16 +111,17 @@ export async function createTeachers(
               orgId: user.orgId
             }
           });
-          await prisma.teacher.update({
+            await prisma.teacher.update({
             where: {
               id: teacherCreated.id
             },
             data: {
               alternateDepartments: {
-                connect: departments.map(dept => ({ id: dept.id }))
+              set: [], // Clear existing connections
+              connect: departments.map(dept => ({ id: dept.id }))
               }
             }
-          });
+            });
         }
         return {
           status: statusCodes.CREATED,
@@ -165,8 +168,6 @@ export async function updateTeachers(
         const teacherExists = await prisma.teacher.findFirst({
           where: {
             name: originalName,
-            // department:
-            //   user.role == "admin" ? originalDepartment : user.department,
             orgId: user.orgId,
           },
         });
@@ -228,7 +229,8 @@ export async function updateTeachers(
       status: status,
       teacher: null,
     };
-  } catch {
+  } 
+  catch {
     return {
       status: statusCodes.INTERNAL_SERVER_ERROR,
       teacher: null,
@@ -304,7 +306,8 @@ export async function createManyTeachers(
       status: statusCodes.FORBIDDEN,
       teachers: null,
     };
-  } catch {
+  }
+  catch {
     return {
       status: statusCodes.INTERNAL_SERVER_ERROR,
       teachers: null,

@@ -30,7 +30,7 @@ const LabsTable = ({
   setLabsData: React.Dispatch<React.SetStateAction<Lab[]>>;
 }) => {
   const navigate = useNavigate();
-  const [searchText, setSearchText] = useState('');
+  const [_searchText, _setSearchText] = useState('');
   const handleEditClick = (name: string, department: string) => {
     navigate(
       `/dashboard/courses/labs/edit/${encodeURIComponent(
@@ -44,7 +44,7 @@ const LabsTable = ({
   // Format lab data to split values by ';' and display each in separate rows
   const formatLabData = (labData: Lab[]) => {
     return labData.flatMap((lab) => {
-      const names = lab.name.split(";");
+      const _names = lab.name.split(";");
       const batches = lab.batches?.split(";") || [];
       const rooms = lab.rooms?.split(";") || [];
       const teachers = lab.teachers?.split(";") || [];

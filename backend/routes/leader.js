@@ -47,6 +47,13 @@ function generateInviteCode() {
 
 // Approve organisation endpoint
 leaderRouter.post("/approve_org", async (req, res) => {
+  if (!req.body) {
+    return res.json({
+      status: statusCodes.BAD_REQUEST,
+      message: "Request body is missing",
+    });
+  }
+  console.log(req.body);
   const { organisationId, organisationName } = req.body;
 
   // Ensure at least one filter (ID or name) is provided

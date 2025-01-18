@@ -24,7 +24,7 @@ interface Section
   timeTable:string;
 }
 
-const rowSelection: TableProps<Section>["rowSelection"] = {
+const _rowSelection: TableProps<Section>["rowSelection"] = {
   onChange: (selectedRowKeys: React.Key[], selectedRows: Section[]) => {
     console.log(
       `selectedRowKeys: ${selectedRowKeys}`,

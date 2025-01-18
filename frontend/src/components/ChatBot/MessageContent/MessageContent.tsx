@@ -28,7 +28,7 @@ export const MessageContent: React.FC<{ message: Message }> = ({ message }) => {
     case 'instructions':
       return (
         <div>
-          <Instructions title={message.title} steps={message.steps} />
+          {/* <Instructions title={message.title} steps={message.steps} /> */}
         </div>
       );
   }
