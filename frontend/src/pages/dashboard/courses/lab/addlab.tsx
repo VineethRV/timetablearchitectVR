@@ -301,11 +301,12 @@ const AddLabPage: React.FC = () => {
       navigate("/signIn");
       return;
     }
+    const name=form.getFieldValue("batchSetName");
     const { courseSets, teachers, rooms } = getCourseData(tableData);
     const response = await axios.post(
       BACKEND_URL + "/labs",
       {
-        name: form.getFieldValue("batchSetName"),
+        name: name,
         semester: Number(localStorage.getItem("semester")),
         batches: courseSets,
         teachers: teachers,
@@ -325,7 +326,6 @@ const AddLabPage: React.FC = () => {
       for(let i=0;i<tableData.length;i++)
       {
         const courseSet=tableData[i].courseSet;
-        const course=tableData[i].course;
         const teachers=tableData[i].teachers;
         teachers.forEach(async teacher=>{
           const resT=await axios.post(
@@ -348,8 +348,8 @@ const AddLabPage: React.FC = () => {
               {
                 if(buttonStatus1[j][k]==courseSet)
                 {
-                  teacherlabTT[j][k]=course
-                    teacherTT[j][k]=course;
+                  teacherlabTT[j][k]=name;
+                    teacherTT[j][k]=name;
                 }
               }
             }
@@ -386,7 +386,7 @@ const AddLabPage: React.FC = () => {
             {
               if(buttonStatus1[j][k]==courseSet)
               {
-                  roomTT[j][k]=course;
+                  roomTT[j][k]=name;
               }
             }
           }

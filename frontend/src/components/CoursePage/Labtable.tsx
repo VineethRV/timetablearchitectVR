@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { TbTrash } from "react-icons/tb";
 import { CiSearch } from "react-icons/ci";
 import { Lab } from "../../types/main";
+import { convertTableToString, stringToTable } from "../../utils/main";
 
 interface labs{
     key: string;
@@ -70,9 +71,7 @@ const LabsTable = ({
   };
 
   // Function to delete a single lab
-  function deleteSingleLab(Lab: labs) {
-    console.log(Lab)
-    const Labs = [Lab];
+  function deleteSingleLab(Labs: labs[]) {
     console.log(Labs)
     const res = axios
       .delete(BACKEND_URL + "/labs", {
@@ -85,13 +84,92 @@ const LabsTable = ({
       })
       .then((res) => {
         const status = res.data.status;
-        console.log(res.data)
         switch (status) {
           case statusCodes.OK:
+
+          Labs.forEach(async (record) => {
+            const teachers=record.teachers.split(",");
+            console.log("teachers",teachers)
+            console.log("record",record)
+            const rooms=record.rooms.split(",");
+            console.log("rooms",rooms)
+            teachers.forEach(async teacher=>{
+              const resT=await axios.post(
+                BACKEND_URL+"/teachers/peek",{
+                  name:teacher,
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+              const teach=resT.data.message
+              console.log("teach",teach)
+                const teacherTT = stringToTable(resT.data.message.timetable);
+                const teacherlabTT = stringToTable(resT.data.message.labtable);
+                teacherTT.forEach((day, i) => {
+                  day.forEach((hour, j) => {
+                    if (hour == record.key) {
+                      teacherTT[i][j] = "Free";
+                      teacherlabTT[i][j] = "Free";
+                    }
+                  });
+                });
+              teach.timetable=convertTableToString(teacherTT);
+              teach.labtable=convertTableToString(teacherlabTT);
+              console.log("after",teacherTT)
+              axios.put(
+                BACKEND_URL+"/teachers",{
+                  originalName:teacher,
+                  teacher:teach
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+            })
+            rooms.forEach(async room=>{
+              const resR=await axios.post(
+                BACKEND_URL+"/rooms/peek",{
+                  name:room,
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+              const roomfetch=resR.data.message
+                const roomTT = stringToTable(resR.data.message.timetable);
+                roomTT.forEach((day, i) => {
+                  day.forEach((hour, j) => {
+                    if (hour == record.key) {
+                      roomTT[i][j] = "Free";
+                    }
+                  });
+                });
+              roomfetch.timetable=convertTableToString(roomTT);
+              console.log(roomfetch)
+              axios.put(
+                BACKEND_URL+"/rooms",{
+                  originalName:room,
+                  room:roomfetch
+                },        
+                {
+                  headers: {
+                    authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+            })
+          });
             setLabsData((labs) => {
               const newRooms = labs.filter((t) => {
-                for (let i = 0; i < selectedLabs.length; i++) {
-                  if (selectedLabs[i].name == t.name) return false;
+                for (let i = 0; i < Labs.length; i++) {
+                  if (Labs[i].key == t.name) return false;
                 }
                 return true;
               });
@@ -226,9 +304,11 @@ const LabsTable = ({
     render: (text:any,record: any, index: number) => {
       if (text.name !== "" || index === 0) {
         let rowSpan = 1;
+        const mergedRecords = [record];
         for (let i = index + 1; i < formattedLabData.length; i++) {
           if (formattedLabData[i].name === "") {
             rowSpan++;
+            mergedRecords.push(formattedLabData[i]);
           } else {
             break;
           }
@@ -241,7 +321,7 @@ const LabsTable = ({
                   className="bg-red-400"
                   type="primary"
                   shape="circle"
-                  onClick={() => deleteSingleLab(record)}
+                  onClick={() => deleteSingleLab(mergedRecords)}
                   icon={<MdDelete />}
                 />
               </Tooltip>
