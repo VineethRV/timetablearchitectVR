@@ -21,7 +21,7 @@ interface Section{
 
 const SectionTabledisplay = () => {
  const [coreData, setCoreData] = useState<Section[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
 

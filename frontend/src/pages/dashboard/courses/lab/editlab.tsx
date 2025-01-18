@@ -59,7 +59,7 @@ const AddLabPage: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [form] = Form.useForm();
   const [form1] = Form.useForm();
-  const [numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
+  const [_numberOfBatches, setNumberOfBatches] = useState(1); // Dynamic batches
   const [formFields, setFormFields] = useState<BatchField[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
@@ -116,7 +116,7 @@ const AddLabPage: React.FC = () => {
       message.error("Error fetching teacher data.");
     }
   };
-  const fetchElectives = async () => {
+  const _fetchElectives = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -416,7 +416,7 @@ const AddLabPage: React.FC = () => {
               </Modal>
             </div>
           </label>
-          <LabAddTable
+          {/* <LabAddTable
             data={tableData.map((batch, index) => ({
               key: `${index}`,
               courseSet: batch.courseSet,
@@ -424,7 +424,7 @@ const AddLabPage: React.FC = () => {
               teachers: [batch.teacher],
               rooms: [batch.room],
             }))}
-          />
+          /> */}
           <br />
           <Form.Item label="Electives and Common time courses" className="w-96">
             <Select

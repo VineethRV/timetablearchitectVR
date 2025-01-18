@@ -11,7 +11,7 @@ import CoreTable, { CoreType } from "../../../../components/CoursePage/coreTable
 function page() {
   const [coreData, setCoreData] = useState<CoreType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [department, setDepartment] = useState(fetchdept());
+  const [department, _setDepartment] = useState(fetchdept());
   useEffect(() => {
 
     axios

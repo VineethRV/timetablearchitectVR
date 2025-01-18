@@ -26,7 +26,7 @@ const EditTeacherpage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [admin, setAdmin] = useState<Boolean>(false);
-  const [userDepartment, setDepartment] = useState("");
+  const [_userDepartment, setDepartment] = useState("");
   const [lab, setLab] = useState("");
   const { oldname, olddepartment } = useParams();
   const clearFields = () => {
