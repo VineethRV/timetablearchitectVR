@@ -166,7 +166,6 @@ const EditLabPage: React.FC = () => {
           );
           if (res.status === 200) {
             const eleTT = stringToTable(res.data.message.timetable);
-            console.log(eleTT);
     
             for (let i = 0; i < eleTT.length; i++) {
               for (let j = 0; j < eleTT[i].length; j++) {
@@ -206,7 +205,6 @@ const EditLabPage: React.FC = () => {
       toast.promise(promise, {
         loading: "Generating lab timetable...",
         success: (response) => {
-          console.log(response.status, response.data);
           if (response.data.status === 200) {
         SetshowTT(true);
         setButtonStatus1(stringToTable(response.data.timetable))
@@ -243,8 +241,6 @@ const EditLabPage: React.FC = () => {
           row.split(",").map((score: string) => parseInt(score, 10) * 100)
         );
       setTimetableScore(parsedScores);
-
-      console.log(response.status, response.data);
       if (response.data.status === 200) {
         message.success("Timetable recommendations fetched successfully!");
         SetshowTT(true);
@@ -309,12 +305,14 @@ const EditLabPage: React.FC = () => {
 
   const handleSubmit = async () => {
     try{
+      console.log(1)
     const token = localStorage.getItem("token");
     if (!token) {
       message.error("Authorization token is missing!");
       navigate("/signIn");
       return;
     }
+    console.log(2)
     const name=form.getFieldValue("batchSetName");
     const { courseSets, teachers, rooms } = getCourseData(tableData);
     const labo:Lab={
@@ -326,6 +324,7 @@ const EditLabPage: React.FC = () => {
       rooms: rooms.map((room) => room.join(",")).join(";"),
       timetable: convertTableToString(buttonStatus1),
     }
+    console.log(3)
     console.log(oldname,olddepartment,oldsemester,labo)
     const response = await axios.put(
       BACKEND_URL + "/labs",
@@ -341,7 +340,8 @@ const EditLabPage: React.FC = () => {
         },
       }
     );
-    if (response.data.status === 201) {
+    console.log(4,response.data)
+    if (response.data.status === 200) {
       for(let i=0;i<tableData.length;i++)
       {
         const courseSet=tableData[i].courseSet;
@@ -362,6 +362,8 @@ const EditLabPage: React.FC = () => {
           const teacherTT=stringToTable(resT.data.message.timetable);
           const teacherlabTT=stringToTable(resT.data.message.labtable)
           console.log("cs",courseSet)
+          console.log("old",oldname)
+          console.log("teacherlabTT",teacherlabTT)
           for(let j=0;j<buttonStatus1.length;j++)
             {
               for(let k=0;k<buttonStatus1[j].length;k++)
@@ -461,7 +463,6 @@ const EditLabPage: React.FC = () => {
       )
       .then((res) => {
         const status = res.data.status;
-        console.log("response",res.data);
         switch (status) {
           case statusCodes.OK:
             const timetableString = res.data.message.timetable
@@ -474,14 +475,10 @@ const EditLabPage: React.FC = () => {
               batchSetName: res.data.message.name,
               numberOfBatches: (res.data.message.batches.split(";"))[0].split("/").length,
             });
-            console.log(res.data.message.teachers)
             const coursesSet = res.data.message.batches.split(";");
             const courses = coursesSet.map((course: string) => course.split("/"));
             const teachers = res.data.message.teachers.split(";").map((teacher: string) => teacher.split(","));
             const rooms = res.data.message.rooms.split(";").map((room: string) => room.split(","));
-            
-            console.log(coursesSet, courses, teachers, rooms);
-            
             const labs: Labs[] = [];
             coursesSet.forEach((batch: string, index: number) => {
               courses[index].forEach((course: string, courseIndex: number) => {
@@ -494,8 +491,6 @@ const EditLabPage: React.FC = () => {
                 });
               });
             });
-            
-            console.log("labs", labs);
             setTableData(labs);
             toast.success("Lab details fetched successfully!");
             break;
@@ -686,7 +681,6 @@ const EditLabPage: React.FC = () => {
                   `teacher-${index}`,
                   records[index].teachers
                 );
-                console.log("ehfd",records[index].rooms[0])
                 form1.setFieldValue(`room-${index}`, records[index].rooms[0]);
                 handleOpenModal();
               }
