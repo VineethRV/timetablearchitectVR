@@ -1,2 +1,2 @@
-export const BACKEND_URL = "https://ttabackend-production.up.railway.app/api"
+export const BACKEND_URL = "http://localhost:3000/api"
 export const WEBSITE_URL = "http://localhost:5173"

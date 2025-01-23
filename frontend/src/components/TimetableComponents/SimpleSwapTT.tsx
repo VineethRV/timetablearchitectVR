@@ -48,7 +48,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
         setSelectedSlot({ rowIndex, colIndex });
         const selectedIndex = courses.indexOf(buttonStatus[rowIndex][colIndex]);
         let teacher = teachers[selectedIndex];
-        let room = rooms[selectedIndex];
+        let room = stringToTable(roomTT)[rowIndex][colIndex];
         console.log("course", buttonStatus[rowIndex][colIndex]);
         console.log("teacher", teacher);
         console.log("room", room);
@@ -60,7 +60,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             BACKEND_URL + "/recommendCourse",
             {
               teacher: teacher,
-              room: room == "-" ? null : room,
+              room: room == "0" ? null : room,
               blocks: convertTableToString(buttonStatus),
             },
             {
