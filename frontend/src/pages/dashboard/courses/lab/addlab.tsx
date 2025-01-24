@@ -250,7 +250,6 @@ const AddLabPage: React.FC = () => {
     tableData: Labs[]
   ): { courseSets: string[]; teachers: string[][]; rooms: string[][] } => {
     // Reduce the tableData into a single record
-    console.log(tableData);
     const courseData = tableData.reduce(
       (lab, item) => {
         const { courseSet, teachers, rooms } = item;
@@ -263,11 +262,9 @@ const AddLabPage: React.FC = () => {
         }
         const teacherList: string[] = [];
         teachers.forEach((teacher) => {
-          console.log("teacher",teacher);
           teacher.split(",").forEach((t) => {
             teacherList.push(t.trim());
           });
-          console.log(teacherList)
         });
         lab.teachers[courseSet].push(...teacherList);
         // Add rooms for this courseSet
@@ -275,7 +272,7 @@ const AddLabPage: React.FC = () => {
           lab.rooms[courseSet] = [];
         }
         lab.rooms[courseSet].push(...rooms);
-        console.log("lab",lab);
+
         return lab;
       },
       {
@@ -296,128 +293,198 @@ const AddLabPage: React.FC = () => {
     };
   };
 
-  const handleSubmit = async () => {
-    try{
-    const token = localStorage.getItem("token");
-    if (!token) {
-      message.error("Authorization token is missing!");
-      navigate("/signIn");
-      return;
-    }
-    const name=form.getFieldValue("batchSetName");
-    const { courseSets, teachers, rooms } = getCourseData(tableData);
-    const response = await axios.post(
-      BACKEND_URL + "/labs",
-      {
-        name: name,
-        semester: Number(localStorage.getItem("semester")),
-        batches: courseSets,
-        teachers: teachers,
-        rooms: rooms,
-        timetables: buttonStatus1.map(row =>
-          row.map(value => value === "Free" ? "0" : value)
-        ),
-        department: department,
+  const getCourseDataF = (
+    tableData: Labs[]
+  ): { courseSets: string[]; teachers: string; rooms: string[][] } => {
+    const courseData = tableData.reduce(
+      (lab, item) => {
+        const { courseSet, teachers, rooms } = item;
+  
+        // Ensure entries exist for this courseSet
+        if (!lab.courseSets.includes(courseSet)) {
+          lab.courseSets.push(courseSet);
+        }
+        if (!lab.rooms[courseSet]) {
+          lab.rooms[courseSet] = [];
+        }
+        if (!lab.teachers[courseSet]) {
+          lab.teachers[courseSet] = "";
+        }
+
+        const teacherList=teachers.join(",");
+        if(lab.teachers[courseSet].length>0){
+          lab.teachers[courseSet]=[lab.teachers[courseSet],teacherList].join("/");
+        }
+        else
+          lab.teachers[courseSet]=teacherList;
+
+        lab.rooms[courseSet].push(...rooms);
+        console.log("lab",lab);
+        return lab;
       },
       {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
+        courseSets: [] as string[], // List of unique courseSets
+        teachers: {} as Record<string,string>, // Teachers grouped by courseSet
+        rooms: {} as Record<string, string[]>, // Rooms grouped by courseSet
       }
     );
-    if (response.data.status === 201) {
-      for(let i=0;i<tableData.length;i++)
-      {
-        const courseSet=tableData[i].courseSet;
-        const teachers=tableData[i].teachers;
-        teachers.forEach(async teacher=>{
-          const resT=await axios.post(
-            BACKEND_URL+"/teachers/peek",{
-              name:teacher,
-              department: department
-            },        
-            {
-              headers: {
-                authorization: localStorage.getItem("token"),
-              },
-            }
-          );
-          const teach=resT.data.message
-          const teacherTT=stringToTable(resT.data.message.timetable);
-          const teacherlabTT=stringToTable(resT.data.message.labtable)
-          for(let j=0;j<buttonStatus1.length;j++)
-            {
-              for(let k=0;k<buttonStatus1[j].length;k++)
+    return {
+      courseSets: courseData.courseSets,
+      teachers: Object.values(courseData.teachers).flat().join(";"),
+      rooms: Object.values(courseData.rooms),
+    };
+  };
+
+  const handleSubmit = async () => {
+    try {
+      console.log(1);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        navigate("/signIn");
+        return;
+      }
+  
+      const name = form.getFieldValue("batchSetName");
+      console.log(2);
+      const { courseSets, teachers, rooms } = getCourseDataF(tableData);
+      console.log("This is what I got", courseSets, teachers, rooms);
+      console.log("teachers:", teachers);
+  
+      const teacherlist = teachers.split(";").map((teacher) => teacher.split(/[,/]/));
+      console.log("teacherlist", teacherlist);
+  
+      const response = await axios.post(
+        BACKEND_URL + "/labs",
+        {
+          name: name,
+          semester: Number(localStorage.getItem("semester")),
+          batches: courseSets,
+          teachers: teachers,
+          rooms: rooms,
+          timetables: buttonStatus1.map((row) =>
+            row.map((value) => (value === "Free" ? "0" : value))
+          ),
+          department: department,
+        },
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+      console.log("response", response);
+  
+      if (response.data.status === 201) {
+        for (let i = 0; i < courseSets.length; i++) {
+          const courseSet = courseSets[i];
+  
+          // Update each teacher for the current courseSet sequentially
+          for (const teacher of teacherlist[i]) {
+            console.log("Updating teacher:", teacher, "for courseSet:", courseSet);
+  
+            const resT = await axios.post(
+              BACKEND_URL + "/teachers/peek",
               {
-                if(buttonStatus1[j][k]==courseSet)
-                {
-                  teacherlabTT[j][k]=name;
-                    teacherTT[j][k]=name;
-                }
-              }
-            }
-            teach.labtable=convertTableToString(teacherlabTT);
-            teach.timetable=convertTableToString(teacherTT);
-            axios.put(
-              BACKEND_URL+"/teachers",{
-                originalName:teacher,
-                teacher:teach
-              },        
+                name: teacher,
+                department: department,
+              },
               {
                 headers: {
-                  authorization: localStorage.getItem("token"),
+                  authorization: token,
                 },
               }
             );
-        })
-        const room=tableData[i].rooms[0]
-        const resR=await axios.post(
-          BACKEND_URL+"/rooms/peek",{
-            name:room,
-          },        
-          {
-            headers: {
-              authorization: localStorage.getItem("token"),
-            },
-          }
-        );
-        const roomfetch=resR.data.message
-        const roomTT=stringToTable(resR.data.message.timetable);
-        for(let j=0;j<buttonStatus1.length;j++)
-          {
-            for(let k=0;k<buttonStatus1[j].length;k++)
-            {
-              if(buttonStatus1[j][k]==courseSet)
-              {
-                  roomTT[j][k]=name;
+  
+            const teach = resT.data.message;
+            const teacherTT = stringToTable(teach.timetable);
+            const teacherlabTT = stringToTable(teach.labtable);
+  
+            for (let j = 0; j < buttonStatus1.length; j++) {
+              for (let k = 0; k < buttonStatus1[j].length; k++) {
+                if (buttonStatus1[j][k] === courseSet) {
+                  teacherlabTT[j][k] = name;
+                  teacherTT[j][k] = name;
+                }
               }
             }
+  
+            teach.labtable = convertTableToString(teacherlabTT);
+            teach.timetable = convertTableToString(teacherTT);
+  
+            await axios.put(
+              BACKEND_URL + "/teachers",
+              {
+                originalName: teacher,
+                teacher: teach,
+              },
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+  
+            console.log(`Teacher updated: ${teacher}`);
           }
-        roomfetch.timetable=convertTableToString(roomTT);
-        const _resRR=await axios.put(
-          BACKEND_URL+"/rooms",{
-            originalName:room,
-            originalDepartment:department,
-            room:roomfetch
-          },        
-          {
-            headers: {
-              authorization: localStorage.getItem("token"),
-            },
+  
+          // Update each room for the current courseSet sequentially
+          for (const room of rooms[i]) {
+            console.log("Updating room:", room, "for courseSet:", courseSet);
+  
+            const resR = await axios.post(
+              BACKEND_URL + "/rooms/peek",
+              {
+                name: room,
+              },
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+  
+            const roomfetch = resR.data.message;
+            const roomTT = stringToTable(roomfetch.timetable);
+  
+            for (let j = 0; j < buttonStatus1.length; j++) {
+              for (let k = 0; k < buttonStatus1[j].length; k++) {
+                if (buttonStatus1[j][k] === courseSet) {
+                  roomTT[j][k] = name;
+                }
+              }
+            }
+  
+            roomfetch.timetable = convertTableToString(roomTT);
+  
+            await axios.put(
+              BACKEND_URL + "/rooms",
+              {
+                originalName: room,
+                originalDepartment: department,
+                room: roomfetch,
+              },
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+  
+            console.log(`Room updated: ${room}`);
           }
-        );
+        }
+  
+        message.success("Added successfully!");
+      } else {
+        message.error(response.data.message || "Failed to add");
       }
-      message.success("Added successfully!");
-    } else {
-      message.error(response.data.message || "Failed to add");
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      message.error("Failed to add");
     }
-  }
-  catch(error)
-  {
-    message.error("Failed to add");
-  }
   };
-
+  
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] text-xl text-bold">
