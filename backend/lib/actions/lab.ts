@@ -12,7 +12,7 @@ export async function createLab(
   batches: string[],
   teachers: string[][],
   rooms: string[][],
-  timetables: string[][],
+  timetables: string,
   department?: string
 ): Promise<{ status: number; data: Lab | null }> {
   try {
@@ -46,7 +46,7 @@ export async function createLab(
           batches: batches.join(";"),
           teachers: teachers.map((batch) => batch.join(",")).join(";"),
           rooms: rooms.map((batch) => batch.join(",")).join(";"),
-          timetable: timetables.map((row) => row.join(",")).join(";"),
+          timetable: timetables,
           department:
             user.role == "admin" && department ? department : user.department,
           orgId: user.orgId,

@@ -272,6 +272,7 @@ const EditLabPage: React.FC = () => {
         }
         const teacherList: string[] = [];
         teachers.forEach((teacher) => {
+          console.log("teacher",teacher)
           teacher.split(",").forEach((t) => {
             teacherList.push(t.trim());
           });
@@ -282,7 +283,7 @@ const EditLabPage: React.FC = () => {
           lab.rooms[courseSet] = [];
         }
         lab.rooms[courseSet].push(...rooms);
-
+        console.log("lob")
         return lab;
       },
       {
@@ -304,146 +305,220 @@ const EditLabPage: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    try{
-      console.log(1)
-    const token = localStorage.getItem("token");
-    if (!token) {
-      message.error("Authorization token is missing!");
-      navigate("/signIn");
-      return;
-    }
-    console.log(2)
-    const name=form.getFieldValue("batchSetName");
-    const { courseSets, teachers, rooms } = getCourseData(tableData);
-    const labo:Lab={
-      name:name,
-      department: olddepartment?olddepartment:null,
-      semester: Number(localStorage.getItem("semester")),
-      batches: courseSets.join(";"),
-      teachers: teachers.map((teacher) => teacher.join(",")).join(";"),
-      rooms: rooms.map((room) => room.join(",")).join(";"),
-      timetable: convertTableToString(buttonStatus1),
-    }
-    console.log(3)
-    console.log(oldname,olddepartment,oldsemester,labo)
-    const response = await axios.put(
-      BACKEND_URL + "/labs",
-      {
-        originalName: oldname,
-        originalSemester: Number(oldsemester),
-        lab:labo,
-        originalDepartment: olddepartment,
-      },
-      {
-        headers: {
-          authorization: localStorage.getItem("token"),
-        },
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        message.error("Authorization token is missing!");
+        navigate("/signIn");
+        return;
       }
-    );
-    console.log(4,response.data)
-    if (response.data.status === 200) {
-      for(let i=0;i<tableData.length;i++)
-      {
-        const courseSet=tableData[i].courseSet;
-        const teachers=tableData[i].teachers;
-        teachers.forEach(async teacher=>{
-          const resT=await axios.post(
-            BACKEND_URL+"/teachers/peek",{
-              name:teacher,
-              department: department
-            },        
-            {
-              headers: {
-                authorization: localStorage.getItem("token"),
-              },
-            }
-          );
-          const teach=resT.data.message
-          const teacherTT=stringToTable(resT.data.message.timetable);
-          const teacherlabTT=stringToTable(resT.data.message.labtable)
-          console.log("cs",courseSet)
-          console.log("old",oldname)
-          console.log("teacherlabTT",teacherlabTT)
-          for(let j=0;j<buttonStatus1.length;j++)
-            {
-              for(let k=0;k<buttonStatus1[j].length;k++)
-              {
-                if(teacherlabTT[j][k]==oldname)
-                {
-                  teacherlabTT[j][k]="Free";
-                  teacherTT[j][k]="Free";
-                }
-                if(buttonStatus1[j][k]==courseSet)
-                {
-                  teacherlabTT[j][k]=name;
-                    teacherTT[j][k]=name;
+  
+      const name = form.getFieldValue("batchSetName");
+      const { courseSets, teachers, rooms } = getCourseData(tableData);
+      const labo: Lab = {
+        name: name,
+        department: olddepartment ? olddepartment : null,
+        semester: Number(localStorage.getItem("semester")),
+        batches: courseSets.join(";"),
+        teachers: teachers.map((teacher) => teacher.join(",")).join(";"),
+        rooms: rooms.map((room) => room.join(",")).join(";"),
+        timetable: convertTableToString(buttonStatus1),
+      };
+  
+      const response = await axios.put(
+        BACKEND_URL + "/labs",
+        {
+          originalName: oldname,
+          originalSemester: Number(oldsemester),
+          lab: labo,
+          originalDepartment: olddepartment,
+        },
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+  
+      if (response.data.status === 200) {
+        const teacherResponse = await axios.get(BACKEND_URL + "/teachers", {
+          headers: {
+            authorization: token,
+          },
+        });
+  
+        if (teacherResponse.data.status === statusCodes.OK) {
+          const teachers = teacherResponse.data.message;
+          for (const teacher of teachers) {
+            const TT = stringToTable(teacher.timetable);
+            const labTT = stringToTable(teacher.labtable);
+  
+            for (let i = 0; i < buttonStatus1.length; i++) {
+              for (let j = 0; j < buttonStatus1[i].length; j++) {
+                if (TT[i][j] === oldname || labTT[i][j] === oldname) {
+                  TT[i][j] = "Free";
+                  labTT[i][j] = "Free";
                 }
               }
             }
-            teach.labtable=convertTableToString(teacherlabTT);
-            teach.timetable=convertTableToString(teacherTT);
-            axios.put(
-              BACKEND_URL+"/teachers",{
-                originalName:teacher,
-                teacher:teach
-              },        
+  
+            teacher.timetable = convertTableToString(TT);
+            teacher.labtable = convertTableToString(labTT);
+  
+            await axios.put(
+              BACKEND_URL + "/teachers",
+              {
+                originalName: teacher.name,
+                teacher: teacher,
+              },
               {
                 headers: {
-                  authorization: localStorage.getItem("token"),
+                  authorization: token,
                 },
               }
             );
-        })
-        const room=tableData[i].rooms[0]
-        const resR=await axios.post(
-          BACKEND_URL+"/rooms/peek",{
-            name:room,
-          },        
-          {
-            headers: {
-              authorization: localStorage.getItem("token"),
-            },
           }
-        );
-        const roomfetch=resR.data.message
-        const roomTT=stringToTable(resR.data.message.timetable);
-        for(let j=0;j<buttonStatus1.length;j++)
-          {
-            for(let k=0;k<buttonStatus1[j].length;k++)
-            {
-              if(roomTT[j][k]==oldname)
-              {
-                  roomTT[j][k]="Free";
+        } else {
+          toast.error("Server error!");
+        }
+        const roomResponse = await axios.get(BACKEND_URL + "/rooms", {
+          headers: {
+            authorization: token,
+          },
+        });
+        if (roomResponse.data.status === statusCodes.OK) {
+          const rooms = roomResponse.data.message;
+          for (const room of rooms) {
+            console.log("room",room)
+            const TT = stringToTable(room.timetable);
+            console.log(TT)
+            for (let i = 0; i < buttonStatus1.length; i++) {
+              for (let j = 0; j < buttonStatus1[i].length; j++) {
+                if (TT[i][j] === oldname) {
+                  TT[i][j] = "Free";
+                }
               }
-              if(buttonStatus1[j][k]==courseSet)
+            }
+            console.log(3)
+            room.timetable = convertTableToString(TT);
+            console.log("room",room)
+            await axios.put(
+              BACKEND_URL + "/rooms",
               {
-                  roomTT[j][k]=name;
+                originalName: room.name,
+                room: room,
+              },
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+          }
+        } else {
+          toast.error("Server error!");
+        }
+  
+        for (const data of tableData) {
+          console.log(1)
+          const courseSet = data.courseSet;
+          const teachers = data.teachers;
+          console.log(2)
+          for (const teacher of teachers) {
+            const resT = await axios.post(
+              BACKEND_URL + "/teachers/peek",
+              {
+                name: teacher,
+                department: department,
+              },
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+            console.log(3)
+            const teach = resT.data.message;
+            const teacherTT = stringToTable(teach.timetable);
+            const teacherlabTT = stringToTable(teach.labtable);
+  
+            for (let j = 0; j < buttonStatus1.length; j++) {
+              for (let k = 0; k < buttonStatus1[j].length; k++) {
+                if (buttonStatus1[j][k] === courseSet) {
+                  teacherlabTT[j][k] = name;
+                  teacherTT[j][k] = name;
+                }
+              }
+            }
+            console.log(4)
+            teach.labtable = convertTableToString(teacherlabTT);
+            teach.timetable = convertTableToString(teacherTT);
+  
+            await axios.put(
+              BACKEND_URL + "/teachers",
+              {
+                originalName: teacher,
+                teacher: teach,
+              },
+              {
+                headers: {
+                  authorization: token,
+                },
+              }
+            );
+          }
+          console.log(5)
+          const room = data.rooms[0];
+          const resR = await axios.post(
+            BACKEND_URL + "/rooms/peek",
+            {
+              name: room,
+            },
+            {
+              headers: {
+                authorization: token,
+              },
+            }
+          );
+          console.log(6)
+          const roomfetch = resR.data.message;
+          const roomTT = stringToTable(roomfetch.timetable);
+  
+          for (let j = 0; j < buttonStatus1.length; j++) {
+            for (let k = 0; k < buttonStatus1[j].length; k++) {
+              if (roomTT[j][k] === oldname) {
+                roomTT[j][k] = "Free";
+              }
+              if (buttonStatus1[j][k] === courseSet) {
+                roomTT[j][k] = name;
               }
             }
           }
-        roomfetch.timetable=convertTableToString(roomTT);
-        const _resRR=await axios.put(
-          BACKEND_URL+"/rooms",{
-            originalName:room,
-            originalDepartment:department,
-            room:roomfetch
-          },        
-          {
-            headers: {
-              authorization: localStorage.getItem("token"),
+          console.log(7)
+          roomfetch.timetable = convertTableToString(roomTT);
+  
+          await axios.put(
+            BACKEND_URL + "/rooms",
+            {
+              originalName: room,
+              originalDepartment: department,
+              room: roomfetch,
             },
-          }
-        );
+            {
+              headers: {
+                authorization: token,
+              },
+            }
+          );
+        }
+        console.log(8)
+        message.success("Added successfully!");
+      } else {
+        message.error(response.data.message || "Failed to add");
       }
-      message.success("Added successfully!");
-    } else {
-      message.error(response.data.message || "Failed to add");
+    } catch (error) {
+      message.error("Failed to add");
     }
-  }
-  catch(error)
-  {
-    message.error("Failed to add");
-  }
   };
 
   const fetchLabDetails = async (name: string, department: string | null,semester:string) => {

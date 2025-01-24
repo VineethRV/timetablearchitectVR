@@ -250,6 +250,7 @@ const AddLabPage: React.FC = () => {
     tableData: Labs[]
   ): { courseSets: string[]; teachers: string[][]; rooms: string[][] } => {
     // Reduce the tableData into a single record
+    console.log(tableData);
     const courseData = tableData.reduce(
       (lab, item) => {
         const { courseSet, teachers, rooms } = item;
@@ -262,9 +263,11 @@ const AddLabPage: React.FC = () => {
         }
         const teacherList: string[] = [];
         teachers.forEach((teacher) => {
+          console.log("teacher",teacher);
           teacher.split(",").forEach((t) => {
             teacherList.push(t.trim());
           });
+          console.log(teacherList)
         });
         lab.teachers[courseSet].push(...teacherList);
         // Add rooms for this courseSet
@@ -272,7 +275,7 @@ const AddLabPage: React.FC = () => {
           lab.rooms[courseSet] = [];
         }
         lab.rooms[courseSet].push(...rooms);
-
+        console.log("lab",lab);
         return lab;
       },
       {

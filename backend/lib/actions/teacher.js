@@ -124,7 +124,8 @@ function createTeachers(JWTtoken_1, name_1) {
                         orgId: user_1.orgId,
                     };
                     return [4 /*yield*/, prisma.teacher.create({
-                            data: { name: name,
+                            data: {
+                                name: name,
                                 initials: initials,
                                 email: email,
                                 department: department
@@ -138,7 +139,8 @@ function createTeachers(JWTtoken_1, name_1) {
                                 labtable: labtable
                                     ? convertTableToString(labtable)
                                     : "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
-                                orgId: user_1.orgId, },
+                                orgId: user_1.orgId
+                            },
                         })];
                 case 4:
                     teacherCreated = _c.sent();
@@ -233,8 +235,6 @@ function updateTeachers(JWTtoken_1, originalName_1) {
                     return [4 /*yield*/, prisma.teacher.findFirst({
                             where: {
                                 name: originalName,
-                                // department:
-                                //   user.role == "admin" ? originalDepartment : user.department,
                                 orgId: user_2.orgId,
                             },
                         })];
@@ -421,6 +421,8 @@ function getTeachers(JWTtoken) {
                                         initials: true,
                                         email: true,
                                         orgId: true,
+                                        timetable: true,
+                                        labtable: true
                                     }
                                 }
                             }
