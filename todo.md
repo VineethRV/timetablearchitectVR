@@ -1,48 +1,63 @@
 # BACKGROUND
-~~[ ] Understand and make onboarding fluent~~
-~~[ ] Verify email~~
-[ ] Add verify email path after hosting
-~~[ ] admin panel sections formed, courses alloted and other stuff.~~
-~~*[ ] display joining code in admin panel(Vineeth)*~~
-~~[ ] disable requestAccess for editors~~
-~~[ ] top teachers free in editors too~~
+~~[ ] Serverside rendering for email verification(V)~~
+
+~~[ ] react rendering problem(V)~~
+
+
+# PANEL
+[ ] Top teachers bug??
+
 
 # TEACHER:
-~~**[ ] if editor deparment should be disabled and editor dep should be selected**~~
-~~`[ ] if teacher busy should save as busy/whatever name and if teacher is free should save as 0`~~
-~~`[ ] Edit teacher lab table is not being displayed in the table`~~
-~~**[ ] labtable is becoming null when doing edit teachers**~~
-**[ ] Moving Subjects in Edit Teachers**
-~~[ ] Disable auto filling~~
-~~**[ ] Alternate department**~~
-**[ ] Disconnecting existing departments from alternate departments**
+[ ] Teacher timetable free/busy revert
+
+[ ] Moving Subjects in Edit Teachers
+
+~~[ ] Import teachers~~
+
+[ ] Consolidated(backend V)
+
 
 # ROOM ADDING:
-~~**[ ] 1 0 problem**~~
-~~**[ ] if editor deparment should be disabled and editor dep should be selected**~~
 [ ] Searching for department problem for admins 
 
+[ ] Consolidated(backend V)
+
+[ ]Import backend
+
+
 # ELECTIVE:
-~~**[ ] Elective problem (not displayed)**~~
 `[] Elective delete and modify`
+
 `[] elective modifications based on role`
 
 
 # LABS:
-~~[ ] Clicking generate should be responsive~~
-~~**[ ] Moving allotted timeslot does not work(Vineeth)**~~
-[ ] Buttons in table can be bigger and table can be on the side rather than down
 `[ ] Deleting and modifying lab is giving invalid request`
-~~**[ ] Lab creation changes not reflected in teachers and rooms()**~~
+
 **[ ] Lab Edit**
 
+[ ] Moving labs fix
+
 # CORE:
-~~[ ] Semester option in core course redundant~~
-~~`[ ] Particular classroom still contains dummy data`~~
-~~[ ] Editing courses load forever~~
+[ ] ask department for admins
+
 
 # SECTION:
-~~**[ ] Core allocation should reflect changes in teachers and rooms**~~
+~~**[ ] Core allocation algo bugs fix**(V)~~
+
+**[ ] Core allocation auto room selection bug**
+
+~~[ ] Display course code instead of name(V)~~
+
+[ ] Searching teachers should be easier
+
+~~[ ] Moving allocated subjects fix(V)~~
+
 [ ] Should be able to delete default room
-[ ] ToolTip should display room allocated
-[ ] Changes as per role
+
+~~[ ] Year of admission is redundant and should be removed(V)~~
+
+~~[ ] ToolTip should display room allocated(V)~~
+
+***[ ] SAVE SECION NOT DONE***

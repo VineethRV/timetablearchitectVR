@@ -315,74 +315,110 @@ function updateTeachers(JWTtoken_1, originalName_1) {
 }
 function createManyTeachers(JWTtoken_1, name_1, initials_1) {
     return __awaiter(this, arguments, void 0, function (JWTtoken, name, initials, email, department) {
-        var _a, status_3, user, teachers, i, duplicateChecks_1, _b;
+        var _a, status_3, user, dep_1, teachers, i, teacher, createdTeachers, updates, error_1;
         if (email === void 0) { email = null; }
         if (department === void 0) { department = null; }
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    _c.trys.push([0, 5, , 6]);
+                    _b.trys.push([0, 8, , 9]);
+                    console.log("Starting createManyTeachers with", { name: name, initials: initials, email: email, department: department });
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
-                    _a = _c.sent(), status_3 = _a.status, user = _a.user;
+                    _a = _b.sent(), status_3 = _a.status, user = _a.user;
+                    console.log("Auth status:", status_3, "User:", user);
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        console.log("User orgId is null");
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                                 teachers: null,
                             }];
                     }
-                    if (!(status_3 == statusCodes_1.statusCodes.OK && user && user.role != "viewer")) return [3 /*break*/, 4];
+                    return [4 /*yield*/, prisma.departments.createMany({
+                            data: [{
+                                    name: department ? department : user.department ? user.department : "no department",
+                                    orgId: user.orgId,
+                                }],
+                            skipDuplicates: true,
+                        })];
+                case 2:
+                    _b.sent();
+                    return [4 /*yield*/, prisma.departments.findMany({
+                            where: {
+                                name: department ? department : user.department ? user.department : "no department",
+                                orgId: user.orgId
+                            }
+                        })];
+                case 3:
+                    dep_1 = _b.sent();
+                    if (!(status_3 == statusCodes_1.statusCodes.OK && user && user.role != "viewer")) return [3 /*break*/, 7];
+                    console.log("Creating teachers array");
                     teachers = [];
                     for (i = 0; i < name.length; i++) {
-                        teachers.push({
+                        teacher = {
                             name: name[i],
                             initials: initials ? initials[i] : null,
                             email: email ? email[i] : null,
                             department: department ? department : user.department,
-                            alternateDepartments: null,
                             timetable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                             labtable: "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
                             orgId: user.orgId,
-                        });
+                        };
+                        console.log("Adding teacher:", teacher);
+                        teachers.push(teacher);
                     }
-                    return [4 /*yield*/, Promise.all(teachers.map(function (teacher) {
-                            return prisma.teacher.findFirst({
-                                where: {
-                                    orgId: teacher.orgId,
-                                    department: teacher.department,
-                                    name: teacher.name,
+                    console.log("Creating teachers in database");
+                    return [4 /*yield*/, prisma.teacher.createMany({
+                            data: teachers,
+                            skipDuplicates: true
+                        })];
+                case 4:
+                    _b.sent();
+                    return [4 /*yield*/, prisma.teacher.findMany({
+                            where: {
+                                name: { in: name },
+                                orgId: user.orgId,
+                            },
+                            select: { id: true, name: true },
+                        })];
+                case 5:
+                    createdTeachers = _b.sent();
+                    updates = createdTeachers.map(function (teacher) { return ({
+                        id: teacher.id,
+                        alternateDepartments: dep_1.map(function (dept) { return ({ id: dept.id }); }),
+                    }); });
+                    console.log("Updating alternateDepartments for each teacher");
+                    return [4 /*yield*/, Promise.all(updates.map(function (update) {
+                            return prisma.teacher.update({
+                                where: { id: update.id },
+                                data: {
+                                    alternateDepartments: {
+                                        connect: update.alternateDepartments,
+                                    },
                                 },
                             });
                         }))];
-                case 2:
-                    duplicateChecks_1 = _c.sent();
-                    //return duplicate teacher if found
-                    if (duplicateChecks_1.some(function (duplicate) { return duplicate; })) {
-                        return [2 /*return*/, {
-                                status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                teachers: teachers.filter(function (teacher, index) { return duplicateChecks_1[index]; }),
-                            }];
-                    }
-                    return [4 /*yield*/, prisma.teacher.createMany({
-                            data: teachers,
-                        })];
-                case 3:
-                    _c.sent();
+                case 6:
+                    _b.sent();
+                    console.log("Successfully created teachers");
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.CREATED,
                             teachers: teachers,
                         }];
-                case 4: return [2 /*return*/, {
-                        status: statusCodes_1.statusCodes.FORBIDDEN,
-                        teachers: null,
-                    }];
-                case 5:
-                    _b = _c.sent();
+                case 7:
+                    console.log("User not authorized");
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.FORBIDDEN,
+                            teachers: null,
+                        }];
+                case 8:
+                    error_1 = _b.sent();
+                    console.error("Error in createManyTeachers:", error_1);
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             teachers: null,
                         }];
-                case 6: return [2 /*return*/];
+                case 9: return [2 /*return*/];
             }
         });
     });

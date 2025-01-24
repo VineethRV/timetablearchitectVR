@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button } from "antd";
+import { Table, Button, Tooltip } from "antd";
 import { toast } from "sonner";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
@@ -124,32 +124,34 @@ const SwapTimetable: React.FC<TimetableProps> = ({
     key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
-      <Button
-        key={colIndex}
-        className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
-          selectedSlot
-            ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
-              ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
-              : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
-            : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
-        }`}
-        onClick={() => handleButtonClick(rowIndex, colIndex)}
-        disabled={
-          (selectedSlot ? true : false) &&
-          (score[rowIndex][(Math.floor(colIndex/2))*2] < 0 || (buttonStatus[rowIndex][colIndex] != "Free" && buttonStatus[rowIndex][colIndex] != "0" ))
-        }
-        style={{
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-          overflow: "hidden",
-          backgroundColor: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(99,106,232)" : "#F2F2FD",
-          color: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "#F2F2FD" : "rgb(99,106,232)",
-          borderColor: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0" )? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
-          borderWidth: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0") ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
-        }}
-      >
-        {buttonStatus[rowIndex][colIndex]}
-      </Button>
+      <Tooltip >
+        <Button
+          key={colIndex}
+          className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
+            selectedSlot
+              ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
+                ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
+                : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
+              : "border text-[#636AE8] bg-[#F2F2FD] hover:bg-[#D9D9F3]"
+          }`}
+          onClick={() => handleButtonClick(rowIndex, colIndex)}
+          disabled={
+            (selectedSlot ? true : false) &&
+            (score[rowIndex][(Math.floor(colIndex/2))*2] < 0 || (buttonStatus[rowIndex][colIndex] != "Free" && buttonStatus[rowIndex][colIndex] != "0" ))
+          }
+          style={{
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+            backgroundColor: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(99,106,232)" : "#F2F2FD",
+            color: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "#F2F2FD" : "rgb(99,106,232)",
+            borderColor: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0" )? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
+            borderWidth: selectedSlot && score[rowIndex][(Math.floor(colIndex/2))*2] > 0 && (buttonStatus[rowIndex][colIndex] == "Free" || buttonStatus[rowIndex][colIndex] == "0") ? `${1 + 2*score[rowIndex][colIndex]}px` : "1px",
+          }}
+        >
+          {buttonStatus[rowIndex][colIndex]}
+        </Button>
+      </Tooltip>
     )),
   }));
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Button } from "antd";
+import { Table, Button, Tooltip } from "antd";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 import { convertTableToString, stringToTable } from "../../utils/main";
@@ -13,6 +13,8 @@ interface TimetableProps {
   rooms: string[]; // Array of courses, teachers, and rooms
   setRoomTT: (status: string) => void; 
   roomTT: string;
+  timetable: string[][];
+  setTimetable:(status: string[][]) => void;
 }
 const weekdays = [
   "Monday",
@@ -31,24 +33,24 @@ const timeslots = [
   "3:30-4:30",
 ];
 
-const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus,courses,teachers,rooms,setRoomTT,roomTT }) => {
+const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButtonStatus,courses,teachers,rooms,setRoomTT,roomTT,timetable,setTimetable }) => {
   const [selectedSlot, setSelectedSlot] = useState<{
     rowIndex: number;
     colIndex: number;
   } | null>(null);
   const [score, setScore] = useState<number[][]>(new Array(6).fill(0).map(() => new Array(6).fill(0).map(() => 0)));
-
+  
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
     console.log("button clicked");
     if (!selectedSlot) {
       console.log("inside first select");
       // Select the first slot
-      if (courses.includes(buttonStatus[rowIndex][colIndex])) {
+      if (courses.includes(timetable[rowIndex][colIndex])) {
         console.log("inside click");
         setSelectedSlot({ rowIndex, colIndex });
-        const selectedIndex = courses.indexOf(buttonStatus[rowIndex][colIndex]);
+        const selectedIndex = courses.indexOf(timetable[rowIndex][colIndex]);
         let teacher = teachers[selectedIndex];
-        let room = rooms[selectedIndex];
+        let room = stringToTable(roomTT)[rowIndex][colIndex];
         console.log("course", buttonStatus[rowIndex][colIndex]);
         console.log("teacher", teacher);
         console.log("room", room);
@@ -60,12 +62,12 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             BACKEND_URL + "/recommendCourse",
             {
               teacher: teacher,
-              room: room == "-" ? null : room,
+              room: room == "0" ? null : room,
               blocks: convertTableToString(buttonStatus),
             },
             {
               headers: {
-          authorization: localStorage.getItem("token"),
+                authorization: localStorage.getItem("token"),
               },
             }
           ),
@@ -74,14 +76,14 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
             success: (response) => {
               console.log("response", response.data.timetable);
               if (response.status === 200) {
-          const newScore = stringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
-          console.log("Course recommendation received", newScore);
-          setScore(newScore);
-          return "Optimal slots found!";
-              } else {
-          console.error("Failed to get course recommendation");
-          return "Failed to get course recommendation";
-              }
+                const newScore = stringToTable(response.data.timetable).map(row => row.map(value => parseFloat(value)));
+                console.log("Course recommendation received", newScore);
+                setScore(newScore);
+                return "Optimal slots found!";
+                    } else {
+                console.error("Failed to get course recommendation");
+                return "Failed to get course recommendation";
+                    }
             },
             error: (error) => {
               console.error("Error:", error.response?.data || error.message);
@@ -107,6 +109,20 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
           return course;
         })
       );
+      const updatedTimetable = timetable.map((row, rIdx) =>
+        row.map((course, cIdx) => {
+          if (
+            rIdx === selectedSlot.rowIndex &&
+            cIdx === selectedSlot.colIndex
+          ) {
+            return timetable[rowIndex][colIndex]; // Swap with the new selection
+          }
+          if (rIdx === rowIndex && cIdx === colIndex) {
+            return timetable[selectedSlot.rowIndex][selectedSlot.colIndex]; // Swap with the previously selected
+          }
+          return course;
+        })
+      );
       let table=stringToTable(roomTT).map((row, rIdx) =>
         row.map((course, cIdx) => {
           if (
@@ -122,6 +138,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
         })
       );
       setRoomTT(convertTableToString(table));
+      setTimetable(updatedTimetable);
       setButtonStatus(updatedStatus);
       setSelectedSlot(null); // Reset the selected slot
     }
@@ -131,33 +148,35 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
     key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
-      <Button
-        key={colIndex}
-        className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
-          selectedSlot
-            ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
-              ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
-              : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
-            : "border text-[#636AE8] hover:bg-[#D9D9F3]"
-        }`}
-        onClick={() => handleButtonClick(rowIndex, colIndex)}
-       
-        style={{
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-          overflow: "hidden",
-          backgroundColor: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(99,106,232)" : "#F2F2FD",
-          color: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "#F2F2FD" : "rgb(99,106,232)",
-          borderColor: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
-          borderWidth: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `${1 + 2 * score[rowIndex][colIndex]}px` : "1px",
-        }}
-        disabled={
-          (selectedSlot ? true : false) &&
-          (score[rowIndex][colIndex] < 0 || buttonStatus[rowIndex][colIndex] !== "Free")
-        }
-      >
-        {buttonStatus[rowIndex][colIndex]}
-    </Button>
+      <Tooltip title={stringToTable(roomTT)[rowIndex][colIndex]+(teachers[courses.indexOf(timetable[rowIndex][colIndex])]?", "+teachers[courses.indexOf(timetable[rowIndex][colIndex])]:"")}>
+        <Button
+          key={colIndex}
+          className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
+            selectedSlot
+              ? selectedSlot.rowIndex === rowIndex && selectedSlot.colIndex === colIndex
+                ? "border-2 border-[#FF5722] text-[#FF5722] bg-[#FFF7F0]"
+                : "border text-[#19331f] bg-[#d4fddf] hover:bg-[#72ee91]"
+              : "border text-[#636AE8] hover:bg-[#D9D9F3]"
+          }`}
+          onClick={() => handleButtonClick(rowIndex, colIndex)}
+        
+          style={{
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            overflow: "hidden",
+            backgroundColor: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "rgb(99,106,232)" : "#F2F2FD",
+            color: selectedSlot?"":buttonStatus[rowIndex][colIndex] !== "Free" ? "#F2F2FD" : "rgb(99,106,232)",
+            borderColor: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `rgb(0, ${255 * score[rowIndex][colIndex]}, 0)` : "",
+            borderWidth: selectedSlot && score[rowIndex][colIndex] > 0 && buttonStatus[rowIndex][colIndex] === "Free" ? `${1 + 2 * score[rowIndex][colIndex]}px` : "1px",
+          }}
+          disabled={
+            (selectedSlot ? true : false) &&
+            (score[rowIndex][colIndex] < 0 || buttonStatus[rowIndex][colIndex] !== "Free")
+          }
+        >
+          {buttonStatus[rowIndex][colIndex]}
+      </Button>
+    </Tooltip>
     )),
   }));
   const columns = [

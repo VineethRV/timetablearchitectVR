@@ -49,6 +49,7 @@ model Teacher {
   labtable             String?
   organisation         Organisation @relation(fields: [orgId], references: [id])
   orgId                Int
+  @@unique([name, orgId, department])
 }
 
 model Course {

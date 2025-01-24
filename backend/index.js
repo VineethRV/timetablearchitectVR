@@ -8,7 +8,7 @@ const electiveF=require("./lib/functions/electives.js")
 const course = require("./lib/actions/course.js");
 const cors = require("cors");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const { adminRouter } = require("./routes/admin.js");
 const { userRouter } = require("./routes/user.js");
 const { authRouter } = require("./routes/auth.js");
@@ -609,7 +609,6 @@ app.put("/api/labs", async (req, res) => {
     lab: labData,
     originalDepartment,
   } = req.body;
-  console.log(originalName, originalSemester, labData, originalDepartment);
   if (!token || !originalName || originalSemester === undefined || !labData) {
     return res.status(200).json({
       status: 400,

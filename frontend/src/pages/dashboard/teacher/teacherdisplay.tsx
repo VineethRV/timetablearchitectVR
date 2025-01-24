@@ -44,33 +44,43 @@ function TeacherPage() {
       skipEmptyLines: true,
       complete: async function (results: any) {
         const parsedData = results.data;
-
+        console.log(parsedData);
         const validTeachers = parsedData.filter((teacher: any) => teacher.name);
+        console.log(validTeachers);
         const names = validTeachers.map((teacher: any) => teacher.name);
+        console.log(names);
         const initials = validTeachers.map((teacher: any) => teacher.initials);
+        console.log(initials);
         const emails = validTeachers.map((teacher: any) => teacher.email);
+        console.log(emails);
 
-        try {
-          const response = await axios.post(
+        await toast.promise(
+          axios.post(
             `${BACKEND_URL}/teachers/many`,
             { name: names, initials: initials, email: emails },
             {
               headers: {
-                authorization: localStorage.getItem("token"),
-                "Content-Type": "application/json",
+          authorization: localStorage.getItem("token"),
+          "Content-Type": "application/json",
               },
             }
-          );
-          if (response.data.status === statusCodes.CREATED) {
-            toast.success("Teachers imported successfully!");
-            setTeachersData((prev) => [...prev, ...validTeachers]); // Update the table
-          } else {
-            toast.error("Error importing teachers!");
+          ),
+          {
+            loading: "Importing teachers...",
+            success: (response) => {
+              if (response.data.status === statusCodes.CREATED) {
+          setTeachersData((prev) => [...prev, ...validTeachers]);
+          return "Teachers imported successfully!";
+              } else {
+          throw new Error("Error importing teachers!");
+              }
+            },
+            error: (error) => {
+              console.error(error);
+              return "An error occurred during import.";
+            },
           }
-        } catch (error) {
-          console.error(error);
-          toast.error("An error occurred during import.");
-        }
+        );
       },
       error: function (error: any) {
         console.error(error);

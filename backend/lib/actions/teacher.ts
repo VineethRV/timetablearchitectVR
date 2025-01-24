@@ -2,6 +2,7 @@ import * as auth from "./auth";
 import { PrismaClient } from "@prisma/client";
 import { Teacher } from "../types/main";
 import { statusCodes } from "../types/statusCodes";
+import { connect } from "http2";
 
 const prisma = new PrismaClient();
 
@@ -244,70 +245,97 @@ export async function createManyTeachers(
   initials: string[] | null,
   email: string[] | null = null,
   department: string | null = null
-): Promise<{ status: number; teachers: Teacher[] | null }> {
+): Promise<{ status: number; teachers: any[] | null }> {
+
   try {
+    console.log("Starting createManyTeachers with", { name, initials, email, department });
     const { status, user } = await auth.getPosition(JWTtoken);
+    console.log("Auth status:", status, "User:", user);
 
     if (user?.orgId == null) {
+      console.log("User orgId is null");
       return {
         status: statusCodes.BAD_REQUEST,
         teachers: null,
       };
     }
+    await prisma.departments.createMany({
+      data: [{
+        name: department ? department : user.department?user.department:"no department",
+        orgId: user.orgId,
+      }],
+      skipDuplicates: true,
+    })
+    const dep = await prisma.departments.findMany({
+      where: {
+        name: department ? department : user.department?user.department:"no department",
+        orgId: user.orgId
+      }
+    });
 
     if (status == statusCodes.OK && user && user.role != "viewer") {
-      const teachers: Teacher[] = [];
+      console.log("Creating teachers array");
+      const teachers = [];
 
       for (let i = 0; i < name.length; i++) {
-        teachers.push({
+        const teacher = {
           name: name[i],
           initials: initials ? initials[i] : null,
           email: email ? email[i] : null,
           department: department ? department : user.department,
-          alternateDepartments: null,
           timetable:
             "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
           labtable:
             "0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0",
           orgId: user.orgId,
-        });
+        };
+        console.log("Adding teacher:", teacher);
+        teachers.push(teacher);
       }
-
-      const duplicateChecks = await Promise.all(
-        teachers.map((teacher) =>
-          prisma.teacher.findFirst({
-            where: {
-              orgId: teacher.orgId,
-              department: teacher.department,
-              name: teacher.name,
+      console.log("Creating teachers in database");
+      await prisma.teacher.createMany({
+        data: teachers,
+        skipDuplicates:true
+      });
+      const createdTeachers = await prisma.teacher.findMany({
+        where: {
+          name: { in: name },
+          orgId: user.orgId,
+        },
+        select: { id: true, name: true },
+      });
+      // Map teacher IDs to their corresponding alternate departments
+      const updates = createdTeachers.map(teacher => ({
+        id: teacher.id,
+        alternateDepartments: dep.map(dept => ({ id: dept.id })),
+      }));
+      console.log("Updating alternateDepartments for each teacher");
+      await Promise.all(
+        updates.map(update =>
+          prisma.teacher.update({
+            where: { id: update.id },
+            data: {
+              alternateDepartments: {
+                connect: update.alternateDepartments,
+              },
             },
           })
         )
       );
-
-      //return duplicate teacher if found
-      if (duplicateChecks.some((duplicate) => duplicate)) {
-        return {
-          status: statusCodes.BAD_REQUEST,
-          teachers: teachers.filter((teacher, index) => duplicateChecks[index]),
-        };
-      }
-
-      await prisma.teacher.createMany({
-        data: teachers,
-      });
-      
+      console.log("Successfully created teachers");
       return {
         status: statusCodes.CREATED,
         teachers: teachers,
       };
     }
+    console.log("User not authorized");
     return {
       status: statusCodes.FORBIDDEN,
       teachers: null,
     };
   }
-  catch {
+  catch (error) {
+    console.error("Error in createManyTeachers:", error);
     return {
       status: statusCodes.INTERNAL_SERVER_ERROR,
       teachers: null,

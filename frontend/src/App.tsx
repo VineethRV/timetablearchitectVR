@@ -32,7 +32,6 @@ import EditCoursepage from "./pages/dashboard/courses/corecourse/editcorecourse"
 import { ChatBot } from "./components/ChatBot/ChatBot";
 import { CoreCoursesTemplate, RoomTemplate, TeacherTemplate } from "./components/Templates/Page";
 import SectionTabledisplay from "./pages/dashboard/section/sectiondisplay";
-import EditLabPage from "./pages/dashboard/courses/lab/editlab";
 
 function App() {
   return (
@@ -81,7 +80,6 @@ function App() {
               element={<AddCoursepage />}
             />
             <Route path="/dashboard/courses/labs" element={<Labcourse />} />
-            <Route path="/dashboard/courses/labs/edit/:oldname/:olddepartment/:oldsemester" element={<EditLabPage/>}/>
             <Route
               path="/dashboard/courses/labs/add"
               element={<AddLabpage />}
