@@ -57,7 +57,7 @@ var randomFactor = 0.1; //introduces some randomness in the allocation of course
 var endFactor = 0.0025;
 function suggestTimetable(token, block, courses, teachers, rooms, semester, preferredRooms) {
     return __awaiter(this, void 0, void 0, function () {
-        var errMessage, blocks, timetable, roomtable, departmentRoomsResponse, flag_1, roomsInfo, bFactor, _loop_1, i, state_1, error_1;
+        var errMessage, blocks, timetable, display, roomtable, departmentRoomsResponse, flag_1, roomsInfo, bFactor, _loop_1, i, state_1, error_1;
         var _this = this;
         var _a, _b, _c, _d;
         return __generator(this, function (_e) {
@@ -71,6 +71,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                     errMessage = "error while converting block string to table";
                     blocks = (0, common_1.convertStringToTable)(block);
                     timetable = blocks.map(function (row) { return row.map(function (cell) { return cell !== '0' ? cell : '0'; }); });
+                    display = blocks.map(function (row) { return row.map(function (cell) { return cell !== '0' ? cell : '0'; }); });
                     roomtable = Array(6).fill(0).map(function () { return Array(6).fill('0'); });
                     console.log("Fetching department rooms");
                     errMessage = "error while fetching department rooms";
@@ -78,7 +79,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                 case 2:
                     departmentRoomsResponse = _e.sent();
                     if (departmentRoomsResponse.status !== statusCodes_1.statusCodes.OK || !departmentRoomsResponse.rooms) {
-                        return [2 /*return*/, { status: departmentRoomsResponse.status, returnVal: { timetable: [[errMessage]], roomtable: null } }];
+                        return [2 /*return*/, { status: departmentRoomsResponse.status, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } }];
                     }
                     flag_1 = 0;
                     return [4 /*yield*/, Promise.all(departmentRoomsResponse.rooms.map(function (room) { return __awaiter(_this, void 0, void 0, function () {
@@ -98,7 +99,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                 case 3:
                     roomsInfo = _e.sent();
                     if (flag_1 == 1) {
-                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } }];
+                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } }];
                     }
                     bFactor = Array(6).fill(1);
                     _loop_1 = function (i) {
@@ -115,7 +116,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                 case 1:
                                     courseResponse = _g.sent();
                                     if (courseResponse.status !== statusCodes_1.statusCodes.OK || !courseResponse.course) {
-                                        return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } } }];
+                                        return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } } }];
                                     }
                                     console.log("Fetching teacher details for teacher: ".concat(teacher));
                                     errMessage = "error while fetching teacher details";
@@ -123,7 +124,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                 case 2:
                                     teacherResponse = _g.sent();
                                     if (teacherResponse.status !== statusCodes_1.statusCodes.OK || !teacherResponse.teacher) {
-                                        return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } } }];
+                                        return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } } }];
                                     }
                                     bestScore = (0, common_1.scoreTeachers)(teacherResponse.teacher.timetable, teacherResponse.teacher.labtable);
                                     currRoomInfo = null;
@@ -153,7 +154,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                     if (roomsInfo && rooms[i] != '0') {
                                         currRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === rooms[i]; });
                                         if (!currRoomInfo) {
-                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } } }];
+                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } } }];
                                         }
                                         feasible = (0, common_1.scoreRooms)(currRoomInfo.timetable);
                                         for (i_2 = 0; i_2 < feasible.length; i_2++) {
@@ -187,24 +188,25 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                 col = index % bestScore[0].length;
                                                 timetable[row][col] = courseResponse.course.name;
                                                 roomtable[row][col] = currRoomInfo.name;
+                                                display[row][col] = courseResponse.course.code;
                                                 bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                                                 for (j = 0; j < bestScore[i].length; j++) {
                                                     bestScore[row][j] = -1;
                                                 }
                                             }
                                             if (availableSlots < ((_b = courseResponse.course) === null || _b === void 0 ? void 0 : _b.credits)) {
-                                                return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: roomtable } } }];
+                                                return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: roomtable, display: display } } }];
                                             }
                                         }
                                         else {
-                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } } }];
+                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } } }];
                                         }
                                     }
                                     else {
                                         bestScoreCopy = bestScore;
                                         preferredRoomInfo = roomsInfo.find(function (room) { return (room === null || room === void 0 ? void 0 : room.name) === preferredRooms; });
                                         if (!preferredRoomInfo) {
-                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } } }];
+                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } } }];
                                         }
                                         feasible = (0, common_1.scoreRooms)(preferredRoomInfo.timetable);
                                         for (i_5 = 0; i_5 < feasible.length; i_5++) {
@@ -245,6 +247,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                     col = index % bestScore[0].length;
                                                     timetable[row][col] = courseResponse.course.name;
                                                     roomtable[row][col] = preferredRoomInfo.name;
+                                                    display[row][col] = courseResponse.course.code;
                                                     bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                                                     for (i_9 = 0; i_9 < bestScoreCopy[row].length; i_9++) {
                                                         bestScoreCopy[row][i_9] = -1;
@@ -280,6 +283,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                                 col = index % bestScoreCopyCopy[0].length;
                                                                 timetable[row][col] = courseResponse.course.name;
                                                                 roomtable[row][col] = roomInfo.name;
+                                                                display[row][col] = courseResponse.course.code;
                                                                 bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                                                                 for (i_12 = 0; i_12 < bestScoreCopyCopy[row].length; i_12++) {
                                                                     bestScoreCopyCopy[row][i_12] = -1;
@@ -290,7 +294,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                     }
                                                 }
                                                 if (remainingCredits > 0)
-                                                    return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } } }];
+                                                    return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null, display: null } } }];
                                             }
                                             else {
                                                 for (k = 0; k < courseResponse.course.credits; k++) {
@@ -301,6 +305,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                                     col = index % bestScore[0].length;
                                                     timetable[row][col] = courseResponse.course.name;
                                                     roomtable[row][col] = preferredRoomInfo.name;
+                                                    display[row][col] = courseResponse.course.code;
                                                     bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                                                     for (i_13 = 0; i_13 < bestScore[row].length; i_13++) {
                                                         bestScore[row][i_13] = -1;
@@ -309,7 +314,7 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                                             }
                                         }
                                         else {
-                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } } }];
+                                            return [2 /*return*/, { value: { status: statusCodes_1.statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } } }];
                                         }
                                     }
                                     return [2 /*return*/];
@@ -331,11 +336,11 @@ function suggestTimetable(token, block, courses, teachers, rooms, semester, pref
                     return [3 /*break*/, 4];
                 case 7:
                     console.log(roomtable);
-                    return [2 /*return*/, { status: statusCodes_1.statusCodes.OK, returnVal: { timetable: timetable, roomtable: roomtable } }];
+                    return [2 /*return*/, { status: statusCodes_1.statusCodes.OK, returnVal: { timetable: timetable, roomtable: roomtable, display: display } }];
                 case 8:
                     error_1 = _e.sent();
                     console.error(error_1);
-                    return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } }];
+                    return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null, display: null } }];
                 case 9: return [2 /*return*/];
             }
         });

@@ -1,7 +1,7 @@
 # BACKGROUND
-[ ] Serverside rendering for email verification(V)
+~~[ ] Serverside rendering for email verification(V)~~
 
-[ ] react rendering problem
+~~[ ] react rendering problem(V)~~
 
 
 # PANEL
@@ -13,7 +13,7 @@
 
 [ ] Moving Subjects in Edit Teachers
 
-[ ] Import teachers
+~~[ ] Import teachers~~
 
 [ ] Consolidated(backend V)
 
@@ -39,7 +39,6 @@
 
 [ ] Moving labs fix
 
-
 # CORE:
 [ ] ask department for admins
 
@@ -49,7 +48,7 @@
 
 **[ ] Core allocation auto room selection bug**
 
-[ ] Display course code instead of name
+~~[ ] Display course code instead of name(V)~~
 
 [ ] Searching teachers should be easier
 
@@ -57,4 +56,8 @@
 
 [ ] Should be able to delete default room
 
-[ ] ToolTip should display room allocated
+~~[ ] Year of admission is redundant and should be removed(V)~~
+
+~~[ ] ToolTip should display room allocated(V)~~
+
+***[ ] SAVE SECION NOT DONE***

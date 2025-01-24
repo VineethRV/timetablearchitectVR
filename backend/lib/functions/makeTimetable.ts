@@ -16,7 +16,8 @@ let randomFactor=0.1;//introduces some randomness in the allocation of courses t
 let endFactor=0.0025;
 type returnStrcture={
     timetable:string[][]|null,
-    roomtable:string[][]|null
+    roomtable:string[][]|null,
+    display:string[][]|null
 }
 export async function suggestTimetable(
     token: string,
@@ -33,13 +34,14 @@ export async function suggestTimetable(
         errMessage = "error while converting block string to table";
         const blocks = convertStringToTable(block);
         const timetable: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? cell : '0'));
+        const display: string[][] = blocks.map(row => row.map(cell => cell !== '0' ? cell : '0'));
         const roomtable: string[][] = Array(6).fill(0).map(() => Array(6).fill('0'));
 
         console.log("Fetching department rooms");
         errMessage = "error while fetching department rooms";
         const departmentRoomsResponse = await getRooms(token);
         if (departmentRoomsResponse.status !== statusCodes.OK || !departmentRoomsResponse.rooms) {
-            return { status: departmentRoomsResponse.status, returnVal: { timetable: [[errMessage]], roomtable: null } };
+            return { status: departmentRoomsResponse.status, returnVal: { timetable: [[errMessage]], roomtable: null ,display:null} };
         }
 
         let flag = 0;
@@ -51,7 +53,7 @@ export async function suggestTimetable(
             return roomResponse.room;
         }));
         if (flag == 1) {
-            return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
+            return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null,display:null } };
         }
 
         let bFactor = Array(6).fill(1);
@@ -66,14 +68,14 @@ export async function suggestTimetable(
             errMessage = "error while fetching course details";
             const courseResponse = await peekCourse(token, course, semester);
             if (courseResponse.status !== statusCodes.OK || !courseResponse.course) {
-                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
+                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null ,display:null} };
             }
 
             console.log(`Fetching teacher details for teacher: ${teacher}`);
             errMessage = "error while fetching teacher details";
             const teacherResponse = await peekTeacher(token, teacher);
             if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
-                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
+                return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null ,display:null} };
             }
 
             let bestScore = scoreTeachers(teacherResponse.teacher.timetable, teacherResponse.teacher.labtable);
@@ -103,7 +105,7 @@ export async function suggestTimetable(
             if (roomsInfo && rooms[i] != '0') {
                 currRoomInfo = roomsInfo.find(room => room?.name === rooms[i]);
                 if (!currRoomInfo) {
-                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null ,display:null} };
                 }
 
                 let feasible = scoreRooms(currRoomInfo.timetable);
@@ -140,6 +142,7 @@ export async function suggestTimetable(
                         const col = index % bestScore[0].length;
                         timetable[row][col] = courseResponse.course.name;
                         roomtable[row][col] = currRoomInfo.name;
+                        display[row][col]=courseResponse.course.code;
                         bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                         for (let j = 0; j < bestScore[i].length; j++) {
                             bestScore[row][j] = -1;
@@ -147,16 +150,16 @@ export async function suggestTimetable(
                     }
 
                     if (availableSlots < courseResponse.course?.credits) {
-                        return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: roomtable } };
+                        return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: roomtable,display:display } };
                     }
                 } else {
-                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null,display:null } };
                 }
             } else {
                 let bestScoreCopy = bestScore;
                 const preferredRoomInfo = roomsInfo.find(room => room?.name === preferredRooms);
                 if (!preferredRoomInfo) {
-                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null,display:null } };
                 }
 
                 let feasible = scoreRooms(preferredRoomInfo.timetable);
@@ -200,6 +203,7 @@ export async function suggestTimetable(
                             const col = index % bestScore[0].length;
                             timetable[row][col] = courseResponse.course.name;
                             roomtable[row][col] = preferredRoomInfo.name;
+                            display[row][col]=courseResponse.course.code;
                             bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                             for (let i = 0; i < bestScoreCopy[row].length; i++) {
                                 bestScoreCopy[row][i] = -1;
@@ -237,6 +241,7 @@ export async function suggestTimetable(
                                         const col = index % bestScoreCopyCopy[0].length;
                                         timetable[row][col] = courseResponse.course.name;
                                         roomtable[row][col] = roomInfo.name;
+                                        display[row][col]=courseResponse.course.code;
                                         bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                                         for (let i = 0; i < bestScoreCopyCopy[row].length; i++) {
                                             bestScoreCopyCopy[row][i] = -1;
@@ -248,7 +253,7 @@ export async function suggestTimetable(
                         }
 
                         if (remainingCredits > 0)
-                            return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null } };
+                            return { status: statusCodes.SERVICE_UNAVAILABLE, returnVal: { timetable: timetable, roomtable: null,display:null } };
                     } else {
                         for (let k = 0; k < courseResponse.course.credits; k++) {
                             let sortedScores = bestScore.flat().map((score, index) => ({ score, index }))
@@ -258,6 +263,7 @@ export async function suggestTimetable(
                             const col = index % bestScore[0].length;
                             timetable[row][col] = courseResponse.course.name;
                             roomtable[row][col] = preferredRoomInfo.name;
+                            display[row][col]=courseResponse.course.code;
                             bFactor[row] = bFactor[row] + courseResponse.course.bFactor;
                             for (let i = 0; i < bestScore[row].length; i++) {
                                 bestScore[row][i] = -1;
@@ -265,15 +271,15 @@ export async function suggestTimetable(
                         }
                     }
                 } else {
-                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null } };
+                    return { status: statusCodes.BAD_REQUEST, returnVal: { timetable: [[errMessage]], roomtable: null ,display:null} };
                 }
             }
         }
         console.log(roomtable)
-        return { status: statusCodes.OK, returnVal: { timetable: timetable, roomtable: roomtable } };
+        return { status: statusCodes.OK, returnVal: { timetable: timetable, roomtable: roomtable,display:display } };
     } catch (error) {
         console.error(error);
-        return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null } };
+        return { status: statusCodes.INTERNAL_SERVER_ERROR, returnVal: { timetable: [[errMessage]], roomtable: null ,display:null} };
     }
 }
 export async function recommendCourse(

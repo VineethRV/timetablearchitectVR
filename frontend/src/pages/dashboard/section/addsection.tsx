@@ -49,6 +49,7 @@ const AddSectionPage: React.FC = () => {
   const [labOptions, setLabOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [timetable,setTimetable]=useState<string[][]>(new Array(6).fill(0).map(() => new Array(6).fill("Free")));
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
@@ -208,7 +209,7 @@ const AddSectionPage: React.FC = () => {
           switch (statusCode) {
             case statusCodes.OK:
               SetshowTT(true);
-              const convertedTimetable = res.data.returnVal.timetable.map(
+              const convertedTimetable = res.data.returnVal.display.map(
                 (row:any) =>
                   row.map((value:any) =>
                     value === "0" ? "Free" : value === "1" ? "Blocked" : value
@@ -216,6 +217,7 @@ const AddSectionPage: React.FC = () => {
               );
               setRoomTT(convertTableToString(res.data.returnVal.roomtable));
               setButtonStatus1(convertedTimetable);
+              setTimetable(res.data.returnVal.timetable);
               return "Generated timetable!!";
             case statusCodes.UNAUTHORIZED:
               return "You are not authorized!";
@@ -247,7 +249,7 @@ const AddSectionPage: React.FC = () => {
 
   const handleSubmit=()=>{
       const name=form.getFieldValue("className");
-      const batch=form.getFieldValue("classBatch");
+      const batch=2025;
       const courses=tableData.map((item)=>item.course)
       const teachers=tableData.map((item)=>item.teacher)
       const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
@@ -382,21 +384,10 @@ const AddSectionPage: React.FC = () => {
           form={form}
           layout="vertical"
           requiredMark
-          className="w-96"
+          className="w-200"
         >
-          <Form.Item name="className" label="Class Name" required>
+          <Form.Item name="className" label="Class Name" required className="w-96">
             <Input placeholder="Name" className="font-inter font-normal" />
-          </Form.Item>
-          <Form.Item
-            name="classBatch"
-            label="Class Batch(Year of Admission)"
-            required
-          >
-            <InputNumber
-              placeholder="Year of Admission"
-              min={2020}
-              className="font-inter font-normal w-96"
-            />
           </Form.Item>
           <label>
             <div>
@@ -421,69 +412,72 @@ const AddSectionPage: React.FC = () => {
                 onOk={handleModalSubmit}
                 cancelText="Cancel"
               >
-                <Form form={form} layout="vertical">
+                <Form form={form} layout="vertical" >
                   <Form.Item
-                    rules={[
-                      { required: true, message: "Please input Field 1!" },
-                    ]}
+                  rules={[
+                    { required: true, message: "Please input Field 1!" },
+                  ]}
                   >
-                    <div>
-                      <Form.Item
-                        name="key"
-                        initialValue={null}
-                        className="hidden"
-                      ></Form.Item>
-                      <Form.Item
-                        required
-                        label="Course"
-                        name="course"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select a Course!",
-                          },
-                        ]}
-                      >
-                        <Select
-                          options={courseOptions.map((course) => ({
-                            label: course,
-                            value: course,
-                          }))}
-                          placeholder="Course"
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        required
-                        label="Teacher"
-                        name="teachers"
-                        rules={[
-                          {
-                            required: true,
-                            message: "Please select a teacher!",
-                          },
-                        ]}
-                      >
-                        <Select
-                          options={teacherOptions.map((teacher) => ({
-                            label: teacher,
-                            value: teacher,
-                          }))}
-                          placeholder="teacher"
-                        />
-                      </Form.Item>
-                      <Form.Item
-                        label="Any particular room to be used?"
-                        name="rooms"
-                      >
-                        <Select
-                          options={roomOptions.map((room) => ({
-                            value: room,
-                            label: room,
-                          }))}
-                          placeholder="default room"
-                        />
-                      </Form.Item>
-                    </div>
+                  <div>
+                    <Form.Item
+                    name="key"
+                    initialValue={null}
+                    className="hidden"
+                    ></Form.Item>
+                    <Form.Item
+                    required
+                    label="Course"
+                    name="course"
+                    rules={[
+                      {
+                      required: true,
+                      message: "Please select a Course!",
+                      },
+                    ]}
+                    >
+                    <Select
+                      className="w-full"
+                      options={courseOptions.map((course) => ({
+                      label: course,
+                      value: course,
+                      }))}
+                      placeholder="Course"
+                    />
+                    </Form.Item>
+                    <Form.Item
+                    required
+                    label="Teacher"
+                    name="teachers"
+                    rules={[
+                      {
+                      required: true,
+                      message: "Please select a teacher!",
+                      },
+                    ]}
+                    >
+                    <Select
+                      className="w-full"
+                      options={teacherOptions.map((teacher) => ({
+                      label: teacher,
+                      value: teacher,
+                      }))}
+                      placeholder="teacher"
+                    />
+                    </Form.Item>
+                    <Form.Item
+                    label="Any particular room to be used?"
+                    name="rooms"
+                    >
+                    <Select
+                      className="w-full"
+                      options={roomOptions.map((room) => ({
+                      value: room,
+                      label: room,
+                      }))}
+                      placeholder="default room"
+                    />
+                    </Form.Item>
+                  </div>
                   </Form.Item>
                 </Form>
               </Modal>
@@ -495,13 +489,13 @@ const AddSectionPage: React.FC = () => {
             onEditClick={handleEditClick}
           />
           <br></br>
-          <Form.Item name="Electives" label="Electives and Common time courses">
+          <Form.Item name="Electives" label="Electives and Common time courses"className="w-96">
             <Select options={electiveOptions.map((ecourse) => ({
                             label: ecourse,
                             value: ecourse,
                           }))} placeholder="Electives" className="font-normal w-96" />
           </Form.Item>
-          <Form.Item name="Labs" label="Lab courses applicable for the section">
+          <Form.Item name="Labs" label="Lab courses applicable for the section" className="w-96">
             <Select options={labOptions.map((lcourse) => ({
                             label: lcourse,
                             value: lcourse,
@@ -510,6 +504,7 @@ const AddSectionPage: React.FC = () => {
           <Form.Item
             label="Select the default Room for the section"
             name="Room"
+            className="w-96"
           >
             <Select
               placeholder="Room"
@@ -536,13 +531,13 @@ const AddSectionPage: React.FC = () => {
               editable={true}
             />
           </div>
-          <div className="flex space-x-4 justify-end w-[55vm]">
+            <div className="flex space-x-4 justify-end w-[55vm] mr-4">
             <Form.Item>
               <Button
-                onClick={clearFields}
-                className="border-[#636AE8FF] text-[#636AE8FF] w-[75px] h-[32px]"
+              onClick={clearFields}
+              className="border-[#636AE8FF] text-[#636AE8FF] w-[75px] h-[32px]"
               >
-                Clear
+              Clear
               </Button>
             </Form.Item>
             <Button
@@ -553,13 +548,13 @@ const AddSectionPage: React.FC = () => {
             </Button>
             <Form.Item>
               <Button
-                onClick={handleSaveTimetable}
-                className="bg-[#636AE8FF] text-[#FFFFFF] w-[75px] h-[32px]"
+              onClick={handleSaveTimetable}
+              className="bg-[#636AE8FF] text-[#FFFFFF] w-[75px] h-[32px]"
               >
-                Save
+              Save
               </Button>
             </Form.Item>
-          </div>
+            </div>
           <div ref={bottomRef}>
             {showTT ? (
               <div>
@@ -575,7 +570,8 @@ const AddSectionPage: React.FC = () => {
                     );
                     return mostFrequent === "0" ? acc : mostFrequent;
                   }, "0"): item.room))}
-                 
+                  timetable={timetable}
+                  setTimetable={setTimetable}
                   roomTT={roomTT}
                   setRoomTT={setRoomTT}
                   // timetableScore={timetableScore}
