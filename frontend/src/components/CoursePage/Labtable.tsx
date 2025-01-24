@@ -19,7 +19,7 @@ interface labs{
     batches: string;
     teachers: string;
     rooms: string;
-    semester: string;
+    semester: number;
     department: string | null;
 }
 
@@ -49,21 +49,23 @@ const LabsTable = ({
       const batches = lab.batches?.split(";") || [];
       const rooms = lab.rooms?.split(";") || [];
       const teachers = lab.teachers?.split(";") || [];
-      const semester=lab.semester
+      const semester = lab.semester ? lab.semester : 0; // Convert to string
+      const department = lab.department || ""; // Default to an empty string if null
+  
       const maxLength = Math.max(batches.length, rooms.length, teachers.length);
-      
-      // Create rows for each batch, teacher, and room pairing
+  
       return Array.from({ length: maxLength }, (_, index) => ({
-        key: `${lab.name}`,  // Unique key for each row
-        name: index===0?lab.name.trim():"",
+        key: `${lab.name}-${index}`,
+        name: index === 0 ? lab.name.trim() : "",
         batches: batches[index]?.trim() || "",
         teachers: teachers[index]?.trim() || "",
         rooms: rooms[index]?.trim() || "",
-        semester:semester,
-        department:lab.department
+        semester: semester, 
+        department: department, 
       }));
     });
   };
+  
   const formattedLabData = React.useMemo(() => formatLabData(labData), [labData]);
   // Row Selection logic by ant design
   const rowSelection: TableProps<labs>["rowSelection"] = {
@@ -90,7 +92,7 @@ const LabsTable = ({
           case statusCodes.OK:
 
           Labs.forEach(async (record) => {
-            const teachers=record.teachers.split(",");
+            const teachers=record.teachers.split(/[,/]/);
             console.log("teachers",teachers)
             console.log("record",record)
             const rooms=record.rooms.split(",");
@@ -112,7 +114,7 @@ const LabsTable = ({
                 const teacherlabTT = stringToTable(resT.data.message.labtable);
                 teacherTT.forEach((day, i) => {
                   day.forEach((hour, j) => {
-                    if (hour == record.key) {
+                    if (hour == record.name) {
                       teacherTT[i][j] = "Free";
                       teacherlabTT[i][j] = "Free";
                     }
@@ -148,7 +150,7 @@ const LabsTable = ({
                 const roomTT = stringToTable(resR.data.message.timetable);
                 roomTT.forEach((day, i) => {
                   day.forEach((hour, j) => {
-                    if (hour == record.key) {
+                    if (hour == record.name) {
                       roomTT[i][j] = "Free";
                     }
                   });
@@ -171,7 +173,7 @@ const LabsTable = ({
             setLabsData((labs) => {
               const newRooms = labs.filter((t) => {
                 for (let i = 0; i < Labs.length; i++) {
-                  if (Labs[i].key == t.name) return false;
+                  if (Labs[i].name == t.name) return false;
                 }
                 return true;
               });
@@ -240,7 +242,7 @@ const LabsTable = ({
       dataIndex: "teachers",
       render: (_, { teachers }) => (
         <>
-          {teachers?.split(",").map((tag) => (
+          {teachers?.split(/[,/]/).map((tag) => (
             <Tag color="blue" key={tag}>
               {tag.toUpperCase()}
             </Tag>
