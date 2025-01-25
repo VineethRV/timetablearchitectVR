@@ -387,6 +387,8 @@ export async function getTeachers(
                   initials: true,
                   email: true,
                   orgId: true,
+                  timetable: true,
+                  labtable: true
                 }
               }
             }

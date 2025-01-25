@@ -272,14 +272,9 @@ export async function getRooms(
               department: true,
               lab: true,
               orgId: true,
+              timetable: true,
             },
-          })
-          .then((results) =>
-            results.map((room) => ({
-              ...room,
-              timetable: null, // Default value, since it's not queried
-            }))
-          );
+          });
       } else {
         rooms = await prisma.room
           .findMany({
@@ -292,14 +287,9 @@ export async function getRooms(
               department: true,
               lab: true,
               orgId: true,
+              timetable: true,
             },
           })
-          .then((results) =>
-            results.map((room) => ({
-              ...room,
-              timetable: null, // Default value, since it's not queried
-            }))
-          );
       }
       return {
         status: statusCodes.OK,

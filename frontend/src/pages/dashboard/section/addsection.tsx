@@ -228,7 +228,7 @@ const AddSectionPage: React.FC = () => {
           }
         },
         error: (error) => {
-          console.error("Error:", error.response?.data || error.message);
+          console.error("Error:", error.response || error.message);
           return "Failed to generate timetable. Please try again!";
         },
       });

@@ -576,6 +576,7 @@ app.post("/api/labs", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { name, semester, batches, teachers, rooms, timetables, department } =
     req.body;
+    console.log(name,semester,batches,teachers,rooms,timetables,department)
   if (!token || !name) {
     return res
       .status(200)

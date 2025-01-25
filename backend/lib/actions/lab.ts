@@ -10,7 +10,7 @@ export async function createLab(
   name: string,
   semester: number,
   batches: string[],
-  teachers: string[][],
+  teachers: string,
   rooms: string[][],
   timetables: string[][],
   department?: string
@@ -44,9 +44,9 @@ export async function createLab(
           name: name,
           semester: semester,
           batches: batches.join(";"),
-          teachers: teachers.map((batch) => batch.join(",")).join(";"),
+          teachers: teachers,
           rooms: rooms.map((batch) => batch.join(",")).join(";"),
-          timetable: timetables.map((row) => row.join(",")).join(";"),
+          timetable: timetables.map((batch) => batch.join(",")).join(";"),
           department:
             user.role == "admin" && department ? department : user.department,
           orgId: user.orgId,

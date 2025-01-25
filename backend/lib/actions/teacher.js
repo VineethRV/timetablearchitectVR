@@ -459,6 +459,8 @@ function getTeachers(JWTtoken) {
                                         initials: true,
                                         email: true,
                                         orgId: true,
+                                        timetable: true,
+                                        labtable: true
                                     }
                                 }
                             }
