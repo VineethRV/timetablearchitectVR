@@ -3,6 +3,8 @@ import { PrismaClient } from "@prisma/client";
 import { Teacher } from "../types/main";
 import { statusCodes } from "../types/statusCodes";
 import { connect } from "http2";
+import { convertStringToTable } from "../functions/common";
+import { STATUS_CODES } from "http";
 
 const prisma = new PrismaClient();
 
@@ -537,6 +539,72 @@ export async function deleteTeachers(
   } catch {
     return {
       status: statusCodes.INTERNAL_SERVER_ERROR,
+    };
+  }
+}
+
+export async function getConsolidated(
+  JWTtoken: string
+): Promise<{ status: number; consolidatedTable: string[][][] | null }> {
+  try{
+    const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (status==statusCodes.OK && user?.orgId == null ) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        consolidatedTable: null,
+      };
+    }
+    let consolidatedTable: string[][][] = Array(6).fill(null).map(() =>
+      Array(6).fill(null).map(() =>
+        Array(0).fill("")
+      )
+    );
+    let teachers;
+    if(user && user.role=="admin" ){
+      teachers = await prisma.teacher.findMany({
+        where: {
+          orgId: user.orgId?user.orgId:-1,
+        },
+        select: {
+          name: true,
+          timetable: true,
+          labtable: true,
+        },
+      });
+    }
+    else if(user){
+      teachers = await prisma.teacher.findMany({
+        where: {
+          orgId: user.orgId?user.orgId:-1,
+          department: user.department,
+        },
+        select: {
+          name: true,
+          timetable: true,
+          labtable: true,
+        },
+      });
+    }
+    teachers?.forEach((teacher) => {
+      const timetable = teacher.timetable;
+      const labtable = teacher.labtable;
+      const teacherTable = convertStringToTable(timetable);
+      const teacherLabTable = convertStringToTable(labtable);
+      for (let i = 0; i < 6; i++) {
+        for (let j = 0; j < 6; j++) {
+          if(teacherTable[i][j]=="0" && teacherLabTable[i][j]=="0"){
+            consolidatedTable[i][j].push(teacher.name);
+          }
+        }
+      }
+    });
+    return {consolidatedTable: consolidatedTable, status: statusCodes.OK};
+  }
+  catch{
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      consolidatedTable: null,
     };
   }
 }
