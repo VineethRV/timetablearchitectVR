@@ -32,11 +32,11 @@ const LabsTable = ({
 }) => {
   const navigate = useNavigate();
   const [_searchText, _setSearchText] = useState('');
-  const handleEditClick = (name: string, department: string) => {
+  const handleEditClick = (name: string, department: string,semester:string) => {
     navigate(
       `/dashboard/courses/labs/edit/${encodeURIComponent(
         name
-      )}/${encodeURIComponent(department)}`
+      )}/${encodeURIComponent(department)}/${encodeURIComponent(semester)}`
     );
   };
 
@@ -282,7 +282,7 @@ const LabsTable = ({
               <Tooltip title="Edit">
           <Button
             type="primary"
-            onClick={() => handleEditClick(record.name,record.department)}
+            onClick={() => handleEditClick(record.name,record.department,record.semester)}
             shape="circle"
             icon={<MdEdit />}
           />
