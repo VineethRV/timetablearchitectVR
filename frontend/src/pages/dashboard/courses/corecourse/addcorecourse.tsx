@@ -6,6 +6,7 @@ import {
   Upload,
   InputNumber,
   message,
+  Select,
 } from "antd";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +14,15 @@ import { statusCodes } from "../../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../../config";
 import axios from "axios";
-
-
+import { DEPARTMENTS_OPTIONS } from "../../../../../info";
+import { useEffect, useState } from "react";
+import { getPosition } from "../../../../utils/main";
 
 const AddCoursepage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const [admin, setAdmin] = useState<Boolean>(false);
+  const [userDepartment, setDepartment] = useState("");
 
   function clearFields() {
     form.setFieldValue('coursename', "");
@@ -27,12 +31,19 @@ const AddCoursepage: React.FC = () => {
     form.setFieldValue('bfactor',"");
     form.setFieldsValue({rooms:null});
   }
-  
+
+  useEffect(() => {
+    getPosition(setDepartment, setAdmin);
+  }, []);
+
   function addCourse() {
     const coursename = form.getFieldValue('coursename');
     const coursecode = form.getFieldValue('coursecode');
     const credits = form.getFieldValue('Hpc');
     const bfactor = form.getFieldValue('bfactor');
+    const department = admin
+      ? form.getFieldValue("department")
+      : userDepartment;
     if (!coursename||!coursecode|| !credits) {
       message.error("Fill all the required Fields");
       return;
@@ -45,6 +56,7 @@ const AddCoursepage: React.FC = () => {
         semester: Number(localStorage.getItem("semester")),
         bfactor: bfactor,
         credits:credits,
+        department: department,
       },
       {
         headers: {
@@ -78,7 +90,6 @@ const AddCoursepage: React.FC = () => {
       },
     });
   }
-
 
   return (
     <div className="text-xl font-bold text-[#171A1F] pl-8 py-6 h-screen overflow-y-scroll">
@@ -116,6 +127,22 @@ const AddCoursepage: React.FC = () => {
           </Form.Item>
           <Form.Item name="coursecode" label="Course Code" required>
             <Input placeholder="Course Code" className="font-normal" />
+          </Form.Item>
+          <Form.Item
+            name="department"
+            initialValue={admin ? undefined : userDepartment} // Set default value when not admin
+            style={{ display: admin ? "block" : "none" }} // Hide the field if not admin
+          >
+            <div>
+              <span>Department</span>
+              <Select
+                showSearch
+                placeholder="Select a department"
+                optionFilterProp="label"
+                options={DEPARTMENTS_OPTIONS}
+                className="font-normal w-96"
+              />
+            </div>
           </Form.Item>
           <Form.Item label="Hours per week" name="Hpc" required>
             <InputNumber

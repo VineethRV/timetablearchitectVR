@@ -12,7 +12,6 @@ export interface Section
 {
   id: number;
     name: string;
-  batch : number;
   courses: string[];
   teachers: string[];
   rooms: string[];
@@ -55,10 +54,6 @@ const SectionTable = ({
     {
       title: "Name",
       dataIndex: "name",
-    },
-    {
-      title: "Batch",
-      dataIndex: "batch",
     },
     {
       title: "Courses",

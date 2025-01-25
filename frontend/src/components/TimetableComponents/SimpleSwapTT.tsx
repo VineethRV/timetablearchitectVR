@@ -148,7 +148,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
     key: rowIndex.toString(),
     day: day,
     buttons: timeslots.map((_, colIndex) => (
-      <Tooltip title={stringToTable(roomTT)[rowIndex][colIndex]+(teachers[courses.indexOf(timetable[rowIndex][colIndex])]?", "+teachers[courses.indexOf(timetable[rowIndex][colIndex])]:"")}>
+      <Tooltip title={stringToTable(roomTT)[rowIndex][colIndex]=="Free"?"":stringToTable(roomTT)[rowIndex][colIndex]+(teachers[courses.indexOf(timetable[rowIndex][colIndex])]?", "+teachers[courses.indexOf(timetable[rowIndex][colIndex])]:"")}>
         <Button
           key={colIndex}
           className={`w-20 h-8 m-1 text-xs font-semibold rounded-md overflow-hidden ${
