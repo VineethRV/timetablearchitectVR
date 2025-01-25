@@ -352,7 +352,7 @@ const EditLabPage: React.FC = () => {
         navigate("/signIn");
         return;
       }
-  
+      const toastId = toast.loading(`Updating lab...`);
       const name = form.getFieldValue("batchSetName");
       const { courseSets, teachers, rooms } = getCourseDataF(tableData);
         
@@ -466,7 +466,6 @@ const EditLabPage: React.FC = () => {
   
           // Update each teacher for the current courseSet sequentially
           for (const teacher of teacherlist[i]) {
-            console.log("Updating teacher:", teacher, "for courseSet:", courseSet);
   
             const resT = await axios.post(
               BACKEND_URL + "/teachers/peek",
@@ -509,13 +508,10 @@ const EditLabPage: React.FC = () => {
                 },
               }
             );
-  
-            console.log(`Teacher updated: ${teacher}`);
           }
   
           // Update each room for the current courseSet sequentially
           for (const room of rooms[i]) {
-            console.log("Updating room:", room, "for courseSet:", courseSet);
   
             const resR = await axios.post(
               BACKEND_URL + "/rooms/peek",
@@ -556,9 +552,9 @@ const EditLabPage: React.FC = () => {
               }
             );
   
-            console.log(`Room updated: ${room}`);
           }
         }
+        toast.dismiss(toastId);
         message.success("Lab updated successfully!");
       } else {
         message.error(response.data.message || "Failed to update");
