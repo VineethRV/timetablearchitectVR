@@ -57,7 +57,7 @@ const EditSectionPage: React.FC = () => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
   const [roomTT,setRoomTT]=useState("0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0")
-  const { id } = useParams();
+  const { id,oldname } = useParams();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -164,7 +164,7 @@ const EditSectionPage: React.FC = () => {
             : Array(6).fill(Array(6).fill("Free"));
             console.log("timetableString",timetableString)
             setButtonStatus1(timetableString)
-             setTimetable(res.data.message.timeTable);
+             setTimetable(stringToTable(res.data.message.timeTable));
              SetshowTT(true);
             toast.success("Section details fetched successfully!");
             break;
@@ -246,7 +246,7 @@ const EditSectionPage: React.FC = () => {
           return;
         }
       }
-  
+      console.log(1)
       // Generate the final timetable
       console.log(courses);
       const promise = axios.post(
@@ -298,7 +298,7 @@ const EditSectionPage: React.FC = () => {
         },
       });
     } catch (error:any) {
-      console.error("Error:", error.message);
+      console.error("Error:", error);
       toast.error("An error occurred while processing the timetable.");
     }
   }
@@ -313,58 +313,68 @@ const EditSectionPage: React.FC = () => {
   };
 
   const handleSubmit=()=>{
-      const name=form.getFieldValue("className");
-      const batch=2025;
-      const courses=tableData.map((item)=>item.course)
-      const teachers=tableData.map((item)=>item.teacher)
-      const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
-      const semester=Number(localStorage.getItem("semester"))
-      const defaultRooms=form.getFieldValue("Room")
-      const timetables= (timetable.map((row=>row.join(',')))).join(';');
-      console.log(name,batch,courses,teachers,rooms,semester,timetable)
-      const promise= axios.post(
-        BACKEND_URL+"/saveTimetable",
-        { 
-          name:name,
-          batch:batch,
-          courses:courses,
-          teachers:teachers,
-          rooms:rooms,
-          defaultRooms:defaultRooms,
-          semester:semester,
-          timetable:timetables,
-          roomTimetable: roomTT
-        },
-        {
-          headers: {
-            authorization: localStorage.getItem("token"),
-          }
+    const name=form.getFieldValue("className");
+    const courses=tableData.map((item)=>item.course)
+    const teachers=tableData.map((item)=>item.teacher)
+    const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
+    const defaultRooms=form.getFieldValue("Room")?form.getFieldValue("Room"):null
+    const electives=form.getFieldValue("Electives")?form.getFieldValue("Electives"):null
+    const labs=form.getFieldValue("Labs")?form.getFieldValue("Labs"):null
+    const courseTT=convertTableToString(buttonStatus1);
+    console.log(courseTT)
+    const timetables= (timetable.map((row=>row.join(',')))).join(';');
+    console.log(name,courses,teachers,rooms,timetable)
+      const section = {
+        name: name,
+        courses: courses,
+        teachers: teachers,
+        rooms: rooms,
+        electives: electives,
+        labs: labs,
+        defaultRooms: defaultRooms,
+        semester: Number(localStorage.getItem("semester")),
+        timetable: timetables,
+        roomTimetable: roomTT,
+        courseTimetable: courseTT,
+      };
+    const promise= axios.put(
+      BACKEND_URL+"/sections",
+      { 
+        id:Number(id),
+        name: oldname,
+        section: section,
+      },
+      {
+        headers: {
+          authorization: localStorage.getItem("token"),
         }
-      );
-      toast.promise(promise, {
-        loading: "Saving timetable...",
-        success: (res) => {
-          const statusCode = res.status;
-          console.log(res.data)
-          switch (statusCode) {
-            case statusCodes.OK:
-              form.resetFields();
-              SetshowTT(false)
-              return "Saved timetable!!"
-            case statusCodes.UNAUTHORIZED:
-              return "You are not authorized!";
-            case statusCodes.INTERNAL_SERVER_ERROR:
-              return "Internal server error";
-            default:
-              return "Failed to save timetable";
-          }
-        },
-        error: (error) => {
-          console.error("Error:", error.response?.data || error.message);
-          return "Failed to save timetable. Please try again!";
-        },
-      });
-  }
+      }
+    );
+    toast.promise(promise, {
+      loading: "Saving timetable...",
+      success: (res) => {
+        const statusCode = res.data.status;
+        console.log(res.data)
+        switch (statusCode) {
+          case statusCodes.OK:
+            form.resetFields();
+            SetshowTT(false)
+            return "Saved timetable!!"
+          case statusCodes.UNAUTHORIZED:
+            return "You are not authorized!";
+          case statusCodes.INTERNAL_SERVER_ERROR:
+            return "Internal server error";
+          default:
+            return "Failed to save timetable";
+        }
+      },
+      error: (error) => {
+        console.error("Error:", error.response?.data || error.message);
+        return "Failed to save timetable. Please try again!";
+      },
+    });
+}
+
 
 
   const handleSaveTimetable = () => {

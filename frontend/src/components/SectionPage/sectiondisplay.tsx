@@ -94,7 +94,7 @@ const SectionTable = ({
               <Button
                 type="primary"
                 shape="circle"
-                onClick={()=>{handleEdit(record.id)}}
+                onClick={()=>{handleEdit(record.id,record.name)}}
                 icon={<MdEdit />}
               />
             </Tooltip>
@@ -119,9 +119,9 @@ const SectionTable = ({
       },
   ];
 
-  function handleEdit(id:number){
+  function handleEdit(id:number,oldname:string){
     navigate(
-      `/dashboard/section/edit/${encodeURIComponent(id)}`
+      `/dashboard/section/edit/${encodeURIComponent(id)}/${encodeURIComponent(oldname)}`
     );
   }
   function deleteSection(record: Section) {

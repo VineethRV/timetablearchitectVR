@@ -99,7 +99,7 @@ function App() {
           <Route path="/dashboard/section" element={<Section />}>
           <Route index element={<SectionTabledisplay />} />
             <Route path="/dashboard/section/add" element={<AddSectionPage />} />
-            <Route path="/dashboard/section/edit/:id" element={<EditSectionPage />} />
+            <Route path="/dashboard/section/edit/:id/:oldname" element={<EditSectionPage />} />
           </Route>
           <Route path="/dashboard/admin/access" element={<Access />} />
         </Route>

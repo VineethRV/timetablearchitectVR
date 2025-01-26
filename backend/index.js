@@ -17,7 +17,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable, updateTimetable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -822,6 +822,30 @@ app.post("/api/sections/peek", async (req, res) => {
   try {
     const result = await peekTimetable(token, id);
     res.status(200).json({ status: result.status, message: result.section });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
+app.put("/api/sections", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const {id, section,name } = req.body;
+  console.log(id,section,name)
+  if(!token||!id||!section||!name)
+    return res.status(200).json({
+      status: 400,
+      message: "Token,id,section and name required",
+    });
+
+  try {
+
+    const result = await updateTimetable(
+      token,
+      id,
+      name,
+      section,
+    );
+    res.status(200).json({ status: result.status });
   } catch (error) {
     res.status(200).json({ status: 500, message: "Server error" });
   }

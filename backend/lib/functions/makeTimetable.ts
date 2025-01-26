@@ -431,9 +431,6 @@ export async function saveTimetable(
           };
         }
         const department=user.department
-        const newCourse = await prisma.section.create({
-          data: Section,
-        });
         const tt=convertStringToTable(timetable)
         for (let i = 0; i < tt.length; i++) {
             for (let j = 0; j < tt[i].length; j++) {
@@ -650,8 +647,122 @@ export async function peekTimetable(
     }
 
 }
-// export async function suggestLab(
 
-// ){
+export async function updateTimetable(
+  JWTtoken: string,
+  id: number,
+  oldname: string,
+  section: Section,
+): Promise<{ status: number }> {
+  try {
+    const { status, user } = await auth.getPosition(JWTtoken);
 
-// }
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+      };
+    }
+
+    if (status == statusCodes.OK && user && user.role != "viewer") {
+      const existingSection = await prisma.section.findFirst({
+        where: {
+          id: id,
+          orgId: user.orgId,
+        },
+      });
+
+      if (!existingSection) {
+        return { status: statusCodes.NOT_FOUND };
+      }
+
+      const updatedSection = await prisma.section.update({
+        where: { id: existingSection.id },
+        data: {
+            name: section.name,
+            courses: section.courses,
+            teachers:section.teachers,
+            rooms:section.rooms,
+            elective:section.elective,
+            semester: section.semester,
+            lab:section.lab,
+            defaultRoom:section.defaultRoom,
+            timeTable:section.timeTable,
+            roomTable:section.roomTable,
+            courseTable:section.courseTable
+        },
+      });
+      const department=user.department
+      const tt=convertStringToTable(section.timeTable)
+      for (let i = 0; i < tt.length; i++) {
+          for (let j = 0; j < tt[i].length; j++) {
+            if (tt[i][j] !== "0") {
+              const tCourse=tt[i][j]
+              for(let k=0;k<section.courses.length;k++)
+              {
+                  if(tCourse==section.courses[k])
+                  {
+                      const tTeacher=section.teachers[k];
+                      console.log(tTeacher)
+                      const teacherResponse = await peekTeacher(JWTtoken, tTeacher,department);
+                      if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
+                          return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                      }
+                      const tTeacherTT=convertStringToTable(teacherResponse.teacher.timetable)
+                      tTeacherTT[i][j]=section.name;
+                      teacherResponse.teacher.timetable=convertTableToString(tTeacherTT)
+                      const updateteacher=await updateTeachers(JWTtoken,tTeacher,department,teacherResponse.teacher)
+                      if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
+                          return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                      }
+                      console.log(updateteacher.teacher)
+                      break;
+                  }
+              }
+            }
+          }
+        }
+        const roomTT=convertStringToTable(section.roomTable)
+        console.log(roomTT)
+        for(let i=0;i<roomTT.length;i++)
+        {
+          for(let j=0;j<roomTT[i].length;j++)
+          {
+              if(roomTT[i][j]!=="0")
+              {
+                   const existingRoom = await prisma.room.findFirst({
+                            where: {
+                              orgId: user.orgId,
+                              department:
+                                user.role = department,
+                              name: roomTT[i][j],
+                            },
+                          });
+                  
+                          if (!existingRoom) {
+                            return {
+                              status: statusCodes.NOT_FOUND,
+                            };
+                          }
+                          const TT=convertStringToTable(existingRoom.timetable)
+                          TT[i][j]=section.name
+                          await prisma.room.update({
+                            where: {
+                              id: existingRoom.id,
+                            },
+                            data: {
+                              timetable: convertTableToString(TT),
+                            },
+                          });
+                  }
+              }
+          }
+      return { status: statusCodes.OK };
+    }
+    return {
+      status: status == statusCodes.OK ? statusCodes.FORBIDDEN : status,
+    };
+  } catch (error) {
+    console.error(error);
+    return { status: statusCodes.INTERNAL_SERVER_ERROR };
+  }
+}

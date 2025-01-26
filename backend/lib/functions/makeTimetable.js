@@ -42,6 +42,7 @@ exports.saveTimetable = saveTimetable;
 exports.getTimetable = getTimetable;
 exports.deleteSection = deleteSection;
 exports.peekTimetable = peekTimetable;
+exports.updateTimetable = updateTimetable;
 var course_1 = require("../actions/course");
 var client_1 = require("@prisma/client");
 var auth = require("../actions/auth");
@@ -456,11 +457,11 @@ function recommendCourse(token, teacher, room, blocks) {
 }
 function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs, semester, defaultRooms, timetable, roomTimetable, courseTimetable) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, status_3, user, Section, duplicates, department, newCourse, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, e_1;
+        var _a, status_3, user, Section, duplicates, department, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, e_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    _b.trys.push([0, 22, , 23]);
+                    _b.trys.push([0, 21, , 22]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _b.sent(), status_3 = _a.status, user = _a.user;
@@ -468,8 +469,8 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                             }];
-                    if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 21];
-                    if (!(user && user.role != "viewer")) return [3 /*break*/, 20];
+                    if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 20];
+                    if (!(user && user.role != "viewer")) return [3 /*break*/, 19];
                     Section = {
                         name: name,
                         orgId: user.orgId,
@@ -498,31 +499,26 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                             }];
                     }
                     department = user.department;
-                    return [4 /*yield*/, prisma.section.create({
-                            data: Section,
-                        })];
-                case 3:
-                    newCourse = _b.sent();
                     tt = (0, common_1.convertStringToTable)(timetable);
                     i = 0;
+                    _b.label = 3;
+                case 3:
+                    if (!(i < tt.length)) return [3 /*break*/, 11];
+                    j = 0;
                     _b.label = 4;
                 case 4:
-                    if (!(i < tt.length)) return [3 /*break*/, 12];
-                    j = 0;
-                    _b.label = 5;
-                case 5:
-                    if (!(j < tt[i].length)) return [3 /*break*/, 11];
-                    if (!(tt[i][j] !== "0")) return [3 /*break*/, 10];
+                    if (!(j < tt[i].length)) return [3 /*break*/, 10];
+                    if (!(tt[i][j] !== "0")) return [3 /*break*/, 9];
                     tCourse = tt[i][j];
                     k = 0;
-                    _b.label = 6;
-                case 6:
-                    if (!(k < courses.length)) return [3 /*break*/, 10];
-                    if (!(tCourse == courses[k])) return [3 /*break*/, 9];
+                    _b.label = 5;
+                case 5:
+                    if (!(k < courses.length)) return [3 /*break*/, 9];
+                    if (!(tCourse == courses[k])) return [3 /*break*/, 8];
                     tTeacher = teachers[k];
                     console.log(tTeacher);
                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(JWTtoken, tTeacher, department)];
-                case 7:
+                case 6:
                     teacherResponse = _b.sent();
                     if (teacherResponse.status !== statusCodes_1.statusCodes.OK || !teacherResponse.teacher) {
                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
@@ -531,34 +527,34 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     tTeacherTT[i][j] = name;
                     teacherResponse.teacher.timetable = (0, common_1.convertTableToString)(tTeacherTT);
                     return [4 /*yield*/, (0, teacher_1.updateTeachers)(JWTtoken, tTeacher, department, teacherResponse.teacher)];
-                case 8:
+                case 7:
                     updateteacher = _b.sent();
                     if (updateteacher.status !== statusCodes_1.statusCodes.OK || !updateteacher.teacher) {
                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
                     }
                     console.log(updateteacher.teacher);
-                    return [3 /*break*/, 10];
-                case 9:
+                    return [3 /*break*/, 9];
+                case 8:
                     k++;
-                    return [3 /*break*/, 6];
-                case 10:
-                    j++;
                     return [3 /*break*/, 5];
-                case 11:
-                    i++;
+                case 9:
+                    j++;
                     return [3 /*break*/, 4];
-                case 12:
+                case 10:
+                    i++;
+                    return [3 /*break*/, 3];
+                case 11:
                     roomTT = (0, common_1.convertStringToTable)(roomTimetable);
                     console.log(roomTT);
                     i = 0;
+                    _b.label = 12;
+                case 12:
+                    if (!(i < roomTT.length)) return [3 /*break*/, 18];
+                    j = 0;
                     _b.label = 13;
                 case 13:
-                    if (!(i < roomTT.length)) return [3 /*break*/, 19];
-                    j = 0;
-                    _b.label = 14;
-                case 14:
-                    if (!(j < roomTT[i].length)) return [3 /*break*/, 18];
-                    if (!(roomTT[i][j] !== "0")) return [3 /*break*/, 17];
+                    if (!(j < roomTT[i].length)) return [3 /*break*/, 17];
+                    if (!(roomTT[i][j] !== "0")) return [3 /*break*/, 16];
                     return [4 /*yield*/, prisma.room.findFirst({
                             where: {
                                 orgId: user.orgId,
@@ -566,7 +562,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                                 name: roomTT[i][j],
                             },
                         })];
-                case 15:
+                case 14:
                     existingRoom = _b.sent();
                     if (!existingRoom) {
                         return [2 /*return*/, {
@@ -583,35 +579,35 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                                 timetable: (0, common_1.convertTableToString)(TT),
                             },
                         })];
-                case 16:
+                case 15:
                     _b.sent();
-                    _b.label = 17;
-                case 17:
+                    _b.label = 16;
+                case 16:
                     j++;
-                    return [3 /*break*/, 14];
-                case 18:
-                    i++;
                     return [3 /*break*/, 13];
-                case 19: return [2 /*return*/, {
+                case 17:
+                    i++;
+                    return [3 /*break*/, 12];
+                case 18: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.OK,
                     }];
-                case 20: 
+                case 19: 
                 // If role is viewer
                 return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.FORBIDDEN
                     }];
-                case 21: 
+                case 20: 
                 // If status is not OK
                 return [2 /*return*/, {
                         status: status_3,
                     }];
-                case 22:
+                case 21:
                     e_1 = _b.sent();
                     console.error(e_1);
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR
                         }];
-                case 23: return [2 /*return*/];
+                case 22: return [2 /*return*/];
             }
         });
     });
@@ -767,6 +763,151 @@ function peekTimetable(JWTtoken, id) {
         });
     });
 }
-// export async function suggestLab(
-// ){
-// }
+function updateTimetable(JWTtoken, id, oldname, section) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_7, user, existingSection, updatedSection, department, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, error_5;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 21, , 22]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _b.sent(), status_7 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                            }];
+                    }
+                    if (!(status_7 == statusCodes_1.statusCodes.OK && user && user.role != "viewer")) return [3 /*break*/, 20];
+                    return [4 /*yield*/, prisma.section.findFirst({
+                            where: {
+                                id: id,
+                                orgId: user.orgId,
+                            },
+                        })];
+                case 2:
+                    existingSection = _b.sent();
+                    if (!existingSection) {
+                        return [2 /*return*/, { status: statusCodes_1.statusCodes.NOT_FOUND }];
+                    }
+                    return [4 /*yield*/, prisma.section.update({
+                            where: { id: existingSection.id },
+                            data: {
+                                name: section.name,
+                                courses: section.courses,
+                                teachers: section.teachers,
+                                rooms: section.rooms,
+                                elective: section.elective,
+                                semester: section.semester,
+                                lab: section.lab,
+                                defaultRoom: section.defaultRoom,
+                                timeTable: section.timeTable,
+                                roomTable: section.roomTable,
+                                courseTable: section.courseTable
+                            },
+                        })];
+                case 3:
+                    updatedSection = _b.sent();
+                    department = user.department;
+                    tt = (0, common_1.convertStringToTable)(section.timeTable);
+                    i = 0;
+                    _b.label = 4;
+                case 4:
+                    if (!(i < tt.length)) return [3 /*break*/, 12];
+                    j = 0;
+                    _b.label = 5;
+                case 5:
+                    if (!(j < tt[i].length)) return [3 /*break*/, 11];
+                    if (!(tt[i][j] !== "0")) return [3 /*break*/, 10];
+                    tCourse = tt[i][j];
+                    k = 0;
+                    _b.label = 6;
+                case 6:
+                    if (!(k < section.courses.length)) return [3 /*break*/, 10];
+                    if (!(tCourse == section.courses[k])) return [3 /*break*/, 9];
+                    tTeacher = section.teachers[k];
+                    console.log(tTeacher);
+                    return [4 /*yield*/, (0, teacher_1.peekTeacher)(JWTtoken, tTeacher, department)];
+                case 7:
+                    teacherResponse = _b.sent();
+                    if (teacherResponse.status !== statusCodes_1.statusCodes.OK || !teacherResponse.teacher) {
+                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                    }
+                    tTeacherTT = (0, common_1.convertStringToTable)(teacherResponse.teacher.timetable);
+                    tTeacherTT[i][j] = section.name;
+                    teacherResponse.teacher.timetable = (0, common_1.convertTableToString)(tTeacherTT);
+                    return [4 /*yield*/, (0, teacher_1.updateTeachers)(JWTtoken, tTeacher, department, teacherResponse.teacher)];
+                case 8:
+                    updateteacher = _b.sent();
+                    if (updateteacher.status !== statusCodes_1.statusCodes.OK || !updateteacher.teacher) {
+                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                    }
+                    console.log(updateteacher.teacher);
+                    return [3 /*break*/, 10];
+                case 9:
+                    k++;
+                    return [3 /*break*/, 6];
+                case 10:
+                    j++;
+                    return [3 /*break*/, 5];
+                case 11:
+                    i++;
+                    return [3 /*break*/, 4];
+                case 12:
+                    roomTT = (0, common_1.convertStringToTable)(section.roomTable);
+                    console.log(roomTT);
+                    i = 0;
+                    _b.label = 13;
+                case 13:
+                    if (!(i < roomTT.length)) return [3 /*break*/, 19];
+                    j = 0;
+                    _b.label = 14;
+                case 14:
+                    if (!(j < roomTT[i].length)) return [3 /*break*/, 18];
+                    if (!(roomTT[i][j] !== "0")) return [3 /*break*/, 17];
+                    return [4 /*yield*/, prisma.room.findFirst({
+                            where: {
+                                orgId: user.orgId,
+                                department: user.role = department,
+                                name: roomTT[i][j],
+                            },
+                        })];
+                case 15:
+                    existingRoom = _b.sent();
+                    if (!existingRoom) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.NOT_FOUND,
+                            }];
+                    }
+                    TT = (0, common_1.convertStringToTable)(existingRoom.timetable);
+                    TT[i][j] = section.name;
+                    return [4 /*yield*/, prisma.room.update({
+                            where: {
+                                id: existingRoom.id,
+                            },
+                            data: {
+                                timetable: (0, common_1.convertTableToString)(TT),
+                            },
+                        })];
+                case 16:
+                    _b.sent();
+                    _b.label = 17;
+                case 17:
+                    j++;
+                    return [3 /*break*/, 14];
+                case 18:
+                    i++;
+                    return [3 /*break*/, 13];
+                case 19: return [2 /*return*/, { status: statusCodes_1.statusCodes.OK }];
+                case 20: return [2 /*return*/, {
+                        status: status_7 == statusCodes_1.statusCodes.OK ? statusCodes_1.statusCodes.FORBIDDEN : status_7,
+                    }];
+                case 21:
+                    error_5 = _b.sent();
+                    console.error(error_5);
+                    return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                case 22: return [2 /*return*/];
+            }
+        });
+    });
+}
