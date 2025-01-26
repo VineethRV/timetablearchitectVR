@@ -444,6 +444,7 @@ export async function saveTimetable(
                     if(tCourse==courses[k])
                     {
                         const tTeacher=teachers[k];
+                        console.log(tTeacher)
                         const teacherResponse = await peekTeacher(JWTtoken, tTeacher,department);
                         if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
                             return { status: statusCodes.INTERNAL_SERVER_ERROR  };
@@ -455,6 +456,7 @@ export async function saveTimetable(
                         if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
                             return { status: statusCodes.INTERNAL_SERVER_ERROR  };
                         }
+                        console.log(updateteacher.teacher)
                         break;
                     }
                 }
@@ -540,13 +542,9 @@ export async function getTimetable(
                   select: {
                     id: true,
                     name: true,
-                    batch: true,
                     courses: true,
                     teachers:true,
-                    rooms:true,
-                    semester:true,
-                    orgId:true,
-                    timeTable:true,
+                    rooms:true
                   },
                 })
               return {
@@ -598,6 +596,64 @@ export async function deleteSection(
     } catch (error) {
         return {
             status: statusCodes.INTERNAL_SERVER_ERROR,
+        };
+    }
+
+}
+/* id: true,
+                    name: true,
+                    batch: true,
+                    courses: true,
+                    teachers:true,
+                    rooms:true,
+                    semester:true,
+                    orgId:true,
+                    timeTable:true, */
+
+export async function peekTimetable(
+    JWTtoken: string,
+    id: number
+): Promise<{ status: number ,section:any}> {
+    try {
+        const { status, user } = await auth.getPosition(JWTtoken);
+        if (user?.orgId == null) {
+            return {
+                status: statusCodes.BAD_REQUEST,
+                section:null,
+            };
+        }
+        if (status == statusCodes.OK && user) {
+            const section = await prisma.section.findFirst({
+                where: {
+                    orgId: user.orgId,
+                    id: id
+                },
+                select:{
+                    id: true,
+                    name: true,
+                    batch: true,
+                    courses: true,
+                    teachers:true,
+                    rooms:true,
+                    semester:true,
+                    orgId:true,
+                    timeTable:true,
+                }
+            });
+            return {
+                status: statusCodes.OK,
+                section: section
+            };
+        } else {
+            return {
+                status: status,
+                section:null,
+            };
+        }
+    } catch (error) {
+        return {
+            status: statusCodes.INTERNAL_SERVER_ERROR,
+            section:null,
         };
     }
 

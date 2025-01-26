@@ -37,7 +37,7 @@ const formItemLayout = {
   },
 };
 
-const AddSectionPage: React.FC = () => {
+const EditSectionPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -589,4 +589,4 @@ const AddSectionPage: React.FC = () => {
   );
 };
 
-export default AddSectionPage;
+export default EditSectionPage;

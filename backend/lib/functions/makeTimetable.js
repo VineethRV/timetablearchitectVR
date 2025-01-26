@@ -41,6 +41,7 @@ exports.recommendCourse = recommendCourse;
 exports.saveTimetable = saveTimetable;
 exports.getTimetable = getTimetable;
 exports.deleteSection = deleteSection;
+exports.peekTimetable = peekTimetable;
 var course_1 = require("../actions/course");
 var client_1 = require("@prisma/client");
 var auth = require("../actions/auth");
@@ -519,6 +520,7 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                     if (!(k < courses.length)) return [3 /*break*/, 10];
                     if (!(tCourse == courses[k])) return [3 /*break*/, 9];
                     tTeacher = teachers[k];
+                    console.log(tTeacher);
                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(JWTtoken, tTeacher, department)];
                 case 7:
                     teacherResponse = _b.sent();
@@ -534,6 +536,7 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                     if (updateteacher.status !== statusCodes_1.statusCodes.OK || !updateteacher.teacher) {
                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
                     }
+                    console.log(updateteacher.teacher);
                     return [3 /*break*/, 10];
                 case 9:
                     k++;
@@ -638,13 +641,9 @@ function getTimetable(JWTtoken, semester) {
                             select: {
                                 id: true,
                                 name: true,
-                                batch: true,
                                 courses: true,
                                 teachers: true,
-                                rooms: true,
-                                semester: true,
-                                orgId: true,
-                                timeTable: true,
+                                rooms: true
                             },
                         })];
                 case 2:
@@ -704,6 +703,71 @@ function deleteSection(JWTtoken, id) {
                     error_3 = _b.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                        }];
+                case 6: return [2 /*return*/];
+            }
+        });
+    });
+}
+/* id: true,
+                    name: true,
+                    batch: true,
+                    courses: true,
+                    teachers:true,
+                    rooms:true,
+                    semester:true,
+                    orgId:true,
+                    timeTable:true, */
+function peekTimetable(JWTtoken, id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_6, user, section, error_4;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 5, , 6]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _b.sent(), status_6 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                section: null,
+                            }];
+                    }
+                    if (!(status_6 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.section.findFirst({
+                            where: {
+                                orgId: user.orgId,
+                                id: id
+                            },
+                            select: {
+                                id: true,
+                                name: true,
+                                batch: true,
+                                courses: true,
+                                teachers: true,
+                                rooms: true,
+                                semester: true,
+                                orgId: true,
+                                timeTable: true,
+                            }
+                        })];
+                case 2:
+                    section = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            section: section
+                        }];
+                case 3: return [2 /*return*/, {
+                        status: status_6,
+                        section: null,
+                    }];
+                case 4: return [3 /*break*/, 6];
+                case 5:
+                    error_4 = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            section: null,
                         }];
                 case 6: return [2 /*return*/];
             }

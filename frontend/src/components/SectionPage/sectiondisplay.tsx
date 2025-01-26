@@ -6,22 +6,16 @@ import { BACKEND_URL } from "../../../config";
 import { statusCodes } from "../../types/statusCodes";
 import { convertTableToString, stringToTable } from "../../utils/main";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 
 export interface Section
 {
   id: number;
     name: string;
-  batch : number;
   courses: string[];
   teachers: string[];
   rooms: string[];
-  electives: string|null;
-  labs: string|null;
-  defaultRoom: string|null;
-  semester: number;
-  orgId:number;
-  timeTable:string;
 }
 
 const _rowSelection: TableProps<Section>["rowSelection"] = {
@@ -38,8 +32,6 @@ const _rowSelection: TableProps<Section>["rowSelection"] = {
   }),
 };
 
-
-
 const SectionTable = ({
   sectionData,
   setSectionData,
@@ -47,18 +39,11 @@ const SectionTable = ({
   sectionData: Section[];
   setSectionData: React.Dispatch<React.SetStateAction<Section[]>>;
 }) => {
+  const navigate=useNavigate();
   const columns = [
-    {
-      title: "ID",
-      dataIndex: "id",
-    },
     {
       title: "Name",
       dataIndex: "name",
-    },
-    {
-      title: "Batch",
-      dataIndex: "batch",
     },
     {
       title: "Courses",
@@ -89,13 +74,27 @@ const SectionTable = ({
       ),
     },
     {
+      title: "Rooms",
+      dataIndex: "rooms",
+      render: (rooms:any) => (
+        <>
+          {rooms.map((room:string, index:any) => (
+            <Tag color="purple" key={index}>
+              {room}
+            </Tag>
+          ))}
+        </>
+      ),
+    },
+    {
         title: "",
-        render: () => {
+        render: (record:any) => {
           return (
             <Tooltip title="Edit">
               <Button
                 type="primary"
                 shape="circle"
+                onClick={()=>{handleEdit(record.id)}}
                 icon={<MdEdit />}
               />
             </Tooltip>
@@ -120,6 +119,11 @@ const SectionTable = ({
       },
   ];
 
+  function handleEdit(id:number){
+    navigate(
+      `/dashboard/section/edit/${encodeURIComponent(id)}`
+    );
+  }
   function deleteSection(record: Section) {
     console.log("rec",record)
     const res = axios

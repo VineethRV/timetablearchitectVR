@@ -33,6 +33,7 @@ import { ChatBot } from "./components/ChatBot/ChatBot";
 import { CoreCoursesTemplate, RoomTemplate, TeacherTemplate } from "./components/Templates/Page";
 import SectionTabledisplay from "./pages/dashboard/section/sectiondisplay";
 import EditLabPage from "./pages/dashboard/courses/lab/editlab";
+import EditSectionPage from "./pages/dashboard/section/editsection";
 
 function App() {
   return (
@@ -98,6 +99,7 @@ function App() {
           <Route path="/dashboard/section" element={<Section />}>
           <Route index element={<SectionTabledisplay />} />
             <Route path="/dashboard/section/add" element={<AddSectionPage />} />
+            <Route path="/dashboard/section/edit/:id" element={<EditSectionPage />} />
           </Route>
           <Route path="/dashboard/admin/access" element={<Access />} />
         </Route>
