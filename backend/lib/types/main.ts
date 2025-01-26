@@ -69,16 +69,17 @@ export type Elective = {
 
 export type Section={
   name: string;
-  batch : number;
   courses: string[];
   teachers: string[];
   rooms: string[];
-  electives: string|null;
-  labs: string|null;
+  elective: string|null;
+  lab: string|null;
   defaultRoom: string|null;
   semester: number;
   orgId:number;
   timeTable:string;
+  roomTable:string;
+  courseTable:string;
 }
 
 export type OTP_TYPE = {

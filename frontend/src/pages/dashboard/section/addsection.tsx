@@ -251,26 +251,30 @@ const AddSectionPage: React.FC = () => {
 
   const handleSubmit=()=>{
       const name=form.getFieldValue("className");
-      const batch=2025;
       const courses=tableData.map((item)=>item.course)
       const teachers=tableData.map((item)=>item.teacher)
       const rooms=tableData.map((item)=>item.room==="--"?"0":item.room)
-      const semester=Number(localStorage.getItem("semester"))
-      const defaultRooms=form.getFieldValue("Room")
+      const defaultRooms=form.getFieldValue("Room")?form.getFieldValue("Room"):null
+      const electives=form.getFieldValue("Electives")?form.getFieldValue("Electives"):null
+      const labs=form.getFieldValue("Labs")?form.getFieldValue("Labs"):null
+      const courseTT=convertTableToString(buttonStatus1);
+      console.log(courseTT)
       const timetables= (timetable.map((row=>row.join(',')))).join(';');
-      console.log(name,batch,courses,teachers,rooms,semester,timetable)
+      console.log(name,courses,teachers,rooms,timetable)
       const promise= axios.post(
         BACKEND_URL+"/saveTimetable",
         { 
           name:name,
-          batch:batch,
           courses:courses,
           teachers:teachers,
           rooms:rooms,
+          electives:electives,
+          labs:labs,
           defaultRooms:defaultRooms,
-          semester:semester,
+          semester:Number(localStorage.getItem("semester")),
           timetable:timetables,
-          roomTimetable: roomTT
+          roomTimetable: roomTT,
+          courseTimetable:courseTT
         },
         {
           headers: {
@@ -281,7 +285,7 @@ const AddSectionPage: React.FC = () => {
       toast.promise(promise, {
         loading: "Saving timetable...",
         success: (res) => {
-          const statusCode = res.status;
+          const statusCode = res.data.status;
           console.log(res.data)
           switch (statusCode) {
             case statusCodes.OK:

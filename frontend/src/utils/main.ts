@@ -14,6 +14,7 @@ export function convertTableToString(timetable: string[][]): string {
 }
 
 export function stringToTable(timetable: string): string[][] {
+  console.log("given timetable", timetable);
   const arr: string[][] = timetable
     .split(";")
     .map((row: string) => row.split(","));

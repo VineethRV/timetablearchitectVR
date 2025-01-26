@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import SectionAddTable, {
   courseList,
@@ -57,7 +57,7 @@ const EditSectionPage: React.FC = () => {
     weekdays.map(() => timeslots.map(() => "Free"))
   );
   const [roomTT,setRoomTT]=useState("0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0;0,0,0,0,0,0")
-
+  const { id } = useParams();
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
@@ -111,7 +111,70 @@ const EditSectionPage: React.FC = () => {
     fetchCourse(setCourseOptions);
     fetchElectives(setElectiveOptions);
     fetchlabs(setLabOptions);
-  }, []);
+    if(id){
+      fetchSectiondetails(id);
+      }
+  },[]);
+
+  const fetchSectiondetails = async (id: string) => {
+    axios
+      .post(
+        BACKEND_URL + "/sections/peek",
+        {
+          id: Number(id),
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then((res) => {
+        const status = res.data.status;
+  
+        switch (status) {
+          case statusCodes.OK:
+  
+            console.log(res.data)
+            form.setFieldsValue({
+              className: res.data.message.name,
+              ELectives:res.data.message.elective,
+              Labs:res.data.message.lab,
+              Room:res.data.message.defaultRoom
+            });
+                        const courses = res.data.message.courses;
+                        const teachers = res.data.message.teachers
+                        const rooms = res.data.message.rooms;
+                        const tablel: courseList[] = [];
+                        console.log("teachers",teachers,"rooms",rooms)
+                        for(let i=0;i<courses.length;i++)
+                        {
+                            tablel.push({
+                              key: i.toString(),
+                              course:courses[i],
+                              teacher: teachers[i],
+                              room: rooms[i]
+                            })
+                        }
+                        setTableData(tablel);
+                        console.log(tablel)
+             setRoomTT(res.data.message.roomTable);
+            const timetableString = res.data.message.courseTable
+            ? stringToTable(res.data.message.courseTable)
+            : Array(6).fill(Array(6).fill("Free"));
+            console.log("timetableString",timetableString)
+            setButtonStatus1(timetableString)
+             setTimetable(res.data.message.timeTable);
+             SetshowTT(true);
+            toast.success("Section details fetched successfully!");
+            break;
+          default:
+            toast.error("Failed to fetch Section details!");
+        }
+
+      });
+  };
+
   
   async function getRecommendation() {
     const block = buttonStatus.map((row) => [...row]); // Create a deep copy of buttonStatus

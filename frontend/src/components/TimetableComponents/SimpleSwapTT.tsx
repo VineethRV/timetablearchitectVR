@@ -39,7 +39,7 @@ const SimpleSwapTimetable: React.FC<TimetableProps> = ({ buttonStatus, setButton
     colIndex: number;
   } | null>(null);
   const [score, setScore] = useState<number[][]>(new Array(6).fill(0).map(() => new Array(6).fill(0).map(() => 0)));
-  
+  console.log(buttonStatus,courses,teachers,rooms,roomTT,timetable)
   const handleButtonClick = (rowIndex: number, colIndex: number) => {
     console.log("button clicked");
     if (!selectedSlot) {

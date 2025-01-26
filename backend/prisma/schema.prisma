@@ -125,7 +125,6 @@ model AccessRequest {
 model Section{
   id     Int          @id @default(autoincrement())
   name   String
-  batch  Int
   courses String[]
   teachers String[]
   rooms String[]
@@ -136,6 +135,8 @@ model Section{
   organisation Organisation @relation(fields: [orgId], references: [id])
   orgId  Int
   timeTable String
+  roomTable String?
+  courseTable String?
 }
 model Departments{
   id Int @id @default(autoincrement())

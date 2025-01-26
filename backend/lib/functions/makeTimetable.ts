@@ -385,7 +385,6 @@ export async function recommendCourse(
 export async function saveTimetable(
     JWTtoken: string,
     name: string,
-    batch: number,
     courses: string[],
     teachers: string[],
     rooms: string[],
@@ -394,7 +393,8 @@ export async function saveTimetable(
     semester: number,
     defaultRooms: string|null,
     timetable:string,
-    roomTimetable:string
+    roomTimetable:string,
+    courseTimetable:string
 ): Promise<{status:number}> {
  try {
     const { status, user } = await auth.getPosition(JWTtoken);
@@ -406,23 +406,23 @@ export async function saveTimetable(
       if (user && user.role != "viewer") {
         const Section: Section = {
           name: name,
-          batch: batch,
           orgId: user.orgId,
           courses: courses,
           teachers:teachers,
           rooms:rooms,
-          electives:electives,
-          labs:labs,
+          elective:electives,
+          lab:labs,
           defaultRoom: defaultRooms,
           semester: semester,
-          timeTable: timetable
+          timeTable: timetable,
+        roomTable: roomTimetable,
+        courseTable: courseTimetable
         };
 
         const duplicates = await prisma.section.findFirst({
           where: {
             orgId: Section.orgId,
             name: name,
-            batch:batch
           },
         });
         if (duplicates||(courses.length!==teachers.length)||courses.length!==rooms.length) {
@@ -600,16 +600,6 @@ export async function deleteSection(
     }
 
 }
-/* id: true,
-                    name: true,
-                    batch: true,
-                    courses: true,
-                    teachers:true,
-                    rooms:true,
-                    semester:true,
-                    orgId:true,
-                    timeTable:true, */
-
 export async function peekTimetable(
     JWTtoken: string,
     id: number
@@ -631,13 +621,15 @@ export async function peekTimetable(
                 select:{
                     id: true,
                     name: true,
-                    batch: true,
                     courses: true,
                     teachers:true,
                     rooms:true,
-                    semester:true,
-                    orgId:true,
+                    elective:true,
+                    lab:true,
+                    defaultRoom:true,
                     timeTable:true,
+                    roomTable:true,
+                    courseTable:true
                 }
             });
             return {

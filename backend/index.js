@@ -17,7 +17,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -810,17 +810,34 @@ app.delete("/api/sections", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+app.post("/api/sections/peek", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { id } = req.body;
+  if (!token || !id) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token and id are required" });
+  }
+
+  try {
+    const result = await peekTimetable(token, id);
+    res.status(200).json({ status: result.status, message: result.section });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 
 app.post("/api/saveTimetable",async (req,res)=>{
   const token = req.headers.authorization?.split(" ")[1];
-  const { name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable } = req.body;
-  if(!name||!batch||!courses||!teachers||!rooms||!semester||!timetable||!roomTimetable)
+  const { name,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable,courseTimetable } = req.body;
+  console.log(name,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable,courseTimetable)
+  if(!name||!courses||!teachers||!rooms||!semester||!timetable||!roomTimetable||!courseTimetable)
     return res.status(200).json({
       status: 400,
-      message: "Token, name,batch,courses, teachers, rooms, semester and timetable  are required",
+      message: "Token, name,courses, teachers, rooms, semester and timetable  are required",
     });
     try {
-      const result = await saveTimetable(token,name,batch,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable);
+      const result = await saveTimetable(token,name,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable,courseTimetable);
       res.status(200).json({ status: result.status});
     } catch (error) {
       res.status(200).json({ status: 500, message: "Server error" });

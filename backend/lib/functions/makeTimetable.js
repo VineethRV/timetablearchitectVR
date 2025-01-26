@@ -454,7 +454,7 @@ function recommendCourse(token, teacher, room, blocks) {
         });
     });
 }
-function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, electives, labs, semester, defaultRooms, timetable, roomTimetable) {
+function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs, semester, defaultRooms, timetable, roomTimetable, courseTimetable) {
     return __awaiter(this, void 0, void 0, function () {
         var _a, status_3, user, Section, duplicates, department, newCourse, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, e_1;
         return __generator(this, function (_b) {
@@ -472,22 +472,22 @@ function saveTimetable(JWTtoken, name, batch, courses, teachers, rooms, elective
                     if (!(user && user.role != "viewer")) return [3 /*break*/, 20];
                     Section = {
                         name: name,
-                        batch: batch,
                         orgId: user.orgId,
                         courses: courses,
                         teachers: teachers,
                         rooms: rooms,
-                        electives: electives,
-                        labs: labs,
+                        elective: electives,
+                        lab: labs,
                         defaultRoom: defaultRooms,
                         semester: semester,
-                        timeTable: timetable
+                        timeTable: timetable,
+                        roomTable: roomTimetable,
+                        courseTable: courseTimetable
                     };
                     return [4 /*yield*/, prisma.section.findFirst({
                             where: {
                                 orgId: Section.orgId,
                                 name: name,
-                                batch: batch
                             },
                         })];
                 case 2:
@@ -709,15 +709,6 @@ function deleteSection(JWTtoken, id) {
         });
     });
 }
-/* id: true,
-                    name: true,
-                    batch: true,
-                    courses: true,
-                    teachers:true,
-                    rooms:true,
-                    semester:true,
-                    orgId:true,
-                    timeTable:true, */
 function peekTimetable(JWTtoken, id) {
     return __awaiter(this, void 0, void 0, function () {
         var _a, status_6, user, section, error_4;
@@ -743,13 +734,15 @@ function peekTimetable(JWTtoken, id) {
                             select: {
                                 id: true,
                                 name: true,
-                                batch: true,
                                 courses: true,
                                 teachers: true,
                                 rooms: true,
-                                semester: true,
-                                orgId: true,
+                                elective: true,
+                                lab: true,
+                                defaultRoom: true,
                                 timeTable: true,
+                                roomTable: true,
+                                courseTable: true
                             }
                         })];
                 case 2:
