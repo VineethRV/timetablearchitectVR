@@ -431,6 +431,9 @@ export async function saveTimetable(
           };
         }
         const department=user.department
+        const newCourse = await prisma.section.create({
+            data: Section,
+          });
         const tt=convertStringToTable(timetable)
         for (let i = 0; i < tt.length; i++) {
             for (let j = 0; j < tt[i].length; j++) {

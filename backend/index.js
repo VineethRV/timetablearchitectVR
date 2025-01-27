@@ -862,7 +862,7 @@ app.post("/api/saveTimetable",async (req,res)=>{
     });
     try {
       const result = await saveTimetable(token,name,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable,courseTimetable);
-      res.status(200).json({ status: result.status});
+      res.status(200).json({ status: result.data.status});
     } catch (error) {
       res.status(200).json({ status: 500, message: "Server error" });
     }
