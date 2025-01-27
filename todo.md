@@ -10,7 +10,7 @@
 
 # TEACHER:
 [ ] Teacher timetable free/busy revert(option to insert custom text to be removed)
-
+[ ] displaying only timetable(not labtable)
 [ ] Moving Subjects in Edit Teachers
 
 ~~[ ] Import teachers~~
@@ -29,15 +29,21 @@
 # ELECTIVE:
 `[] Elective delete and modify`
 
+[ ]optimize add algorithm
+
 `[] elective modifications based on role`
 
 
 # LABS:
 `[ ] Deleting and modifying lab is giving invalid request`
 
+[]optimize algorithm
+
 **[ ] Lab Edit**
 
 [ ] Moving labs fix
+
+[ ] optimize edit algorithm
 
 # CORE:
 ~~[ ] ask department for admins~~
@@ -55,6 +61,7 @@
 ~~[ ] Moving allocated subjects fix(V)~~
 
 [ ] Should be able to delete default room
+
 
 ~~[ ] Year of admission is redundant and should be removed(V)~~
 

@@ -358,7 +358,7 @@ const EditLabPage: React.FC = () => {
         
       const teacherlist = teachers.split(";").map((teacher) => teacher.split(/[,/]/));
       console.log("teacherlist", teacherlist);
-      const labo: Lab = {
+      const labo= {
         name: name,
         department: olddepartment ? olddepartment : null,
         semester: Number(localStorage.getItem("semester")),
