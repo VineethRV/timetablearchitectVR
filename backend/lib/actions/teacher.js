@@ -53,9 +53,11 @@ exports.createManyTeachers = createManyTeachers;
 exports.getTeachers = getTeachers;
 exports.peekTeacher = peekTeacher;
 exports.deleteTeachers = deleteTeachers;
+exports.getConsolidated = getConsolidated;
 var auth = require("./auth");
 var client_1 = require("@prisma/client");
 var statusCodes_1 = require("../types/statusCodes");
+var common_1 = require("../functions/common");
 var prisma = new client_1.PrismaClient();
 function convertTableToString(timetable) {
     return timetable.map(function (row) { return row.join(","); }).join(";");
@@ -621,6 +623,84 @@ function deleteTeachers(JWTtoken, teachers) {
                     _b = _c.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                        }];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getConsolidated(JWTtoken) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_6, user, consolidatedTable_1, teachers, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _c.trys.push([0, 6, , 7]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _c.sent(), status_6 = _a.status, user = _a.user;
+                    if (status_6 == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                consolidatedTable: null,
+                            }];
+                    }
+                    consolidatedTable_1 = Array(6).fill(null).map(function () {
+                        return Array(6).fill(null).map(function () {
+                            return Array(0).fill("");
+                        });
+                    });
+                    teachers = void 0;
+                    if (!(user && user.role == "admin")) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.teacher.findMany({
+                            where: {
+                                orgId: user.orgId ? user.orgId : -1,
+                            },
+                            select: {
+                                name: true,
+                                timetable: true,
+                                labtable: true,
+                            },
+                        })];
+                case 2:
+                    teachers = _c.sent();
+                    return [3 /*break*/, 5];
+                case 3:
+                    if (!user) return [3 /*break*/, 5];
+                    return [4 /*yield*/, prisma.teacher.findMany({
+                            where: {
+                                orgId: user.orgId ? user.orgId : -1,
+                                department: user.department,
+                            },
+                            select: {
+                                name: true,
+                                timetable: true,
+                                labtable: true,
+                            },
+                        })];
+                case 4:
+                    teachers = _c.sent();
+                    _c.label = 5;
+                case 5:
+                    teachers === null || teachers === void 0 ? void 0 : teachers.forEach(function (teacher) {
+                        var timetable = teacher.timetable;
+                        var labtable = teacher.labtable;
+                        var teacherTable = (0, common_1.convertStringToTable)(timetable);
+                        var teacherLabTable = (0, common_1.convertStringToTable)(labtable);
+                        for (var i = 0; i < 6; i++) {
+                            for (var j = 0; j < 6; j++) {
+                                if (teacherTable[i][j] == "0" && teacherLabTable[i][j] == "0") {
+                                    consolidatedTable_1[i][j].push(teacher.name);
+                                }
+                            }
+                        }
+                    });
+                    return [2 /*return*/, { consolidatedTable: consolidatedTable_1, status: statusCodes_1.statusCodes.OK }];
+                case 6:
+                    _b = _c.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            consolidatedTable: null,
                         }];
                 case 7: return [2 /*return*/];
             }

@@ -37,7 +37,7 @@ export async function createCourse(
           semester: semester,
         };
         if (user.role == "admin" && department) {
-          Course.department = department;
+          Course.department = department?department:user.department;
         }
         // First check if any duplicates exist (orgId, department, and name same)
         const duplicates = await prisma.course.findFirst({

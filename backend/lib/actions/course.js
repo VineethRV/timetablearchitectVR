@@ -75,7 +75,7 @@ function createCourse(JWTtoken_1, name_1, code_1, credits_1, bFactor_1) {
                         semester: semester,
                     };
                     if (user.role == "admin" && department) {
-                        Course.department = department;
+                        Course.department = department ? department : user.department;
                     }
                     return [4 /*yield*/, prisma.course.findFirst({
                             where: {

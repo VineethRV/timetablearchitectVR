@@ -9,13 +9,13 @@
 
 
 # TEACHER:
-[ ] Teacher timetable free/busy revert
+[ ] Teacher timetable free/busy revert(option to insert custom text to be removed)
 
 [ ] Moving Subjects in Edit Teachers
 
 ~~[ ] Import teachers~~
 
-[ ] Consolidated(backend V)
+[ ] Consolidated~~(backend V)~~
 
 
 # ROOM ADDING:
@@ -40,7 +40,7 @@
 [ ] Moving labs fix
 
 # CORE:
-[ ] ask department for admins
+~~[ ] ask department for admins~~
 
 
 # SECTION:

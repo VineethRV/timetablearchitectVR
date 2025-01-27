@@ -14,6 +14,7 @@ import Corecourse from "./pages/dashboard/courses/corecourse/corecoursedisplay";
 import AddCoursepage from "./pages/dashboard/courses/corecourse/addcorecourse";
 import Section from "./pages/dashboard/section/section";
 import TeacherPage from "./pages/dashboard/teacher/teacherdisplay";
+import Consolidated from "./pages/dashboard/teacher/consolidated";
 import EditTeacherpage from "./pages/dashboard/teacher/editteacher";
 import RoomPage from "./pages/dashboard/room/roomdisplay";
 import EditRoomPage from "./pages/dashboard/room/editroom";
@@ -61,6 +62,10 @@ function App() {
             <Route
               path="/dashboard/teachers/edit/:oldname/:olddepartment"
               element={<EditTeacherpage />}
+            />
+            <Route
+              path="/dashboard/teachers/timeslot-dependent"
+              element={<Consolidated />}
             />
           </Route>
           <Route path="/dashboard/rooms" element={<Room />}>

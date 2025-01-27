@@ -81,7 +81,7 @@ const TeachersSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick( "/")}
+          onClick={() => handleClick( "/timeslot-dependent")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
             pathname === "/dashboard/teachers/timeslot-dependent"
               ? "text-[#636AE8FF] font-bold"

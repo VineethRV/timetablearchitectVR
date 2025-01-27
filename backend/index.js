@@ -1002,6 +1002,19 @@ app.get("/api/sectionCount", async (req, res) => {
     res.status(200).json({ status: 500, message: error });
   }
 });
+app.get("/api/teachers/consolidated", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await teacher.getConsolidated(token);
+    res.status(200).json({ status: result.status, consolidatedTable: result.consolidatedTable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 app.get("/health", (_, res) => {
   return res.json({
     msg: "Server is healthy !!",
