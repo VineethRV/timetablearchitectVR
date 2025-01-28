@@ -1,7 +1,7 @@
 import { peekCourse } from "../actions/course";
 import { PrismaClient } from "@prisma/client";
 import * as auth from "../actions/auth";
-import { getRooms, peekRoom } from "../actions/room";
+import { getRooms, peekRoom, updateRoom } from "../actions/room";
 import { peekTeacher, updateTeachers } from "../actions/teacher";
 import { statusCodes } from "../types/statusCodes";
 import { convertStringToTable, convertTableToString, scoreRooms, scoreTeachers } from "./common";
@@ -656,10 +656,12 @@ export async function updateTimetable(
   id: number,
   oldname: string,
   section: Section,
+  teachers: string[],
+  rooms: string[]
 ): Promise<{ status: number }> {
   try {
+    console.log("Section i got",section)
     const { status, user } = await auth.getPosition(JWTtoken);
-
     if (user?.orgId == null) {
       return {
         status: statusCodes.BAD_REQUEST,
@@ -694,6 +696,54 @@ export async function updateTimetable(
             courseTable:section.courseTable
         },
       });
+      console.log("updated Sections",updatedSection)
+      //Deleting from old teachers
+      teachers.forEach(async (teacher) => {
+        console.log("teacher",teacher)
+        const teacherResponse = await peekTeacher(JWTtoken, teacher,user.department);
+        if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
+          return { status: statusCodes.INTERNAL_SERVER_ERROR };
+        }
+        const tTeacherTT=convertStringToTable(teacherResponse.teacher.timetable)
+        for(let i=0;i<tTeacherTT.length;i++)
+        {
+            for(let j=0;j<tTeacherTT[i].length;j++)
+            {
+                if(tTeacherTT[i][j]===oldname)
+                {
+                    tTeacherTT[i][j]="Free"
+                }
+            }
+        }
+        teacherResponse.teacher.timetable=convertTableToString(tTeacherTT)
+        const updateteacher=await updateTeachers(JWTtoken,teacher,user.department,teacherResponse.teacher)
+        if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
+            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+        }
+      })
+//Deleting from old rooms
+      rooms.forEach(async (room) => {
+        const roomResponse = await peekRoom(JWTtoken, room,user.department);
+        if (roomResponse.status !== statusCodes.OK || !roomResponse.room) {
+            return { status: statusCodes.INTERNAL_SERVER_ERROR };
+          }
+        const TT=convertStringToTable(roomResponse.room.timetable)
+        for(let i=0;i<TT.length;i++)
+        {
+            for(let j=0;j<TT[i].length;j++)
+            {
+                if(TT[i][j]===oldname)
+                {
+                    TT[i][j]="Free"
+                }
+            }
+        }  
+        roomResponse.room.timetable=convertTableToString(TT)
+        const updateroom=await updateRoom(JWTtoken,room,user.department,roomResponse.room)
+        if (updateroom.status !== statusCodes.OK ) {
+            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+        }
+      })
       const department=user.department
       const tt=convertStringToTable(section.timeTable)
       for (let i = 0; i < tt.length; i++) {

@@ -46,6 +46,8 @@ const EditSectionPage: React.FC = () => {
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
   const [courseOptions, setCourseOptions] = useState<string[]>([]);
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
+  const [oldteachers,setOldTeachers]=useState<string[]>([]);
+  const [oldrooms,setOldRooms]=useState<string[]>([]);
   const [labOptions, setLabOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -144,6 +146,7 @@ const EditSectionPage: React.FC = () => {
             });
                         const courses = res.data.message.courses;
                         const teachers = res.data.message.teachers
+                        setOldTeachers(teachers)
                         const rooms = res.data.message.rooms;
                         const tablel: courseList[] = [];
                         console.log("teachers",teachers,"rooms",rooms)
@@ -333,9 +336,9 @@ const EditSectionPage: React.FC = () => {
         labs: labs,
         defaultRooms: defaultRooms,
         semester: Number(localStorage.getItem("semester")),
-        timetable: timetables,
-        roomTimetable: roomTT,
-        courseTimetable: courseTT,
+        timeTable: timetables,
+        roomTable: roomTT,
+        courseTable: courseTT,
       };
     const promise= axios.put(
       BACKEND_URL+"/sections",
@@ -343,6 +346,8 @@ const EditSectionPage: React.FC = () => {
         id:Number(id),
         name: oldname,
         section: section,
+        teachers: oldteachers,
+        rooms: oldrooms
       },
       {
         headers: {
@@ -358,6 +363,8 @@ const EditSectionPage: React.FC = () => {
         switch (statusCode) {
           case statusCodes.OK:
             form.resetFields();
+            setOldTeachers(teachers)
+            setOldRooms(rooms)
             SetshowTT(false)
             return "Saved timetable!!"
           case statusCodes.UNAUTHORIZED:

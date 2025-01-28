@@ -768,26 +768,28 @@ function peekTimetable(JWTtoken, id) {
         });
     });
 }
-function updateTimetable(JWTtoken, id, oldname, section) {
+function updateTimetable(JWTtoken, id, oldname, section, teachers, rooms) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, status_7, user, existingSection, updatedSection, department, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, error_5;
+        var _a, status_7, user_1, existingSection, updatedSection, department, tt, i, j, tCourse, k, tTeacher, teacherResponse, tTeacherTT, updateteacher, roomTT, i, j, existingRoom, TT, error_5;
+        var _this = this;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 21, , 22]);
+                    console.log("Section i got", section);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
-                    _a = _b.sent(), status_7 = _a.status, user = _a.user;
-                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                    _a = _b.sent(), status_7 = _a.status, user_1 = _a.user;
+                    if ((user_1 === null || user_1 === void 0 ? void 0 : user_1.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                             }];
                     }
-                    if (!(status_7 == statusCodes_1.statusCodes.OK && user && user.role != "viewer")) return [3 /*break*/, 20];
+                    if (!(status_7 == statusCodes_1.statusCodes.OK && user_1 && user_1.role != "viewer")) return [3 /*break*/, 20];
                     return [4 /*yield*/, prisma.section.findFirst({
                             where: {
                                 id: id,
-                                orgId: user.orgId,
+                                orgId: user_1.orgId,
                             },
                         })];
                 case 2:
@@ -813,7 +815,70 @@ function updateTimetable(JWTtoken, id, oldname, section) {
                         })];
                 case 3:
                     updatedSection = _b.sent();
-                    department = user.department;
+                    console.log("updated Sections", updatedSection);
+                    //Deleting from old teachers
+                    teachers.forEach(function (teacher) { return __awaiter(_this, void 0, void 0, function () {
+                        var teacherResponse, tTeacherTT, i, j, updateteacher;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0:
+                                    console.log("teacher", teacher);
+                                    return [4 /*yield*/, (0, teacher_1.peekTeacher)(JWTtoken, teacher, user_1.department)];
+                                case 1:
+                                    teacherResponse = _a.sent();
+                                    if (teacherResponse.status !== statusCodes_1.statusCodes.OK || !teacherResponse.teacher) {
+                                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                                    }
+                                    tTeacherTT = (0, common_1.convertStringToTable)(teacherResponse.teacher.timetable);
+                                    for (i = 0; i < tTeacherTT.length; i++) {
+                                        for (j = 0; j < tTeacherTT[i].length; j++) {
+                                            if (tTeacherTT[i][j] === oldname) {
+                                                tTeacherTT[i][j] = "Free";
+                                            }
+                                        }
+                                    }
+                                    teacherResponse.teacher.timetable = (0, common_1.convertTableToString)(tTeacherTT);
+                                    return [4 /*yield*/, (0, teacher_1.updateTeachers)(JWTtoken, teacher, user_1.department, teacherResponse.teacher)];
+                                case 2:
+                                    updateteacher = _a.sent();
+                                    if (updateteacher.status !== statusCodes_1.statusCodes.OK || !updateteacher.teacher) {
+                                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                                    }
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                    //Deleting from old rooms
+                    rooms.forEach(function (room) { return __awaiter(_this, void 0, void 0, function () {
+                        var roomResponse, TT, i, j, updateroom;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, (0, room_1.peekRoom)(JWTtoken, room, user_1.department)];
+                                case 1:
+                                    roomResponse = _a.sent();
+                                    if (roomResponse.status !== statusCodes_1.statusCodes.OK || !roomResponse.room) {
+                                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                                    }
+                                    TT = (0, common_1.convertStringToTable)(roomResponse.room.timetable);
+                                    for (i = 0; i < TT.length; i++) {
+                                        for (j = 0; j < TT[i].length; j++) {
+                                            if (TT[i][j] === oldname) {
+                                                TT[i][j] = "Free";
+                                            }
+                                        }
+                                    }
+                                    roomResponse.room.timetable = (0, common_1.convertTableToString)(TT);
+                                    return [4 /*yield*/, (0, room_1.updateRoom)(JWTtoken, room, user_1.department, roomResponse.room)];
+                                case 2:
+                                    updateroom = _a.sent();
+                                    if (updateroom.status !== statusCodes_1.statusCodes.OK) {
+                                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                                    }
+                                    return [2 /*return*/];
+                            }
+                        });
+                    }); });
+                    department = user_1.department;
                     tt = (0, common_1.convertStringToTable)(section.timeTable);
                     i = 0;
                     _b.label = 4;
@@ -872,8 +937,8 @@ function updateTimetable(JWTtoken, id, oldname, section) {
                     if (!(roomTT[i][j] !== "0")) return [3 /*break*/, 17];
                     return [4 /*yield*/, prisma.room.findFirst({
                             where: {
-                                orgId: user.orgId,
-                                department: user.role = department,
+                                orgId: user_1.orgId,
+                                department: user_1.role = department,
                                 name: roomTT[i][j],
                             },
                         })];
