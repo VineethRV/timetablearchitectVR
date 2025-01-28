@@ -15,7 +15,7 @@
 
 ~~[ ] Import teachers~~
 
-[ ] Consolidated~~(backend V)~~
+~~[ ] Consolidated~~
 
 
 # ROOM ADDING:
@@ -45,8 +45,10 @@
 
 [ ] optimize edit algorithm
 
+[ ]Import lab
+
 # CORE:
-~~[ ] ask department for admins~~
+~~[ ] ask department for admins~~ 
 
 
 # SECTION:
@@ -67,4 +69,4 @@
 
 ~~[ ] ToolTip should display room allocated(V)~~
 
-***[ ] SAVE SECION NOT DONE***
+~~***[ ] SAVE SECION NOT DONE***~~

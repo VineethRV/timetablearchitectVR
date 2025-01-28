@@ -14,11 +14,13 @@ const prisma = new PrismaClient();
 //current function is for non admins.
 let randomFactor=0.1;//introduces some randomness in the allocation of courses to the timetable
 let endFactor=0.0025;
+
 type returnStrcture={
     timetable:string[][]|null,
     roomtable:string[][]|null,
     display:string[][]|null
 }
+
 export async function suggestTimetable(
     token: string,
     block: string,
@@ -518,23 +520,30 @@ export async function saveTimetable(
     };
   }
 }
-
+interface retType {
+    id: number;
+    name: string;
+    courses: string[];
+    teachers: string[];
+    rooms: string[];
+    temporary?: boolean
+}
 export async function getTimetable(
     JWTtoken: string,
     semester: number
 ): Promise<{ status: number; section: any[] | null }>{
     try{
          const { status, user } = await auth.getPosition(JWTtoken);
-        
+            let section:retType[];
             if (user?.orgId == null) {
               return {
                 status: statusCodes.BAD_REQUEST,
                 section: null,
               };
             }
-        
-            if (status == statusCodes.OK && user) {
-                 let section = await prisma.section.findMany({
+            
+            if (status == statusCodes.OK && user ) {
+                 section = await prisma.section.findMany({
                   where: {
                     orgId: user.orgId,
                     semester: semester,
@@ -547,11 +556,43 @@ export async function getTimetable(
                     rooms:true
                   },
                 })
+                console.log("section found",section)
+                let tempSections= await prisma.tempSection.findMany({
+                    where:{
+                        orgId:user.orgId,
+                        semester:semester,
+                    }
+                })
+                console.log("temps Found:",tempSections)
+                for (const tempSection of tempSections) {
+                    const teacherCourses = tempSection.teacherCourse.split(',');
+                    const courses: string[] = [];
+                    const teachers: string[] = [];
+                    const rooms: string[] = [];
+
+                    for (const tc of teacherCourses) {
+                        const [teacher, course] = tc.split('-');
+                        teachers.push(teacher);
+                        courses.push(course);
+                        rooms.push('0');
+                    }
+
+                    section.push({
+                        id: tempSection.id,
+                        name: tempSection.name+'(Temporary)',
+                        courses: courses,
+                        teachers: teachers,
+                        rooms: rooms,
+                        temporary:true
+                    });
+                }
+                // console.log("tempSections: ")
               return {
                 status: statusCodes.OK,
                 section: section,
               };
-            } else {
+            } 
+            else {
               return {
                 status: status,
                 section: null,
@@ -769,3 +810,98 @@ export async function updateTimetable(
     return { status: statusCodes.INTERNAL_SERVER_ERROR };
   }
 }
+
+interface teacherByte{
+    teacherInitials:string,
+    sections:string[]
+    semesters:number[]
+    courseCodes:string[]
+}
+interface tempSection{
+        name: string;
+        semester: number | null;
+        orgId: number;
+        department: string | null;
+        teacherCourse: string;
+}
+
+export async function createTemptable(JWTtoken:string,data:teacherByte[]):Promise<{status:number,returnVal:string|null}> {
+    let errMessage:string="Call to createTemptable failed";
+    console.log("bande");
+    try{
+        let user=await auth.getPosition(JWTtoken);
+        let tempSection:tempSection[]=[];
+        if(user.status!==statusCodes.OK){
+            return{
+                status:user.status,
+                returnVal:"Error while fetching user details"
+            }
+        }
+        if(user.user?.orgId){
+            errMessage="failed to find temporary sections"
+            for (const teacher of data) {
+                for (let i = 0; i < teacher.sections.length; i++) {
+                    const existingSection = tempSection.find(section => 
+                        section.name === teacher.sections[i] && 
+                        section.semester === teacher.semesters[i]
+                    );
+                    if (!existingSection) {
+                        tempSection.push({
+                            name: teacher.sections[i],
+                            semester: teacher.semesters[i],
+                            orgId: user.user?.orgId ,
+                            department: user.user?.department,
+                            teacherCourse: `${teacher.teacherInitials}-${teacher.courseCodes[i]}`
+                        });
+                    }
+                    else{
+                        if (existingSection) {
+                            existingSection.teacherCourse += `,${teacher.teacherInitials}-${teacher.courseCodes[i]}`;
+                        }
+                    }
+                }
+            }  
+            errMessage="Failed to update temporary Sections locally"
+            try {
+                // Delete existing entries for this organization
+                // for (const section of tempSection) {
+                //     await prisma.tempSection.deleteMany({
+                //         where: {
+                //         orgId: user.user.orgId,
+                //         department: user.user.department,
+                //         name: section.name,
+                //         semester: section.semester || 0
+                //         }
+                //     });
+                // }
+                
+                // Create new entries
+                await prisma.tempSection.createMany({
+                    data: tempSection,
+                    skipDuplicates: true
+                });
+                return {
+                    status: statusCodes.OK,
+                    returnVal: "Done!"
+                };
+            } 
+            catch (error) {
+                console.error(error);
+                return {
+                    status: statusCodes.INTERNAL_SERVER_ERROR,
+                    returnVal: "Failed to update database with temporary sections"
+                };
+            }
+        }
+        return{
+            status:statusCodes.BAD_REQUEST,
+            returnVal:"User details not found"
+        }
+    }
+    catch{
+        return{
+            status:statusCodes.INTERNAL_SERVER_ERROR,
+            returnVal:errMessage
+        }
+    }
+}   

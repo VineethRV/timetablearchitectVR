@@ -1,5 +1,5 @@
 "use client";
-import { Button } from "antd";
+import { Button, Tooltip } from "antd";
 import { CiExport, CiImport} from "react-icons/ci";
 import Loading from "../../../../components/Loading/Loading";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Lab } from "../../../../types/main";
 import LabTable from "../../../../components/CoursePage/Labtable";
+import { FaDownload } from "react-icons/fa";
 
 function page() {
   const [labsData, setLabsData] = useState<Lab[]>([]);
@@ -41,19 +42,35 @@ function page() {
   }, []);
 
   if(loading) return <Loading/>
+
+  function downloadCSVTemplate(): void {
+    const headers = ["Teacher initials", "Lab course", "section", "batch number","semester", "Lab course", "section", "batch number","semester", "Lab course", "section", "batch number","semester", "Lab course", "section", "batch number","semester"];
+    const csvContent = headers.join(",") + "\n";
+    
+    // Create a Blob with the CSV content
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    
+    // Create a download link
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute("href", url);
+    link.setAttribute("download", "lab_template.csv");
+    link.style.visibility = "hidden";
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success("Template downloaded successfully");
+  }
+
+  function createTempLabs(){
+    
+  }
   return (
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">Lab Sets</h1>
-      <div className="flex space-x-3 justify-end py-1">
-        <Button className="bg-[#F2F2FDFF] text-primary font-bold">
-          <CiImport />
-          Import
-        </Button>
-        <Button className="bg-primary text-white font-bold">
-          <CiExport />
-          Export
-        </Button>
-      </div>
       <LabTable
       setLabsData={setLabsData}
       labData={labsData} />

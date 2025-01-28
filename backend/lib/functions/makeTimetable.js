@@ -43,6 +43,7 @@ exports.getTimetable = getTimetable;
 exports.deleteSection = deleteSection;
 exports.peekTimetable = peekTimetable;
 exports.updateTimetable = updateTimetable;
+exports.createTemptable = createTemptable;
 var course_1 = require("../actions/course");
 var client_1 = require("@prisma/client");
 var auth = require("../actions/auth");
@@ -619,21 +620,22 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
 }
 function getTimetable(JWTtoken, semester) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, status_4, user, section, error_2;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var _a, status_4, user, section, tempSections, _i, tempSections_1, tempSection, teacherCourses, courses, teachers, rooms, _b, teacherCourses_1, tc, _c, teacher, course, error_2;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
                 case 0:
-                    _b.trys.push([0, 5, , 6]);
+                    _d.trys.push([0, 6, , 7]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
-                    _a = _b.sent(), status_4 = _a.status, user = _a.user;
+                    _a = _d.sent(), status_4 = _a.status, user = _a.user;
+                    section = void 0;
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                                 section: null,
                             }];
                     }
-                    if (!(status_4 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    if (!(status_4 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 4];
                     return [4 /*yield*/, prisma.section.findMany({
                             where: {
                                 orgId: user.orgId,
@@ -648,23 +650,56 @@ function getTimetable(JWTtoken, semester) {
                             },
                         })];
                 case 2:
-                    section = _b.sent();
+                    section = _d.sent();
+                    console.log("section found", section);
+                    return [4 /*yield*/, prisma.tempSection.findMany({
+                            where: {
+                                orgId: user.orgId,
+                                semester: semester,
+                            }
+                        })];
+                case 3:
+                    tempSections = _d.sent();
+                    console.log("temps Found:", tempSections);
+                    for (_i = 0, tempSections_1 = tempSections; _i < tempSections_1.length; _i++) {
+                        tempSection = tempSections_1[_i];
+                        teacherCourses = tempSection.teacherCourse.split(',');
+                        courses = [];
+                        teachers = [];
+                        rooms = [];
+                        for (_b = 0, teacherCourses_1 = teacherCourses; _b < teacherCourses_1.length; _b++) {
+                            tc = teacherCourses_1[_b];
+                            _c = tc.split('-'), teacher = _c[0], course = _c[1];
+                            teachers.push(teacher);
+                            courses.push(course);
+                            rooms.push('0');
+                        }
+                        section.push({
+                            id: tempSection.id,
+                            name: tempSection.name + '(Temporary)',
+                            courses: courses,
+                            teachers: teachers,
+                            rooms: rooms,
+                            temporary: true
+                        });
+                    }
+                    // console.log("tempSections: ")
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
                             section: section,
                         }];
-                case 3: return [2 /*return*/, {
+                case 4: return [2 /*return*/, {
                         status: status_4,
                         section: null,
                     }];
-                case 4: return [3 /*break*/, 6];
-                case 5:
-                    error_2 = _b.sent();
+                case 5: return [3 /*break*/, 7];
+                case 6:
+                    error_2 = _d.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             section: null,
                         }];
-                case 6: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     });
@@ -912,6 +947,119 @@ function updateTimetable(JWTtoken, id, oldname, section) {
                     console.error(error_5);
                     return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
                 case 22: return [2 /*return*/];
+            }
+        });
+    });
+}
+function createTemptable(JWTtoken, data) {
+    return __awaiter(this, void 0, void 0, function () {
+        var errMessage, user, tempSection, _loop_2, _i, data_1, teacher, error_6, _a;
+        var _b, _c, _d;
+        return __generator(this, function (_e) {
+            switch (_e.label) {
+                case 0:
+                    errMessage = "Call to createTemptable failed";
+                    console.log("bande");
+                    _e.label = 1;
+                case 1:
+                    _e.trys.push([1, 7, , 8]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 2:
+                    user = _e.sent();
+                    tempSection = [];
+                    if (user.status !== statusCodes_1.statusCodes.OK) {
+                        return [2 /*return*/, {
+                                status: user.status,
+                                returnVal: "Error while fetching user details"
+                            }];
+                    }
+                    if (!((_b = user.user) === null || _b === void 0 ? void 0 : _b.orgId)) return [3 /*break*/, 6];
+                    errMessage = "failed to find temporary sections";
+                    _loop_2 = function (teacher) {
+                        var _loop_3 = function (i) {
+                            var existingSection = tempSection.find(function (section) {
+                                return section.name === teacher.sections[i] &&
+                                    section.semester === teacher.semesters[i];
+                            });
+                            if (!existingSection) {
+                                tempSection.push({
+                                    name: teacher.sections[i],
+                                    semester: teacher.semesters[i],
+                                    orgId: (_c = user.user) === null || _c === void 0 ? void 0 : _c.orgId,
+                                    department: (_d = user.user) === null || _d === void 0 ? void 0 : _d.department,
+                                    teacherCourse: "".concat(teacher.teacherInitials, "-").concat(teacher.courseCodes[i])
+                                });
+                            }
+                            else {
+                                if (existingSection) {
+                                    existingSection.teacherCourse += ",".concat(teacher.teacherInitials, "-").concat(teacher.courseCodes[i]);
+                                }
+                            }
+                        };
+                        for (var i = 0; i < teacher.sections.length; i++) {
+                            _loop_3(i);
+                        }
+                    };
+                    for (_i = 0, data_1 = data; _i < data_1.length; _i++) {
+                        teacher = data_1[_i];
+                        _loop_2(teacher);
+                    }
+                    errMessage = "Failed to update temporary Sections locally";
+                    _e.label = 3;
+                case 3:
+                    _e.trys.push([3, 5, , 6]);
+                    // Delete existing entries for this organization
+                    // for (const section of tempSection) {
+                    //     await prisma.tempSection.deleteMany({
+                    //         where: {
+                    //         orgId: user.user.orgId,
+                    //         department: user.user.department,
+                    //         name: section.name,
+                    //         semester: section.semester || 0
+                    //         }
+                    //     });
+                    // }
+                    // Create new entries
+                    return [4 /*yield*/, prisma.tempSection.createMany({
+                            data: tempSection,
+                            skipDuplicates: true
+                        })];
+                case 4:
+                    // Delete existing entries for this organization
+                    // for (const section of tempSection) {
+                    //     await prisma.tempSection.deleteMany({
+                    //         where: {
+                    //         orgId: user.user.orgId,
+                    //         department: user.user.department,
+                    //         name: section.name,
+                    //         semester: section.semester || 0
+                    //         }
+                    //     });
+                    // }
+                    // Create new entries
+                    _e.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            returnVal: "Done!"
+                        }];
+                case 5:
+                    error_6 = _e.sent();
+                    console.error(error_6);
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            returnVal: "Failed to update database with temporary sections"
+                        }];
+                case 6: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.BAD_REQUEST,
+                        returnVal: "User details not found"
+                    }];
+                case 7:
+                    _a = _e.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            returnVal: errMessage
+                        }];
+                case 8: return [2 /*return*/];
             }
         });
     });

@@ -76,7 +76,6 @@ model Lab {
   organisation Organisation @relation(fields: [orgId], references: [id])
   orgId        Int
 }
-
 model Elective {
   id           Int          @id @default(autoincrement())
   name         String
@@ -137,6 +136,15 @@ model Section{
   timeTable String
   roomTable String?
   courseTable String?
+}
+model tempSection{
+  id     Int          @id @default(autoincrement())
+  name   String
+  semester Int?
+  orgId  Int
+  department String?
+  teacherCourse String
+  @@unique([name, orgId,semester,department])
 }
 model Departments{
   id Int @id @default(autoincrement())

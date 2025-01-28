@@ -17,7 +17,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable, updateTimetable } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable, updateTimetable,createTemptable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -1019,6 +1019,27 @@ app.get("/health", (_, res) => {
   return res.json({
     msg: "Server is healthy !!",
   });
+});
+
+app.post("/api/createTempTable", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { data } = req.body;
+  if (!token || !data) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token and data are required",
+    });
+  }
+
+  try {
+    const result = await createTemptable(token, data);
+    res.status(200).json({ 
+      status: result.status, 
+      returnVal: result.returnVal 
+    });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
 });
 
 app.listen(port, () => {
