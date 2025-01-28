@@ -829,12 +829,11 @@ app.post("/api/sections/peek", async (req, res) => {
 
 app.put("/api/sections", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
-  const {id, section,name } = req.body;
-  console.log(id,section,name)
-  if(!token||!id||!section||!name)
+  const {id, section,name,teachers,rooms } = req.body;
+  if(!token||!id||!section||!name||!teachers||!rooms)
     return res.status(200).json({
       status: 400,
-      message: "Token,id,section and name required",
+      message: "Token,id,section,name and teachers required",
     });
 
   try {
@@ -844,6 +843,8 @@ app.put("/api/sections", async (req, res) => {
       id,
       name,
       section,
+      teachers,
+      rooms
     );
     res.status(200).json({ status: result.status });
   } catch (error) {
