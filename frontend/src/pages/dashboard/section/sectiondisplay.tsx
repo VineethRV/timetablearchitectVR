@@ -99,7 +99,7 @@ const SectionTabledisplay = () => {
 
         try {
           const response = await axios.post(
-            `${BACKEND_URL}/sections/many`,
+            `${BACKEND_URL}/createTempTable`,
             { data },
             {
               headers: {
@@ -109,8 +109,7 @@ const SectionTabledisplay = () => {
             }
           );
 
-          if (response.data.status === statusCodes.CREATED) {
-            setCoreData(prev => [...prev, ...data]);
+          if (response.data.status === statusCodes.OK) {
             toast.success("Sections imported successfully!");
           } else {
             throw new Error();
