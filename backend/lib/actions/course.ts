@@ -319,3 +319,59 @@ export async function peekCourse(
     };
   }
 }
+
+export async function peekCourseWithCode(
+  JWTtoken: string,
+  name: string,
+  semester: number,
+  department: string | null = null,): Promise<{ status: number; course: Course | null }>{
+    
+    try {
+      console.log(JWTtoken)
+      const { status, user } = await auth.getPosition(JWTtoken);
+  
+      if (user?.orgId == null) {
+        return {
+          status: statusCodes.BAD_REQUEST,
+          course: null,
+        };
+      }
+      console.log(user)
+      if (status == statusCodes.OK && user) {
+        let course
+        if(user.role=='admin'){
+          course = await prisma.course.findFirst({
+            where: {
+              code: name,
+              orgId: user.orgId,
+              semester: semester,
+              department:department?department:user.department,
+            },
+          });
+        }
+        else{
+          course = await prisma.course.findFirst({
+            where: {
+              code: name,
+              department:user.department,
+              orgId: user.orgId,
+              semester: semester,
+            },
+          });
+        }
+        return {
+          status: statusCodes.OK,
+          course: course,
+        };
+      }
+      return {
+        status: status,
+        course: null,
+      };
+    } catch {
+      return {
+        status: statusCodes.INTERNAL_SERVER_ERROR,
+        course: null,
+      };
+    }
+}

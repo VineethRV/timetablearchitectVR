@@ -243,11 +243,11 @@ const CoreTable = ({
   return (
     <div>
       <div className="flex space-x-3 justify-end py-1">
-        <Button className="bg-[#F2F2FDFF] text-primary font-bold">
+        <Button className="bg-[#F2F2FDFF] text-primary font-bold" disabled>
           <CiImport />
           Import
         </Button>
-        <Button className="bg-primary text-white font-bold">
+        <Button className="bg-primary text-white font-bold" disabled>
           <CiExport />
           Export
         </Button>

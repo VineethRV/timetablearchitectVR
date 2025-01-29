@@ -112,14 +112,6 @@ const AddTeacherpage = () => {
           <h1>&#8592;</h1>
           <h1>Back</h1>
         </div>
-        <Upload>
-          <Button
-            icon={<CiImport />}
-            className="text-[#636AE8FF] border-[#636AE8FF] "
-          >
-            Import
-          </Button>
-        </Upload>
       </div>
       <motion.div
         initial={{ opacity: 0, y: -20 }}

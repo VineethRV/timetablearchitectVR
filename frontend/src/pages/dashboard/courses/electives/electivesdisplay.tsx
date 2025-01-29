@@ -44,11 +44,11 @@ function page() {
     <div className="h-screen px-8 py-4 overflow-y-scroll">
       <h1 className="text-3xl font-bold text-primary mt-2">Elective Clusters</h1>
       <div className="flex space-x-3 justify-end py-1">
-        <Button className="bg-[#F2F2FDFF] text-primary font-bold">
+        <Button className="bg-[#F2F2FDFF] text-primary font-bold" disabled>
           <CiImport />
           Import
         </Button>
-        <Button className="bg-primary text-white font-bold">
+        <Button className="bg-primary text-white font-bold" disabled>
           <CiExport />
           Export
         </Button>

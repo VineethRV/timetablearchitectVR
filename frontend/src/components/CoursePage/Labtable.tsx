@@ -9,7 +9,7 @@ import axios from "axios";
 import { BACKEND_URL } from "../../../config";
 import { useNavigate } from "react-router-dom";
 import { TbTrash } from "react-icons/tb";
-import { CiSearch } from "react-icons/ci";
+import { CiExport, CiImport, CiSearch } from "react-icons/ci";
 import { Lab } from "../../types/main";
 import { convertTableToString, stringToTable } from "../../utils/main";
 
@@ -380,6 +380,16 @@ const LabsTable = ({
 
   return (
     <div>
+      <div className="flex space-x-3 justify-end py-1">
+            <Button className="bg-[#F2F2FDFF] text-primary font-bold" disabled>
+              <CiImport />
+              Import
+            </Button>
+            <Button className="bg-primary text-white font-bold" disabled>
+              <CiExport />
+              Export
+            </Button>
+        </div>
       <div className="flex space-x-8 justify-between py-4">
         <Input
           className="w-fit"

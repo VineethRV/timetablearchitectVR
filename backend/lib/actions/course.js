@@ -41,6 +41,7 @@ exports.deleteCourse = deleteCourse;
 exports.updateCourse = updateCourse;
 exports.getCourses = getCourses;
 exports.peekCourse = peekCourse;
+exports.peekCourseWithCode = peekCourseWithCode;
 var auth = require("./auth");
 var client_1 = require("@prisma/client");
 var statusCodes_1 = require("../types/statusCodes");
@@ -373,6 +374,69 @@ function peekCourse(JWTtoken_1, name_1, semester_1) {
                     }];
                 case 6: return [2 /*return*/, {
                         status: status_5,
+                        course: null,
+                    }];
+                case 7:
+                    _b = _c.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            course: null,
+                        }];
+                case 8: return [2 /*return*/];
+            }
+        });
+    });
+}
+function peekCourseWithCode(JWTtoken_1, name_1, semester_1) {
+    return __awaiter(this, arguments, void 0, function (JWTtoken, name, semester, department) {
+        var _a, status_6, user, course, _b;
+        if (department === void 0) { department = null; }
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _c.trys.push([0, 7, , 8]);
+                    console.log(JWTtoken);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _c.sent(), status_6 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                course: null,
+                            }];
+                    }
+                    console.log(user);
+                    if (!(status_6 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
+                    course = void 0;
+                    if (!(user.role == 'admin')) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.course.findFirst({
+                            where: {
+                                code: name,
+                                orgId: user.orgId,
+                                semester: semester,
+                                department: department ? department : user.department,
+                            },
+                        })];
+                case 2:
+                    course = _c.sent();
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, prisma.course.findFirst({
+                        where: {
+                            code: name,
+                            department: user.department,
+                            orgId: user.orgId,
+                            semester: semester,
+                        },
+                    })];
+                case 4:
+                    course = _c.sent();
+                    _c.label = 5;
+                case 5: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.OK,
+                        course: course,
+                    }];
+                case 6: return [2 /*return*/, {
+                        status: status_6,
                         course: null,
                     }];
                 case 7:
