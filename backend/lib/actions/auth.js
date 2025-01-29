@@ -261,9 +261,12 @@ function getPosition(JWTtoken) {
                     jwtParsed = jwt.decode(JWTtoken);
                     userId = jwtParsed.id;
                     userEmail = jwtParsed.email;
+                    //find user info from DB using id
+                    console.log("user id", userId);
                     return [4 /*yield*/, prisma.user.findUnique({ where: { id: userId } })];
                 case 1:
                     user = _b.sent();
+                    console.log("user", user);
                     if (user) {
                         if (user.email == userEmail) {
                             //successfull match,and has permission return values

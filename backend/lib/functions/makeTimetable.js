@@ -45,6 +45,7 @@ exports.peekTimetable = peekTimetable;
 exports.updateTimetable = updateTimetable;
 exports.createTemptable = createTemptable;
 exports.peekTempTable = peekTempTable;
+exports.deleteTempTable = deleteTempTable;
 var course_1 = require("../actions/course");
 var client_1 = require("@prisma/client");
 var auth = require("../actions/auth");
@@ -1144,6 +1145,7 @@ function peekTempTable(token, id) {
                     if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 4];
                     return [4 /*yield*/, prisma.tempSection.findUnique({
                             where: {
+                                orgId: user.orgId,
                                 id: id
                             }
                         })];
@@ -1163,6 +1165,47 @@ function peekTempTable(token, id) {
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                             retVal: e_2
+                        }];
+                case 6: return [2 /*return*/];
+            }
+        });
+    });
+}
+function deleteTempTable(JWTtoken, id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_8, user, error_7;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    _b.trys.push([0, 5, , 6]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _b.sent(), status_8 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                            }];
+                    }
+                    if (!(status_8 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.tempSection.deleteMany({
+                            where: {
+                                orgId: user.orgId,
+                                id: id
+                            },
+                        })];
+                case 2:
+                    _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                        }];
+                case 3: return [2 /*return*/, {
+                        status: status_8,
+                    }];
+                case 4: return [3 /*break*/, 6];
+                case 5:
+                    error_7 = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
                         }];
                 case 6: return [2 /*return*/];
             }

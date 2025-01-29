@@ -399,13 +399,13 @@ function peekCourseWithCode(JWTtoken_1, name_1, semester_1) {
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _c.sent(), status_6 = _a.status, user = _a.user;
+                    console.log("status", status_6);
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                                 course: null,
                             }];
                     }
-                    console.log(user);
                     if (!(status_6 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
                     course = void 0;
                     if (!(user.role == 'admin')) return [3 /*break*/, 3];
