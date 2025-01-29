@@ -42,6 +42,7 @@ exports.updateRoom = updateRoom;
 exports.getRooms = getRooms;
 exports.peekRoom = peekRoom;
 exports.deleteRooms = deleteRooms;
+exports.getConsolidated = getConsolidated;
 var auth = require("./auth");
 var client_1 = require("@prisma/client");
 var statusCodes_1 = require("../types/statusCodes");
@@ -464,6 +465,84 @@ function deleteRooms(JWTtoken, rooms) {
                     _b = _c.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                        }];
+                case 7: return [2 /*return*/];
+            }
+        });
+    });
+}
+function getConsolidated(JWTtoken) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status_6, user, consolidatedTable_1, rooms, _b;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _c.trys.push([0, 6, , 7]);
+                    return [4 /*yield*/, auth.getPosition(JWTtoken)];
+                case 1:
+                    _a = _c.sent(), status_6 = _a.status, user = _a.user;
+                    if (status_6 == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                consolidatedTable: null,
+                            }];
+                    }
+                    consolidatedTable_1 = Array(6)
+                        .fill(null)
+                        .map(function () {
+                        return Array(6)
+                            .fill(null)
+                            .map(function () { return Array(0).fill(""); });
+                    });
+                    rooms = void 0;
+                    if (!(user && user.role == "admin")) return [3 /*break*/, 3];
+                    return [4 /*yield*/, prisma.room.findMany({
+                            where: {
+                                orgId: user.orgId ? user.orgId : -1,
+                            },
+                            select: {
+                                name: true,
+                                timetable: true,
+                            },
+                        })];
+                case 2:
+                    rooms = _c.sent();
+                    return [3 /*break*/, 5];
+                case 3:
+                    if (!user) return [3 /*break*/, 5];
+                    return [4 /*yield*/, prisma.room.findMany({
+                            where: {
+                                orgId: user.orgId ? user.orgId : -1,
+                                department: user.department,
+                            },
+                            select: {
+                                name: true,
+                                timetable: true,
+                            },
+                        })];
+                case 4:
+                    rooms = _c.sent();
+                    _c.label = 5;
+                case 5:
+                    rooms === null || rooms === void 0 ? void 0 : rooms.forEach(function (room) {
+                        var timetable = room.timetable;
+                        if (timetable) {
+                            var roomTable = timetable.split(";").map(function (row) { return row.split(","); });
+                            for (var i = 0; i < 6; i++) {
+                                for (var j = 0; j < 6; j++) {
+                                    if (roomTable[i][j] == "0") {
+                                        consolidatedTable_1[i][j].push(room.name);
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    return [2 /*return*/, { consolidatedTable: consolidatedTable_1, status: statusCodes_1.statusCodes.OK }];
+                case 6:
+                    _b = _c.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            consolidatedTable: null,
                         }];
                 case 7: return [2 /*return*/];
             }

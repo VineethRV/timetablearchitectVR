@@ -1063,6 +1063,21 @@ app.post("/api/tempSection/peek", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+
+app.get("/api/rooms/consolidated", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(200).json({ status: 400, message: "Token is required" });
+  }
+
+  try {
+    const result = await room.getConsolidated(token);
+    res.status(200).json({ status: result.status, consolidatedTable: result.consolidatedTable });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });

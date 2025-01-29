@@ -10,10 +10,10 @@ interface StatusTableProps {
   buttonStatus: string[][]; // Array of arrays with "Free" or "Busy"
   setButtonStatus: (status: string[][]) => void; 
   setData: (data: string[]) => void;
-  teacherList: string[][][];
+  elementList: string[][][];
 }
 
-const StatusTable: React.FC<StatusTableProps> = ({ buttonStatus, setButtonStatus,setData,teacherList }) => {
+const StatusTable: React.FC<StatusTableProps> = ({ buttonStatus, setButtonStatus,setData,elementList }) => {
   // Handle button click to toggle status
   // Make API call when component mounts
   
@@ -28,11 +28,11 @@ const StatusTable: React.FC<StatusTableProps> = ({ buttonStatus, setButtonStatus
         : row
     );
     try{
-      setData(teacherList[rowIndex][colIndex]);
+      setData(elementList[rowIndex][colIndex]);
       setButtonStatus(updatedStatus);
     }
     catch{
-      toast.error("Please wait for teacher data to arrive");
+      toast.error("Please wait for element data to arrive");
     }
   };
 

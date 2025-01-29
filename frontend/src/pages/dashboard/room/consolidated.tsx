@@ -29,13 +29,12 @@ const consolidated = () => {
     weekdays.map(() => timeslots.map(() => "Check"))
   );
   let [data, setData] = useState([""]);
-  let [teacherList,setTeacherList]=useState( Array(6).fill(null).map(() =>
+  let [RoomList,setRoomList]=useState( Array(6).fill(null).map(() =>
     Array(0).fill(null).map(() =>
       Array(0).fill("")
     )
-  ));
-  const exportToCSV = () => {
-      // Create rows directly from teacherList
+  ));const exportToCSV = () => {
+      // Create rows directly from RoomList
       const rows = [];
       const days = [
         "Monday 1st Hour", "Monday 2nd Hour", "Monday 3rd Hour", "Monday 4th Hour", "Monday 5th Hour", "Monday 6th Hour",
@@ -48,10 +47,10 @@ const consolidated = () => {
       // Add header row for CSV
       for (let day = 0; day < 6; day++) {
         for (let slot = 0; slot < 6; slot++) {
-          // Get teachers for this time slot
-          const teachers = teacherList[day][slot] || [];
-          // Join teachers with a semicolon if multiple teachers
-          rows.push([days[day*6+slot],teachers.join(',')]);
+          // Get Rooms for this time slot
+          const Rooms = RoomList[day][slot] || [];
+          // Join Rooms with a semicolon if multiple Rooms
+          rows.push([days[day*6+slot],Rooms.join(',')]);
         }
       }
   
@@ -64,7 +63,7 @@ const consolidated = () => {
       const url = URL.createObjectURL(blob);
   
       link.setAttribute("href", url);
-      link.setAttribute("download", "teachersData.csv");
+      link.setAttribute("download", "roomData.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -75,6 +74,11 @@ const consolidated = () => {
       console.error('No token found');
       return;
     }
+    const promise=axios.get(`${BACKEND_URL}/rooms/consolidated`, {
+      headers: {
+        Authorization:token,
+      }
+    })
     useEffect(() => {
       const fetchConsolidatedData = () => {
         const token = localStorage.getItem('token');
@@ -82,7 +86,7 @@ const consolidated = () => {
           console.error('No token found');
           return;
         }
-        const promise = axios.get(`${BACKEND_URL}/teachers/consolidated`, {
+        const promise = axios.get(`${BACKEND_URL}/Rooms/consolidated`, {
           headers: {
             Authorization: token,
           }
@@ -91,18 +95,18 @@ const consolidated = () => {
         toast.promise(
           promise,
           {
-            loading: 'Fetching teacher data...',
+            loading: 'Fetching Room data...',
             success: (response) => {
               if (response.status === 200 && response.data.consolidatedTable) {
                 console.log("consolidated data:", response.data.consolidatedTable);
-                setTeacherList(response.data.consolidatedTable);
-                return 'Teacher data loaded successfully';
+                setRoomList(response.data.consolidatedTable);
+                return 'Room data loaded successfully';
               }
-              throw new Error('Failed to load teacher data');
+              throw new Error('Failed to load Room data');
             },
             error: (error) => {
               console.error('Error fetching consolidated data:', error);
-              return 'Failed to fetch teacher data';
+              return 'Failed to fetch Room data';
             }
           }
         );
@@ -126,7 +130,7 @@ const consolidated = () => {
       <div className="flex px-2 items-center justify-between text-[#636AE8FF] font-inter text-xl text-bold">
         <div
           onClick={() => {
-            navigate("/dashboard/teachers");
+            navigate("/dashboard/Rooms");
           }}
           className="flex text-base w-fit cursor-pointer space-x-2"
         >
@@ -152,8 +156,8 @@ const consolidated = () => {
           >
             <label>
               <div className="flex items-center">
-                <span>Availability of teachers</span>
-                <Tooltip title="Click on the slot to check teacher status">
+                <span>Availability of Rooms</span>
+                <Tooltip title="Click on the slot to check Room status">
                   <IoIosInformationCircleOutline className="ml-2 w-4 h-4 text-[#636AE8FF]" />
                 </Tooltip>
               </div>
@@ -162,7 +166,7 @@ const consolidated = () => {
               buttonStatus={buttonStatus}
               setButtonStatus={setButtonStatus}
               setData={setData}
-              elementList={teacherList}
+              elementList={RoomList}
             />
           </Form>
           <List
@@ -174,7 +178,7 @@ const consolidated = () => {
             }}
         
             size="small"
-            header={<div style={{ fontWeight: 'bold', fontSize: '1.2em' }}>Free teachers:</div>}
+            header={<div style={{ fontWeight: 'bold', fontSize: '1.2em' }}>Free Rooms:</div>}
             bordered
             dataSource={data}
             renderItem={(item) => <List.Item>{item}</List.Item>}

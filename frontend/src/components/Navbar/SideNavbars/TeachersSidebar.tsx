@@ -1,4 +1,5 @@
 import { Divider, Button, Layout } from "antd";
+import axios from "axios";
 import {
   FaCalendar,
   FaUserPen,
@@ -7,6 +8,8 @@ import {
   FaClockRotateLeft,
 } from "react-icons/fa6";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { BACKEND_URL } from "../../../../config";
 
 const { Sider } = Layout;
 
@@ -98,6 +101,55 @@ const TeachersSidebar = () => {
       <div className="flex justify-center">
         <Button
           className="mt-2 bg-[#636AE8FF] text-white"
+          onClick={() => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+              console.error('No token found');
+              return;
+            }
+
+            toast.promise(
+              axios.get(`${BACKEND_URL}/teachers/consolidated`, {
+          headers: { Authorization: token }
+              }),
+              {
+          loading: 'Fetching teacher data...',
+          success: (response) => {
+            if (response.status === 200 && response.data.consolidatedTable) {
+              const days = [
+                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+              ];
+              const rows = [];
+              
+              // Create CSV rows
+              for (let day = 0; day < 6; day++) {
+                for (let slot = 0; slot < 6; slot++) {
+            const teachers = response.data.consolidatedTable[day][slot] || [];
+            rows.push([
+              `${days[day]} ${slot + 1}st Hour`,
+              teachers.join(',')
+            ]);
+                }
+              }
+
+              // Generate and download CSV
+              const csvContent = rows.map(row => row.join(",")).join("\n");
+              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(blob);
+              link.download = "teacherData.csv";
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              return 'Teacher data exported successfully';
+            }
+            throw new Error('Failed to export teacher data');
+          },
+          error: 'Failed to fetch teacher data'
+              }
+            );
+          }}
         >
           Generate Consolidated
         </Button>

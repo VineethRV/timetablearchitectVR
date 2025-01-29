@@ -412,3 +412,72 @@ export async function deleteRooms(
     };
   }
 }
+
+export async function getConsolidated(
+  JWTtoken: string
+): Promise<{ status: number; consolidatedTable: string[][][] | null }> {
+  try {
+    const { status, user } = await auth.getPosition(JWTtoken);
+
+    if (status == statusCodes.OK && user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        consolidatedTable: null,
+      };
+    }
+
+    let consolidatedTable: string[][][] = Array(6)
+      .fill(null)
+      .map(() =>
+        Array(6)
+          .fill(null)
+          .map(() => Array(0).fill(""))
+      );
+
+    let rooms;
+    if (user && user.role == "admin") {
+      rooms = await prisma.room.findMany({
+        where: {
+          orgId: user.orgId ? user.orgId : -1,
+        },
+        select: {
+          name: true,
+          timetable: true,
+        },
+      });
+    } else if (user) {
+      rooms = await prisma.room.findMany({
+        where: {
+          orgId: user.orgId ? user.orgId : -1,
+          department: user.department,
+        },
+        select: {
+          name: true,
+          timetable: true,
+        },
+      });
+    }
+
+    rooms?.forEach((room) => {
+      const timetable = room.timetable;
+      if (timetable) {
+        const roomTable = timetable.split(";").map(row => row.split(","));
+        for (let i = 0; i < 6; i++) {
+          for (let j = 0; j < 6; j++) {
+            if (roomTable[i][j] == "0") {
+              consolidatedTable[i][j].push(room.name);
+            }
+          }
+        }
+      }
+    });
+
+    return { consolidatedTable: consolidatedTable, status: statusCodes.OK };
+  } 
+  catch {
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      consolidatedTable: null,
+    };
+  }
+}

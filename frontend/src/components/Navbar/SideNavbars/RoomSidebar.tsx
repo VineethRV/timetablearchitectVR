@@ -1,4 +1,5 @@
 import { Divider, Button, Layout } from "antd";
+import axios from "axios";
 import {
   FaCalendar,
   FaBuildingUser,
@@ -7,6 +8,8 @@ import {
   FaPenToSquare,
 } from "react-icons/fa6";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { BACKEND_URL } from "../../../../config";
 
 const { Sider } = Layout;
 
@@ -83,7 +86,7 @@ const RoomsSidebar = () => {
         </div>
 
         <div
-          onClick={() => handleClick( "/")}
+          onClick={() => handleClick( "/timeslot-dependent")}
           className={`relative cursor-pointer flex space-x-2 p-2 ${
             pathname === "/dashboard/timeslot-dependent"
               ? "text-[#636AE8FF] font-bold"
@@ -99,7 +102,52 @@ const RoomsSidebar = () => {
       </div>
       <div className="flex justify-center">
         <Button
-          onClick={() => navigate(`/rooms/consolidated`)}
+          onClick={() => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+              console.error('No token found');
+              return;
+            }
+
+            toast.promise(
+              axios.get(`${BACKEND_URL}/rooms/consolidated`, {
+          headers: { Authorization: token }
+              }),
+              {
+          loading: 'Fetching room data...',
+          success: (response) => {
+            if (response.status === 200 && response.data.consolidatedTable) {
+              const rows = [];
+              const days = [
+                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+              ];
+              
+              for (let day = 0; day < 6; day++) {
+                for (let slot = 0; slot < 6; slot++) {
+            const rooms = response.data.consolidatedTable[day][slot] || [];
+            rows.push([`${days[day]} ${slot + 1}st Hour`, rooms.join(',')]);
+                }
+              }
+
+              const csvContent = rows.map(row => row.join(",")).join("\n");
+              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+              const link = document.createElement("a");
+              const url = URL.createObjectURL(blob);
+
+              link.setAttribute("href", url);
+              link.setAttribute("download", "roomData.csv");
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              return 'Room data exported successfully';
+            }
+            throw new Error('Failed to export room data');
+          },
+          error: 'Failed to fetch room data'
+              }
+            );
+          }}
           className="mt-2 bg-[#636AE8FF] text-white"
         >
           Generate Consolidated
