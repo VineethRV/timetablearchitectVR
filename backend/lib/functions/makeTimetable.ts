@@ -397,12 +397,13 @@ export async function saveTimetable(
     timetable:string,
     roomTimetable:string,
     courseTimetable:string
-): Promise<{status:number}> {
+): Promise<{status:number,section:any|null}> {
  try {
     const { status, user } = await auth.getPosition(JWTtoken);
     if (user?.orgId == null)
       return {
         status: statusCodes.BAD_REQUEST,
+        section: null,
       };
     if (status == statusCodes.OK) {
       if (user && user.role != "viewer") {
@@ -430,6 +431,7 @@ export async function saveTimetable(
         if (duplicates||(courses.length!==teachers.length)||courses.length!==rooms.length) {
           return {
             status: statusCodes.BAD_REQUEST,
+            section: null,
           };
         }
         const department=user.department
@@ -449,14 +451,16 @@ export async function saveTimetable(
                         console.log(tTeacher)
                         const teacherResponse = await peekTeacher(JWTtoken, tTeacher,department);
                         if (teacherResponse.status !== statusCodes.OK || !teacherResponse.teacher) {
-                            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                            return { status: statusCodes.INTERNAL_SERVER_ERROR,
+                            section: null
+                              };
                         }
                         const tTeacherTT=convertStringToTable(teacherResponse.teacher.timetable)
                         tTeacherTT[i][j]=name;
                         teacherResponse.teacher.timetable=convertTableToString(tTeacherTT)
                         const updateteacher=await updateTeachers(JWTtoken,tTeacher,department,teacherResponse.teacher)
                         if (updateteacher.status !== statusCodes.OK || !updateteacher.teacher) {
-                            return { status: statusCodes.INTERNAL_SERVER_ERROR  };
+                            return { status: statusCodes.INTERNAL_SERVER_ERROR ,section: null };
                         }
                         console.log(updateteacher.teacher)
                         break;
@@ -485,6 +489,7 @@ export async function saveTimetable(
                             if (!existingRoom) {
                               return {
                                 status: statusCodes.NOT_FOUND,
+                                section: null,
                               };
                             }
                             const TT=convertStringToTable(existingRoom.timetable)
@@ -502,21 +507,25 @@ export async function saveTimetable(
             }
         return {
           status: statusCodes.OK,
+          section: newCourse
         };
       }
       // If role is viewer
       return {
-        status: statusCodes.FORBIDDEN
+        status: statusCodes.FORBIDDEN,
+        section: null,
       };
     }
     // If status is not OK
     return {
       status: status,
+        section: null,
     };
   } catch (e) {
     console.error(e);
     return {
-      status: statusCodes.INTERNAL_SERVER_ERROR
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      section: null,
     };
   }
 }

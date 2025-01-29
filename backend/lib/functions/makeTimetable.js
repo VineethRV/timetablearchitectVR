@@ -470,6 +470,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                section: null,
                             }];
                     if (!(status_3 == statusCodes_1.statusCodes.OK)) return [3 /*break*/, 21];
                     if (!(user && user.role != "viewer")) return [3 /*break*/, 20];
@@ -498,6 +499,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     if (duplicates || (courses.length !== teachers.length) || courses.length !== rooms.length) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                section: null,
                             }];
                     }
                     department = user.department;
@@ -528,7 +530,9 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                 case 7:
                     teacherResponse = _b.sent();
                     if (teacherResponse.status !== statusCodes_1.statusCodes.OK || !teacherResponse.teacher) {
-                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                                section: null
+                            }];
                     }
                     tTeacherTT = (0, common_1.convertStringToTable)(teacherResponse.teacher.timetable);
                     tTeacherTT[i][j] = name;
@@ -537,7 +541,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                 case 8:
                     updateteacher = _b.sent();
                     if (updateteacher.status !== statusCodes_1.statusCodes.OK || !updateteacher.teacher) {
-                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
+                        return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR, section: null }];
                     }
                     console.log(updateteacher.teacher);
                     return [3 /*break*/, 10];
@@ -574,6 +578,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     if (!existingRoom) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.NOT_FOUND,
+                                section: null,
                             }];
                     }
                     TT = (0, common_1.convertStringToTable)(existingRoom.timetable);
@@ -597,22 +602,26 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     return [3 /*break*/, 13];
                 case 19: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.OK,
+                        section: newCourse
                     }];
                 case 20: 
                 // If role is viewer
                 return [2 /*return*/, {
-                        status: statusCodes_1.statusCodes.FORBIDDEN
+                        status: statusCodes_1.statusCodes.FORBIDDEN,
+                        section: null,
                     }];
                 case 21: 
                 // If status is not OK
                 return [2 /*return*/, {
                         status: status_3,
+                        section: null,
                     }];
                 case 22:
                     e_1 = _b.sent();
                     console.error(e_1);
                     return [2 /*return*/, {
-                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            section: null,
                         }];
                 case 23: return [2 /*return*/];
             }

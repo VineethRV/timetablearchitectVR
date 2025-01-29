@@ -422,6 +422,8 @@ const EditSectionPage: React.FC = () => {
             setOldTeachers(teachers)
             setOldRooms(rooms)
             SetshowTT(false)
+            axios
+            navigate(`/dashboard/section/editsection/${res.data.message.id}/${res.data.message.name}`);
             return "Saved timetable!!"
           case statusCodes.UNAUTHORIZED:
             return "You are not authorized!";
