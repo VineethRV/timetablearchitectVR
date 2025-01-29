@@ -213,7 +213,9 @@ export async function getPosition(
     const userId = jwtParsed.id;
     const userEmail = jwtParsed.email;
     //find user info from DB using id
+    console.log("user id",userId);
     const user = await prisma.user.findUnique({ where: { id: userId } });
+    console.log("user",user);
     if (user) {
       if (user.email == userEmail) {
         //successfull match,and has permission return values

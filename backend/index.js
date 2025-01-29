@@ -1095,6 +1095,24 @@ app.post("/api/courses/peekWithCode", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+app.delete("/api/tempSection", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { id } = req.body;
+  if (!token || !id) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token and id are required" });
+  }
+
+  try {
+    const result = await deleteTempTable(token, id);
+    res
+      .status(200)
+      .json({ status: result.status, message: "Temporary section deleted successfully" });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

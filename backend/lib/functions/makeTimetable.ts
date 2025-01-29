@@ -971,6 +971,7 @@ export async function peekTempTable(token:string,id:number):Promise<{status:numb
         if(status==statusCodes.OK && user?.orgId){
             const retVal=await prisma.tempSection.findUnique({
                 where:{
+                    orgId:user.orgId,
                     id:id
                 }
             })
@@ -990,5 +991,37 @@ export async function peekTempTable(token:string,id:number):Promise<{status:numb
             status:statusCodes.INTERNAL_SERVER_ERROR,
             retVal:e
         }
+    }
+}
+export async function deleteTempTable(
+    JWTtoken: string,
+    id: number
+): Promise<{ status: number }> {
+    try {
+        const { status, user } = await auth.getPosition(JWTtoken);
+        if (user?.orgId == null) {
+            return {
+                status: statusCodes.BAD_REQUEST,
+            };
+        }
+        if (status == statusCodes.OK && user) {
+            await prisma.tempSection.deleteMany({
+                where: {
+                    orgId: user.orgId,
+                    id: id
+                },
+            });
+            return {
+                status: statusCodes.OK,
+            };
+        } else {
+            return {
+                status: status,
+            };
+        }
+    } catch (error) {
+        return {
+            status: statusCodes.INTERNAL_SERVER_ERROR,
+        };
     }
 }

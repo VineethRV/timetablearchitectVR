@@ -329,14 +329,13 @@ export async function peekCourseWithCode(
     try {
       console.log(JWTtoken)
       const { status, user } = await auth.getPosition(JWTtoken);
-  
+      console.log("status",status)
       if (user?.orgId == null) {
         return {
           status: statusCodes.BAD_REQUEST,
           course: null,
         };
       }
-      console.log(user)
       if (status == statusCodes.OK && user) {
         let course
         if(user.role=='admin'){
