@@ -1080,6 +1080,7 @@ app.get("/api/rooms/consolidated", async (req, res) => {
 app.post("/api/courses/peekWithCode", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { name, semester, department } = req.body;
+  console.log(token,name,semester,department)
   if (!token || !name || semester === undefined) {
     return res
       .status(200)

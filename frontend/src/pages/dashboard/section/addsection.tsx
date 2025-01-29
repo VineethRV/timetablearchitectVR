@@ -138,7 +138,7 @@ const AddSectionPage: React.FC = () => {
             },
           }
         );
-  
+
         if (electiveResponse.status === 200) {
           const eleTT = stringToTable(electiveResponse.data.message.timetable);
           for (let i = 0; i < eleTT.length; i++) {

@@ -13,12 +13,12 @@ import {
 } from "antd";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import SectionAddTable, {
   courseList,
 } from "../../../components/SectionPage/sectionaddtable";
-import { convertTableToString, fetchCourse, fetchdept, fetchElectives, fetchlabs, fetchRooms, fetchTeachers, stringToTable, timeslots, weekdays } from "../../../utils/main";
+import { convertTableToString, fetchCourse, fetchdept, fetchElectives, fetchlabs, fetchRooms, fetchTeachers, formItemLayout, stringToTable, timeslots, weekdays } from "../../../utils/main";
 import axios from "axios";
 import { BACKEND_URL } from "../../../../config";
 import { toast } from "sonner";
@@ -26,20 +26,12 @@ import { statusCodes } from "../../../types/statusCodes";
 import SimpleSwapTimetable from "../../../components/TimetableComponents/SimpleSwapTT";
 import UneditableTimeTable from "../../../components/TimetableComponents/uneditableTimetable";
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    sm: { span: 24 },
-  },
-};
-
 const EditSectionPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const location=useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const temp = queryParams.get("temp");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tableData, setTableData] = useState<courseList[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
@@ -119,6 +111,69 @@ const EditSectionPage: React.FC = () => {
   },[]);
 
   const fetchSectiondetails = async (id: string) => {
+    if(temp)
+    {
+      axios
+      .post(
+        BACKEND_URL + "/tempSection/peek",
+        {
+          id: Number(id),
+        },
+        {
+          headers: {
+            authorization: localStorage.getItem("token"),
+          },
+        }
+      )
+      .then(async (res) => {
+        const status = res.data.status;
+  
+        switch (status) {
+          case statusCodes.OK:
+  
+            console.log(res.data)
+            form.setFieldsValue({
+              className: res.data.message.name,
+             });
+             const teacherCourse = res.data.message.teacherCourse.split(",").map((tC: string) => tC.split("-"));
+
+// Extract first and second elements separately
+                        const teachers = teacherCourse.map((tC: any[]) => tC[0]);
+                        const coursecode = teacherCourse.map((tC : any[]) => tC[1]);
+                        const tablel: courseList[] = [];
+                         for(let i=0;i<coursecode.length;i++)
+                        {
+                          await axios.post(BACKEND_URL + "/courses/peekWithCode", 
+                            { name: coursecode[i],
+                              semester:res.data.message.semester,
+                              department:res.data.message.department
+                             }, 
+                            { headers:
+                               { authorization: localStorage.getItem("token") }
+                             }).then((resp) => {
+                              console.log(resp.data)
+                              if (resp.data.status === statusCodes.OK)
+                              {
+                                tablel.push({
+                                  key: i.toString(),
+                                  course:resp.data.message.name,
+                                  teacher: teachers[i],
+                                  room: "--"
+                                })
+                              }
+                          });
+                        }
+                        setTableData(tablel);
+
+             toast.success("Section details fetched successfully!");
+             break;
+          default:
+            toast.error("Failed to fetch Section details!");
+        }
+
+      });
+    }
+    else{
     axios
       .post(
         BACKEND_URL + "/sections/peek",
@@ -154,9 +209,9 @@ const EditSectionPage: React.FC = () => {
                         {
                             tablel.push({
                               key: i.toString(),
-                              course:courses[i],
+                              course:courses[i]==''?"--":courses[i],
                               teacher: teachers[i],
-                              room: rooms[i]
+                              room: rooms[i]==0?"--":rooms[i]
                             })
                         }
                         setTableData(tablel);
@@ -176,6 +231,7 @@ const EditSectionPage: React.FC = () => {
         }
 
       });
+    }
   };
 
   

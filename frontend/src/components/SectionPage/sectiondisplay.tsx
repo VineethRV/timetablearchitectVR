@@ -94,7 +94,7 @@ const SectionTable = ({
               <Button
                 type="primary"
                 shape="circle"
-                onClick={()=>{handleEdit(record.id,record.name)}}
+                onClick={()=>{handleEdit(record.id,record.name,record.temporary?record.temporary:0)}}
                 icon={<MdEdit />}
               />
             </Tooltip>
@@ -119,10 +119,19 @@ const SectionTable = ({
       },
   ];
 
-  function handleEdit(id:number,oldname:string){
+  function handleEdit(id:number,oldname:string,temp:any) {
+    console.log("temp is",temp);
+    if(temp==1)
+    {
+      navigate(
+        `/dashboard/section/edit/${encodeURIComponent(id)}/${encodeURIComponent(oldname)}?temp=${encodeURIComponent(temp)}`
+      );
+    }
+    else{
     navigate(
       `/dashboard/section/edit/${encodeURIComponent(id)}/${encodeURIComponent(oldname)}`
     );
+  }
   }
   function deleteSection(record: Section) {
     console.log("rec",record)
