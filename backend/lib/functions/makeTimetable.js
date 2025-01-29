@@ -899,7 +899,9 @@ function updateTimetable(JWTtoken, id, oldname, section, teachers, rooms) {
                         var roomResponse, TT, i, j, updateroom;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4 /*yield*/, (0, room_1.peekRoom)(JWTtoken, room, user_1.department)];
+                                case 0:
+                                    if (!(room !== '0')) return [3 /*break*/, 3];
+                                    return [4 /*yield*/, (0, room_1.peekRoom)(JWTtoken, room, user_1.department)];
                                 case 1:
                                     roomResponse = _a.sent();
                                     if (roomResponse.status !== statusCodes_1.statusCodes.OK || !roomResponse.room) {
@@ -920,7 +922,8 @@ function updateTimetable(JWTtoken, id, oldname, section, teachers, rooms) {
                                     if (updateroom.status !== statusCodes_1.statusCodes.OK) {
                                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
                                     }
-                                    return [2 /*return*/];
+                                    _a.label = 3;
+                                case 3: return [2 /*return*/];
                             }
                         });
                     }); });

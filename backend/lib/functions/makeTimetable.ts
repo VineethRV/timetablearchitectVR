@@ -470,11 +470,12 @@ export async function saveTimetable(
             }
           }
           const roomTT=convertStringToTable(roomTimetable)
-          console.log(roomTT)
+          console.log("roomtTT",roomTT)
           for(let i=0;i<roomTT.length;i++)
           {
             for(let j=0;j<roomTT[i].length;j++)
             {
+
                 if(roomTT[i][j]!=="0")
                 {
                      const existingRoom = await prisma.room.findFirst({
@@ -485,7 +486,6 @@ export async function saveTimetable(
                                 name: roomTT[i][j],
                               },
                             });
-                    
                             if (!existingRoom) {
                               return {
                                 status: statusCodes.NOT_FOUND,
@@ -773,6 +773,7 @@ export async function updateTimetable(
       })
 //Deleting from old rooms
       rooms.forEach(async (room) => {
+        if(room!=='0'){
         const roomResponse = await peekRoom(JWTtoken, room,user.department);
         if (roomResponse.status !== statusCodes.OK || !roomResponse.room) {
             return { status: statusCodes.INTERNAL_SERVER_ERROR };
@@ -793,6 +794,7 @@ export async function updateTimetable(
         if (updateroom.status !== statusCodes.OK ) {
             return { status: statusCodes.INTERNAL_SERVER_ERROR  };
         }
+    }
       })
       const department=user.department
       const tt=convertStringToTable(section.timeTable)

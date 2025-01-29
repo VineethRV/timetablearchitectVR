@@ -31,7 +31,7 @@ const EditSectionPage: React.FC = () => {
   const navigate = useNavigate();
   const location=useLocation();
   const queryParams = new URLSearchParams(location.search);
-  const temp = queryParams.get("temp");
+  const temp=queryParams.get("temp");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tableData, setTableData] = useState<courseList[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
@@ -111,7 +111,8 @@ const EditSectionPage: React.FC = () => {
   },[]);
 
   const fetchSectiondetails = async (id: string) => {
-    if(temp)
+    console.log(temp)
+    if(temp=="true")
     {
       axios
       .post(
@@ -131,7 +132,7 @@ const EditSectionPage: React.FC = () => {
         switch (status) {
           case statusCodes.OK:
   
-            console.log(res.data)
+            console.log("data is",res.data)
             form.setFieldsValue({
               className: res.data.message.name,
              });
@@ -396,6 +397,65 @@ const EditSectionPage: React.FC = () => {
         roomTable: roomTT,
         courseTable: courseTT,
       };
+      if(temp=="true")
+      {
+        const promise= axios.post(
+          BACKEND_URL+"/saveTimetable",
+          { 
+            name:name,
+            courses:courses,
+            teachers:teachers,
+            rooms:rooms,
+            electives:electives,
+            labs:labs,
+            defaultRooms:defaultRooms,
+            semester:Number(localStorage.getItem("semester")),
+            timetable:timetables,
+            roomTimetable: roomTT,
+            courseTimetable:courseTT
+          },
+          {
+            headers: {
+              authorization: localStorage.getItem("token"),
+            }
+          }
+        );
+        toast.promise(promise, {
+          loading: "Saving timetable...",
+          success: (res) => {
+            const statusCode = res.data.status;
+            console.log(res.data)
+            switch (statusCode) {
+              case statusCodes.OK:
+                form.resetFields();
+                SetshowTT(false)
+                
+            axios.delete(
+              BACKEND_URL+"/tempSection",
+              {
+                data: { id: Number(id) },
+                headers: {
+                  authorization: localStorage.getItem("token"),
+                }
+              }
+            );
+            navigate(`/dashboard/section/editsection/${res.data.message.id}/${res.data.message.name}`);
+                return "Saved timetable!!"
+              case statusCodes.UNAUTHORIZED:
+                return "You are not authorized!";
+              case statusCodes.INTERNAL_SERVER_ERROR:
+                return "Internal server error";
+              default:
+                return "Failed to save timetable";
+            }
+          },
+          error: (error) => {
+            console.error("Error:", error.response?.data || error.message);
+            return "Failed to save timetable. Please try again!";
+          },
+        });
+      }
+      else{
     const promise= axios.put(
       BACKEND_URL+"/sections",
       { 
@@ -422,8 +482,6 @@ const EditSectionPage: React.FC = () => {
             setOldTeachers(teachers)
             setOldRooms(rooms)
             SetshowTT(false)
-            axios
-            navigate(`/dashboard/section/editsection/${res.data.message.id}/${res.data.message.name}`);
             return "Saved timetable!!"
           case statusCodes.UNAUTHORIZED:
             return "You are not authorized!";
@@ -438,6 +496,7 @@ const EditSectionPage: React.FC = () => {
         return "Failed to save timetable. Please try again!";
       },
     });
+  }
 }
 
 
