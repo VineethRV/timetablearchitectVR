@@ -955,3 +955,31 @@ export async function createTemptable(JWTtoken:string,data:teacherByte[]):Promis
         }
     }
 }   
+
+export async function peekTempTable(token:string,id:number):Promise<{status:number,retVal:any}> {
+    let {status,user}=await auth.getPosition(token)
+    try{    
+        if(status==statusCodes.OK && user?.orgId){
+            const retVal=await prisma.tempSection.findUnique({
+                where:{
+                    id:id
+                }
+            })
+            console.log("Retval: ",retVal)
+            return {
+                status:statusCodes.OK,
+                retVal:retVal
+            }
+        }
+        return{
+            status:statusCodes.UNAUTHORIZED,
+            retVal:"User not eligible to make this decsion"
+        }
+    }
+    catch(e){
+        return{
+            status:statusCodes.INTERNAL_SERVER_ERROR,
+            retVal:e
+        }
+    }
+}

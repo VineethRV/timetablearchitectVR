@@ -44,6 +44,7 @@ exports.deleteSection = deleteSection;
 exports.peekTimetable = peekTimetable;
 exports.updateTimetable = updateTimetable;
 exports.createTemptable = createTemptable;
+exports.peekTempTable = peekTempTable;
 var course_1 = require("../actions/course");
 var client_1 = require("@prisma/client");
 var auth = require("../actions/auth");
@@ -1125,6 +1126,45 @@ function createTemptable(JWTtoken, data) {
                             returnVal: errMessage
                         }];
                 case 8: return [2 /*return*/];
+            }
+        });
+    });
+}
+function peekTempTable(token, id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, status, user, retVal, e_2;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4 /*yield*/, auth.getPosition(token)];
+                case 1:
+                    _a = _b.sent(), status = _a.status, user = _a.user;
+                    _b.label = 2;
+                case 2:
+                    _b.trys.push([2, 5, , 6]);
+                    if (!(status == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId))) return [3 /*break*/, 4];
+                    return [4 /*yield*/, prisma.tempSection.findUnique({
+                            where: {
+                                id: id
+                            }
+                        })];
+                case 3:
+                    retVal = _b.sent();
+                    console.log("Retval: ", retVal);
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            retVal: retVal
+                        }];
+                case 4: return [2 /*return*/, {
+                        status: statusCodes_1.statusCodes.UNAUTHORIZED,
+                        retVal: "User not eligible to make this decsion"
+                    }];
+                case 5:
+                    e_2 = _b.sent();
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            retVal: e_2
+                        }];
+                case 6: return [2 /*return*/];
             }
         });
     });

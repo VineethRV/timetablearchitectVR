@@ -17,7 +17,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable, updateTimetable,createTemptable } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable, updateTimetable,createTemptable,peekTempTable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin')
 app.use(express.json());
 app.use(
@@ -1043,6 +1043,26 @@ app.post("/api/createTempTable", async (req, res) => {
   }
 });
 
+app.post("/api/tempSection/peek", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { id } = req.body;
+  if (!token || !id) {
+    return res.status(200).json({
+      status: 400,
+      message: "Token and id are required",
+    });
+  }
+
+  try {
+    const result = await peekTempTable(token, id);
+    res.status(200).json({ 
+      status: result.status, 
+      message: result.retVal 
+    });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
