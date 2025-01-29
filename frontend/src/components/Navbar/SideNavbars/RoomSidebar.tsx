@@ -70,7 +70,7 @@ const RoomsSidebar = () => {
       <Divider />
       <div
         className="flex flex-col items-left justify-center h-[25vh] space-y-2 font-medium text-[#565E6C] pl-4">
-        <div
+        {/* <div
           onClick={() => handleClick( "/")}
           className={`relative flex cursor-pointer space-x-2 p-2 ${
             pathname === "/dashboard/rank-timewise"
@@ -83,7 +83,7 @@ const RoomsSidebar = () => {
           {pathname === "/dashboard/rank-timewise" && (
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
-        </div>
+        </div> */}
 
         <div
           onClick={() => handleClick( "/timeslot-dependent")}
@@ -99,59 +99,59 @@ const RoomsSidebar = () => {
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
-      </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mr-4">
         <Button
           onClick={() => {
-            const token = localStorage.getItem('token');
-            if (!token) {
-              console.error('No token found');
-              return;
-            }
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('No token found');
+          return;
+        }
 
-            toast.promise(
-              axios.get(`${BACKEND_URL}/rooms/consolidated`, {
+        toast.promise(
+          axios.get(`${BACKEND_URL}/rooms/consolidated`, {
           headers: { Authorization: token }
-              }),
-              {
+          }),
+          {
           loading: 'Fetching room data...',
           success: (response) => {
-            if (response.status === 200 && response.data.consolidatedTable) {
-              const rows = [];
-              const days = [
-                "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
-              ];
-              
-              for (let day = 0; day < 6; day++) {
-                for (let slot = 0; slot < 6; slot++) {
-            const rooms = response.data.consolidatedTable[day][slot] || [];
-            rows.push([`${days[day]} ${slot + 1}st Hour`, rooms.join(',')]);
-                }
-              }
-
-              const csvContent = rows.map(row => row.join(",")).join("\n");
-              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-              const link = document.createElement("a");
-              const url = URL.createObjectURL(blob);
-
-              link.setAttribute("href", url);
-              link.setAttribute("download", "roomData.csv");
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              
-              return 'Room data exported successfully';
+        if (response.status === 200 && response.data.consolidatedTable) {
+          const rows = [];
+          const days = [
+            "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+          ];
+          
+          for (let day = 0; day < 6; day++) {
+            for (let slot = 0; slot < 6; slot++) {
+        const rooms = response.data.consolidatedTable[day][slot] || [];
+        rows.push([`${days[day]} ${slot + 1}st Hour`, rooms.join(',')]);
             }
-            throw new Error('Failed to export room data');
+          }
+
+          const csvContent = rows.map(row => row.join(",")).join("\n");
+          const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+          const link = document.createElement("a");
+          const url = URL.createObjectURL(blob);
+
+          link.setAttribute("href", url);
+          link.setAttribute("download", "roomData.csv");
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          return 'Room data exported successfully';
+        }
+        throw new Error('Failed to export room data');
           },
           error: 'Failed to fetch room data'
-              }
-            );
+          }
+        );
           }}
           className="mt-2 bg-[#636AE8FF] text-white"
         >
           Generate Consolidated
         </Button>
+      </div>
       </div>
     </Sider>
   );

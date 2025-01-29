@@ -82,23 +82,7 @@ const TeachersSidebar = () => {
             <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
           )}
         </div>
-
-        <div
-          onClick={() => handleClick( "/timeslot-dependent")}
-          className={`relative cursor-pointer flex space-x-2 p-2 ${
-            pathname === "/dashboard/teachers/timeslot-dependent"
-              ? "text-[#636AE8FF] font-bold"
-              : "text-[#565E6C]"
-          }`}
-        >
-          <FaCalendar className="w-5 h-5" />
-          <span>Timeslot Dependent</span>
-          {pathname === "/dashboard/teachers/timeslot-dependent" && (
-            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[4px] h-[70%] bg-[#636AE8FF] rounded-full"></div>
-          )}
-        </div>
-      </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mr-4">
         <Button
           className="mt-2 bg-[#636AE8FF] text-white"
           onClick={() => {
@@ -153,6 +137,7 @@ const TeachersSidebar = () => {
         >
           Generate Consolidated
         </Button>
+      </div>
       </div>
     </Sider>
   );
