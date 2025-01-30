@@ -399,6 +399,7 @@ const EditSectionPage: React.FC = () => {
       };
       if(temp=="true")
       {
+          console.log("Saving temp...")
         const promise= axios.post(
           BACKEND_URL+"/saveTimetable",
           { 
@@ -422,7 +423,7 @@ const EditSectionPage: React.FC = () => {
         );
         toast.promise(promise, {
           loading: "Saving timetable...",
-          success: (res) => {
+          success: async (res) => {
             const statusCode = res.data.status;
             console.log(res.data)
             switch (statusCode) {
@@ -430,7 +431,7 @@ const EditSectionPage: React.FC = () => {
                 form.resetFields();
                 SetshowTT(false)
                 
-            axios.delete(
+            const resp=await axios.delete(
               BACKEND_URL+"/tempSection",
               {
                 data: { id: Number(id) },
@@ -439,7 +440,8 @@ const EditSectionPage: React.FC = () => {
                 }
               }
             );
-            navigate(`/dashboard/section/editsection/${res.data.message.id}/${res.data.message.name}`);
+            console.log(resp.data)
+            navigate(`/dashboard/section/edit/${res.data.message.id}/${res.data.message.name}`);
                 return "Saved timetable!!"
               case statusCodes.UNAUTHORIZED:
                 return "You are not authorized!";

@@ -557,7 +557,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     return [3 /*break*/, 4];
                 case 12:
                     roomTT = (0, common_1.convertStringToTable)(roomTimetable);
-                    console.log(roomTT);
+                    console.log("roomtTT", roomTT);
                     i = 0;
                     _b.label = 13;
                 case 13:
@@ -576,6 +576,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                         })];
                 case 15:
                     existingRoom = _b.sent();
+                    console.log("existingRoom", existingRoom);
                     if (!existingRoom) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.NOT_FOUND,
@@ -601,10 +602,12 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                 case 18:
                     i++;
                     return [3 /*break*/, 13];
-                case 19: return [2 /*return*/, {
-                        status: statusCodes_1.statusCodes.OK,
-                        section: newCourse
-                    }];
+                case 19:
+                    console.log("We came till here;");
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            section: newCourse
+                        }];
                 case 20: 
                 // If role is viewer
                 return [2 /*return*/, {

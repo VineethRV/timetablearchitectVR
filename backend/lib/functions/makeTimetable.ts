@@ -486,6 +486,7 @@ export async function saveTimetable(
                                 name: roomTT[i][j],
                               },
                             });
+                            console.log("existingRoom",existingRoom)
                             if (!existingRoom) {
                               return {
                                 status: statusCodes.NOT_FOUND,
@@ -505,6 +506,7 @@ export async function saveTimetable(
                     }
                 }
             }
+            console.log("We came till here;")
         return {
           status: statusCodes.OK,
           section: newCourse

@@ -17,7 +17,7 @@ const labF = require("./lib/functions/lab.js");
 const { sendVerificationEmail } = require("./lib/emailutils.js");
 const { leaderRouter } = require("./routes/leader.js");
 const { chatRouter } = require('./routes/chatbot.js')
-const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable, updateTimetable,createTemptable,peekTempTable } = require("./lib/functions/makeTimetable");
+const { suggestTimetable, saveTimetable,getTimetable,recommendCourse, deleteSection,peekTimetable,deleteTempTable, updateTimetable,createTemptable,peekTempTable } = require("./lib/functions/makeTimetable");
 const panel=require('./lib/functions/admin');
 const { message } = require("antd");
 app.use(express.json());
@@ -864,7 +864,8 @@ app.post("/api/saveTimetable",async (req,res)=>{
     });
     try {
       const result = await saveTimetable(token,name,courses, teachers, rooms,electives,labs, semester, defaultRooms,timetable,roomTimetable,courseTimetable);
-      res.status(200).json({ status: result.data.status,message:result.section});
+      console.log("results",result)
+      res.status(200).json({ status: result.status,message:result.section});
     } catch (error) {
       res.status(200).json({ status: 500, message: "Server error" });
     }
@@ -1098,6 +1099,7 @@ app.post("/api/courses/peekWithCode", async (req, res) => {
 app.delete("/api/tempSection", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { id } = req.body;
+  console.log("id is ",id)
   if (!token || !id) {
     return res
       .status(200)
