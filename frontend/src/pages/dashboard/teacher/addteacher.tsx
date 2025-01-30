@@ -4,13 +4,13 @@ import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
-import TimeTable from "../../../components/TimetableComponents/timetable";
 import { DEPARTMENTS_OPTIONS } from "../../../../info";
 import axios from "axios";
 import { statusCodes } from "../../../types/statusCodes";
 import { toast } from "sonner";
 import { BACKEND_URL } from "../../../../config";
 import { formItemLayout, getPosition, timeslots, weekdays } from "../../../utils/main";
+import UneditableTimeTable from "../../../components/TimetableComponents/uneditableTimetable";
 
 
 export function buttonConvert(buttonStatus: string[][]): string[][] {
@@ -175,9 +175,10 @@ const AddTeacherpage = () => {
               </Tooltip>
             </div>
           </label>
-          <TimeTable
+          <UneditableTimeTable
             buttonStatus={buttonStatus}
             setButtonStatus={setButtonStatus}
+            editable={false}
           />
           <div className="flex justify-end">
             <div className="flex space-x-4">

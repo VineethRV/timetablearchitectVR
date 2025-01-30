@@ -10,7 +10,6 @@ import {
   Radio,
   message,
 } from "antd";
-import TimeTable from "../../../components/TimetableComponents/timetable"
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import {useNavigate } from "react-router-dom";
@@ -22,6 +21,7 @@ import { statusCodes } from "../../../types/statusCodes";
 import { DEPARTMENTS_OPTIONS } from "../../../../info";
 import { formItemLayout, getPosition, timeslots, weekdays } from "../../../utils/main";
 import { buttonConvert } from "../teacher/addteacher";
+import UneditableTimeTable from "../../../components/TimetableComponents/uneditableTimetable";
 
 
 const AddRoomPage: React.FC = () => {
@@ -152,9 +152,10 @@ const AddRoomPage: React.FC = () => {
             </Tooltip>
           </label>
           <div className="flex justify-left">
-            <TimeTable
+            <UneditableTimeTable
               buttonStatus={buttonStatus}
               setButtonStatus={setButtonStatus}
+              editable={false}
             />
           </div>
           <div className="flex space-x-4 justify-end w-[55vm]">

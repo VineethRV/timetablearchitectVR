@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Button, Form, Input, Select, Tooltip, Upload, Radio, message } from "antd";
-import TimeTable from "../../../components/TimetableComponents/timetable";
 import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { useNavigate, useParams } from "react-router-dom";
@@ -21,6 +20,7 @@ import {
   weekdays,
 } from "../../../utils/main";
 import { DEPARTMENTS_OPTIONS } from "../../../../info";
+import UneditableTimeTable from "../../../components/TimetableComponents/uneditableTimetable";
 
 
 const EditRoomPage: React.FC = () => {
@@ -221,9 +221,10 @@ const EditRoomPage: React.FC = () => {
             </Tooltip>
           </label>
           <div className="flex justify-left">
-            <TimeTable
+            <UneditableTimeTable
               buttonStatus={buttonStatus}
               setButtonStatus={setButtonStatus}
+              editable={false}
             />
           </div>
           <div className="flex space-x-4 justify-end w-[55vm]">
