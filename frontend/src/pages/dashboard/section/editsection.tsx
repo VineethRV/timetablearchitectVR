@@ -153,6 +153,9 @@ const EditSectionPage: React.FC = () => {
                             {
                               teach.push(resp.data.message.name)
                             }
+                            else{
+                              teach.push("--")
+                            }
                           })
 
                         }
