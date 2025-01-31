@@ -500,6 +500,73 @@ export async function peekTeacher(
   }
 }
 
+export async function peekTeacherWithInitials(
+  token: string,
+  name: string,
+  department: string | null = null
+): Promise<{ status: number; teacher: Teacher | null }> {
+  try {
+    //get position of user
+    const { status, user } = await auth.getPosition(token);
+
+    if (user?.orgId == null) {
+      return {
+        status: statusCodes.BAD_REQUEST,
+        teacher: null,
+      };
+    }
+
+    //if verification of rules is okay, perform the following
+    if (status == statusCodes.OK && user) {
+      let teacher 
+      teacher=await prisma.teacher.findFirst({
+        where: {
+          initials: name,
+          orgId: user.orgId,
+        },
+        select: {
+          name: true,
+          orgId: true,
+          department: true,
+          alternateDepartments: {
+            select: {
+              name: true
+            }
+          },
+          initials: true,
+          email: true,
+          labtable: true,
+          timetable: true,
+        },
+      });
+      if(teacher)
+        return {
+          status: statusCodes.OK,
+          teacher: 
+                  {
+                    ...teacher,
+                    alternateDepartments: teacher.alternateDepartments.map(dep => dep.name)
+                  }
+        };
+      return{
+        status:statusCodes.NOT_FOUND,
+        teacher:null
+      }
+    }
+    //else
+    return {
+      status: status,
+      teacher: null,
+    };
+  } catch {
+    //internal error
+    return {
+      status: statusCodes.INTERNAL_SERVER_ERROR,
+      teacher: null,
+    };
+  }
+}
+
 export async function deleteTeachers(
   JWTtoken: string,
   teachers: Teacher[]

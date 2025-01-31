@@ -52,6 +52,7 @@ exports.updateTeachers = updateTeachers;
 exports.createManyTeachers = createManyTeachers;
 exports.getTeachers = getTeachers;
 exports.peekTeacher = peekTeacher;
+exports.peekTeacherWithInitials = peekTeacherWithInitials;
 exports.deleteTeachers = deleteTeachers;
 exports.getConsolidated = getConsolidated;
 var auth = require("./auth");
@@ -577,6 +578,74 @@ function peekTeacher(token_1, name_1) {
         });
     });
 }
+function peekTeacherWithInitials(token_1, name_1) {
+    return __awaiter(this, arguments, void 0, function (token, name, department) {
+        var _a, status_6, user, teacher, _b;
+        if (department === void 0) { department = null; }
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    _c.trys.push([0, 4, , 5]);
+                    return [4 /*yield*/, auth.getPosition(token)];
+                case 1:
+                    _a = _c.sent(), status_6 = _a.status, user = _a.user;
+                    if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.BAD_REQUEST,
+                                teacher: null,
+                            }];
+                    }
+                    if (!(status_6 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
+                    teacher = void 0;
+                    return [4 /*yield*/, prisma.teacher.findFirst({
+                            where: {
+                                initials: name,
+                                orgId: user.orgId,
+                            },
+                            select: {
+                                name: true,
+                                orgId: true,
+                                department: true,
+                                alternateDepartments: {
+                                    select: {
+                                        name: true
+                                    }
+                                },
+                                initials: true,
+                                email: true,
+                                labtable: true,
+                                timetable: true,
+                            },
+                        })];
+                case 2:
+                    teacher = _c.sent();
+                    if (teacher)
+                        return [2 /*return*/, {
+                                status: statusCodes_1.statusCodes.OK,
+                                teacher: __assign(__assign({}, teacher), { alternateDepartments: teacher.alternateDepartments.map(function (dep) { return dep.name; }) })
+                            }];
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.NOT_FOUND,
+                            teacher: null
+                        }];
+                case 3: 
+                //else
+                return [2 /*return*/, {
+                        status: status_6,
+                        teacher: null,
+                    }];
+                case 4:
+                    _b = _c.sent();
+                    //internal error
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
+                            teacher: null,
+                        }];
+                case 5: return [2 /*return*/];
+            }
+        });
+    });
+}
 function deleteTeachers(JWTtoken, teachers) {
     return __awaiter(this, void 0, void 0, function () {
         var _a, status, user, _b;
@@ -631,15 +700,15 @@ function deleteTeachers(JWTtoken, teachers) {
 }
 function getConsolidated(JWTtoken) {
     return __awaiter(this, void 0, void 0, function () {
-        var _a, status_6, user, consolidatedTable_1, teachers, _b;
+        var _a, status_7, user, consolidatedTable_1, teachers, _b;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     _c.trys.push([0, 6, , 7]);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
-                    _a = _c.sent(), status_6 = _a.status, user = _a.user;
-                    if (status_6 == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId) == null) {
+                    _a = _c.sent(), status_7 = _a.status, user = _a.user;
+                    if (status_7 == statusCodes_1.statusCodes.OK && (user === null || user === void 0 ? void 0 : user.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
                                 consolidatedTable: null,

@@ -1115,6 +1115,22 @@ app.delete("/api/tempSection", async (req, res) => {
     res.status(200).json({ status: 500, message: "Server error" });
   }
 });
+app.post("/api/teachers/peekWithInitials", async (req, res) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  const { name, department } = req.body;
+  if (!token || !name) {
+    return res
+      .status(200)
+      .json({ status: 400, message: "Token and name are required" });
+  }
+
+  try {
+    const result = await teacher.peekTeacherWithInitials(token, name, department);
+    res.status(200).json({ status: result.status, message: result.teacher });
+  } catch (error) {
+    res.status(200).json({ status: 500, message: "Server error" });
+  }
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
