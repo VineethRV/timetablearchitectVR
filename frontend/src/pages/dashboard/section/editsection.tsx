@@ -128,7 +128,7 @@ const EditSectionPage: React.FC = () => {
       )
       .then(async (res) => {
         const status = res.data.status;
-  
+        console.log("recieved data is ",res.data)
         switch (status) {
           case statusCodes.OK:
   
@@ -171,9 +171,10 @@ const EditSectionPage: React.FC = () => {
                             { headers:
                                { authorization: localStorage.getItem("token") }
                              }).then((resp) => {
-                              console.log(resp.data)
+                              console.log("ok course is",resp.data)
                               if (resp.data.status === statusCodes.OK)
                               {
+                                console.log("now",resp.data.message.name,teach[i])
                                 tablel.push({
                                   key: i.toString(),
                                   course:resp.data.message.name,
