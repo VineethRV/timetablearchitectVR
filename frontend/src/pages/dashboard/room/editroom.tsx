@@ -224,7 +224,7 @@ const EditRoomPage: React.FC = () => {
             <UneditableTimeTable
               buttonStatus={buttonStatus}
               setButtonStatus={setButtonStatus}
-              editable={false}
+              editable={true}
             />
           </div>
           <div className="flex space-x-4 justify-end w-[55vm]">

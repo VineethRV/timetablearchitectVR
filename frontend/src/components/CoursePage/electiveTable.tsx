@@ -23,15 +23,15 @@ const ElectivesTable = ({
   ElectiveData: Elective[];
   setElectivesData: React.Dispatch<React.SetStateAction<Elective[]>>;
 }) => {
-  const _navigate = useNavigate();
+  const navigate = useNavigate();
 
-  // const handleEditClick = (name: string, department: string) => {
-  //   navigate(
-  //     `/dashboard/electives/edit/${encodeURIComponent(
-  //       name
-  //     )}/${encodeURIComponent(department)}`
-  //   );
-  // };
+  const handleEditClick = (name: string, department: string,semester:any) => {
+    navigate(
+      `/dashboard/courses/electives/edit/${encodeURIComponent(
+        name
+      )}/${encodeURIComponent(department)}/${encodeURIComponent(semester)}`
+    );
+  };
 
   const [selectedElectives, setSelectedElectives] = useState<Ele[]>([]);
 
@@ -50,6 +50,8 @@ const ElectivesTable = ({
         courses: courses[index]?.trim() || "",
         rooms: rooms[index]?.trim() || "",
         teachers: teachers[index]?.trim() || "",
+        department: Elective.department,
+        semester: Elective.semester,
       }));
     }).flat(); 
   };
@@ -246,7 +248,7 @@ const ElectivesTable = ({
     },
    {
       title: "",
-      render: (text:any,_: any, index: number) => {
+      render: (text:any,record: any, index: number) => {
         if (text.name !== "" || index === 0) {
           let rowSpan = 1;
           for (let i = index + 1; i < formattedElectiveData.length; i++) {
@@ -262,7 +264,7 @@ const ElectivesTable = ({
                 <Tooltip title="Edit">
             <Button
               type="primary"
-              //onClick={() => handleEditClick(record.name,record.department)}
+              onClick={() => handleEditClick(record.name,record.department,record.semester)}
               shape="circle"
               icon={<MdEdit />}
             />

@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ElectiveAddTable, { Elective } from "../../../../components/CoursePage/electiveAddtable";
 import { BACKEND_URL } from "../../../../../config";
@@ -21,11 +21,14 @@ import { toast } from "sonner";
 import { statusCodes } from "../../../../types/statusCodes";
 import EleTimetable from "../../../../components/TimetableComponents/electiveTT";
 import UneditableTimeTable from "../../../../components/TimetableComponents/uneditableTimetable";
-
   
-const AddElectivepage: React.FC = () => {
+const EditElectivepage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [form] = Form.useForm();
+    const { oldname,olddepartment,oldsemester}= useParams();
+    const [oldteachers,SetOldTeachers]=useState<string|null>(null)
+    const [oldcourses,SetOldCourses]=useState<string|null>(null)
+    const [oldrooms,SetOldRooms]=useState<string|null>(null)
     const [eledata,SetEleData]=useState<Elective[]>([])
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [editingRecord, setEditingRecord] = useState<Elective | null>(null);
@@ -40,12 +43,15 @@ const AddElectivepage: React.FC = () => {
     const [buttonStatusele, setButtonStatusele] = useState(
       weekdays.map(() => timeslots.map(() => "Free")));
     const navigate=useNavigate();
-  
     useEffect(() => {
+      if(oldname && olddepartment && oldsemester)
+      {
+        fetchElectives();
+      }
       fetchTeachers(setTeacherOptions);
       fetchRooms(setRoomOptions)
       SetEleData(eledata);
-    }, [eledata]);
+    }, [oldname,olddepartment,oldsemester]);
 
 
     const handleOpenModal = () => {
@@ -59,27 +65,14 @@ const AddElectivepage: React.FC = () => {
       setEditingRecord(null);
     };
 
-    const handleSubmit=async ()=>{
-      //name, courses, teachers, rooms, semester, timetable, department 
-     const courses = eledata.map((elective) => elective.course).join(";");
-      const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
-      const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
-      const department= await fetchdept()
-      const name=form.getFieldValue("clusterName")
-      if(!name || !courses || !teachers||!rooms)
-      {
-        message.error("Fill all the required Fields");
-        return;
-      }
-      const response=axios.post(
-        BACKEND_URL+"/electives",{
-          name: name,
-          courses: courses,
-          teachers: teachers,
-          rooms: rooms,
-          semester:Number(localStorage.getItem("semester")),
-          timetable: convertTableToString(buttonStatus),
-          department: department
+    const fetchElectives = async () => {
+      axios
+      .post(
+        BACKEND_URL + "/electives/peek",
+        {
+          name: oldname,
+          semester:Number(oldsemester),
+          department: olddepartment,
         },
         {
           headers: {
@@ -87,115 +80,199 @@ const AddElectivepage: React.FC = () => {
           },
         }
       )
-      
-    toast.promise(response, {
-      loading: "Adding Electives...",
-      success: (res) => {
-        const statusCode = res.status;
-        console.log(res);
-        switch (statusCode) {
+      .then((res) => {
+        const status = res.data.status;
+        switch (status) {
           case statusCodes.OK:
-            for(let k=0;k<eledata.length;k++)
-            {
-              const course=eledata[k].course;
-              let courseTT=[]
-              for (let i = 0; i < buttonStatus.length; i++) {
-                for (let j = 0; j < buttonStatus[i].length; j++) {
-                  if (buttonStatus[i][j] === course) {
-                    courseTT.push({ row: i, col: j }); 
-                  }
-                }
-              }
-              const teachers=eledata[k].teachers
-              teachers.forEach(async teacher=>{
-                const resT=await axios.post(
-                  BACKEND_URL+"/teachers/peek",{
-                    name:teacher,
-                    department: department
-                  },        
-                  {
-                    headers: {
-                      authorization: localStorage.getItem("token"),
-                    },
-                  }
-                );
-                const teach=resT.data.message
-                console.log("teach",teach)
-                const teacherTT=stringToTable(resT.data.message.timetable);
-                for(let i=0;i<courseTT.length;i++)
-                {
-                  teacherTT[courseTT[i].row][courseTT[i].col]=course;
-                }
-                teach.timetable=convertTableToString(teacherTT);
-                axios.put(
-                  BACKEND_URL+"/teachers",{
-                    originalName:teacher,
-                    teacher:teach
-                  },        
-                  {
-                    headers: {
-                      authorization: localStorage.getItem("token"),
-                    },
-                  }
-                );
-              })
-              const rooms=eledata[k].rooms
-              console.log("rooms",rooms)
-              rooms?.forEach(async room=>{
-                const resR=await axios.post(
-                  BACKEND_URL+"/rooms/peek",{
-                    name:room,
-                  },        
-                  {
-                    headers: {
-                      authorization: localStorage.getItem("token"),
-                    },
-                  }
-                );
-                const roomfetch=resR.data.message
-                console.log("roomfetch",roomfetch)
-                const roomTT=stringToTable(resR.data.message.timetable);
-                console.log("roomTT",roomTT)
-                for(let i=0;i<courseTT.length;i++)
-                {
-                  roomTT[courseTT[i].row][courseTT[i].col]=course;
-                }
-                console.log("after",roomTT)
-                roomfetch.timetable=convertTableToString(roomTT);
-                console.log("abc",roomfetch,room)
-                const resRR=await axios.put(
-                  BACKEND_URL+"/rooms",{
-                    originalName:room,
-                    originalDepartment:department,
-                    room:roomfetch
-                  },        
-                  {
-                    headers: {
-                      authorization: localStorage.getItem("token"),
-                    },
-                  }
-                );
-                console.log(resRR.data)
-              })
-
-            }
-            return "Saved Elective Cluster Successfully";
-          case statusCodes.BAD_REQUEST:
-            return "Elective already exists!";
-          case statusCodes.UNAUTHORIZED:
-            return "You are not authorized!";
-          case statusCodes.INTERNAL_SERVER_ERROR:
-            return "Internal server error";
+            console.log(res.data.message)
+            form.setFieldsValue({
+              clusterName: res.data.message.name,
+            });
+            SetEleData(
+              res.data.message.courses.split(";").map((course: string, index: number) => ({
+                course: course,
+                teachers: (res.data.message.teachers.split(";"))[index].split(","),
+                rooms: (res.data.message.rooms.split(";"))[index]?.split(","),
+              }))
+            );
+            setButtonStatus(stringToTable(res.data.message.timetable));
+            SetOldCourses(res.data.message.courses)
+            SetOldTeachers(res.data.message.teachers)
+            SetOldRooms(res.data.message.rooms)
+            toast.success("Course details fetched successfully!");
+            break;
           default:
-            return "Unexpected status code";
+            toast.error("Failed to fetch Course details!");
         }
-      },
-      error: (error) => {
-        console.error("Error:", error.response?.data || error.message);
-        return "Failed to add elective cluster. Please try again!";
-      },
-    });
+      });
     }
+
+    
+    const handleSubmit = async () => {
+      try {
+        // Extracting necessary data
+        const courses = eledata.map(e => e.course).join(";");
+        const teachers = eledata.map(e => e.teachers?.join(",")).join(";");
+        const rooms = eledata.map(e => e.rooms?.join(",")).join(";");
+        const name = form.getFieldValue("clusterName");
+    
+        if (!name || !courses || !teachers || !rooms) {
+          message.error("Fill all the required fields");
+          return;
+        }
+    
+        const elective = {
+          name,
+          courses,
+          teachers,
+          rooms,
+          semester: Number(localStorage.getItem("semester")),
+          timetable: convertTableToString(buttonStatus),
+          department: olddepartment,
+        };
+    
+        // 1. **Update Electives**
+        const response = await axios.put(
+          `${BACKEND_URL}/electives`,
+          {
+            originalName: oldname,
+            originalDepartment: olddepartment,
+            updatedElective: elective,
+          },
+          {
+            headers: { authorization: localStorage.getItem("token") },
+          }
+        );
+    
+        if (response.status !== statusCodes.OK) {
+          throw new Error("Failed to update elective cluster");
+        }
+        
+        // 2. **Update Old Teachers (Removing old elective from their timetables)**
+        if (oldcourses && oldteachers) {
+          const courses = oldcourses?.split(";");
+          const teachers=oldteachers.split(";").map((teacher)=>teacher.split(","));
+          const rooms=oldrooms?.split(";");
+          courses.forEach(async (course, i) => {
+          for (const teacher of teachers[i]) {
+            const resT = await axios.post(`${BACKEND_URL}/teachers/peek`, { name: teacher }, {
+              headers: { authorization: localStorage.getItem("token") },
+            });
+    
+            const teach = resT.data.message;
+            const teacherTT = stringToTable(teach.timetable);
+    
+            teacherTT.forEach((day, i) => day.forEach((hour, j) => {
+              if (hour === course) teacherTT[i][j] = "Free";
+            }));
+    
+            teach.timetable = convertTableToString(teacherTT);
+            console.log("teach",teach)
+            await axios.put(`${BACKEND_URL}/teachers`, {
+              originalName: teacher,
+              teacher: teach
+            }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+          }
+          if(rooms){
+          for (const room of rooms[i])
+          {
+            if(room=="0"||room=="")
+            {
+              continue;
+            }
+            const resR = await axios.post(`${BACKEND_URL}/rooms/peek`, { name: room }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+    
+            const roomfetch = resR.data.message;
+            const roomTT = stringToTable(roomfetch.timetable);
+    
+            roomTT.forEach((day, i) => day.forEach((hour, j) => {
+              if (hour === course) roomTT[i][j] = "Free";
+            }));
+    
+            roomfetch.timetable = convertTableToString(roomTT);
+    
+            await axios.put(`${BACKEND_URL}/rooms`, {
+              originalName: room,
+              room: roomfetch
+            }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+          }
+        }
+        }
+       
+          );
+        }
+          
+        // 3. **Update New Teachers & Rooms**
+        for (const elective of eledata) {
+          const course = elective.course;
+          const courseTT: { row: number; col: number }[] = [];
+    
+          buttonStatus.forEach((row, i) => {
+            row.forEach((col, j) => {
+              if (col === course) courseTT.push({ row: i, col: j });
+            });
+          });
+    
+          // 3.1 **Update Teachers**
+          for (const teacher of elective.teachers) {
+            const resT = await axios.post(`${BACKEND_URL}/teachers/peek`, { name: teacher }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+    
+            const teach = resT.data.message;
+            const teacherTT = stringToTable(teach.timetable);
+    
+            courseTT.forEach(({ row, col }) => {
+              teacherTT[row][col] = course;
+            });
+    
+            teach.timetable = convertTableToString(teacherTT);
+    
+            await axios.put(`${BACKEND_URL}/teachers`, {
+              originalName: teacher,
+              teacher: teach
+            }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+          }
+    
+          // 3.2 **Update Rooms**
+          for (const room of elective.rooms || []) {
+            const resR = await axios.post(`${BACKEND_URL}/rooms/peek`, { name: room }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+    
+            const roomfetch = resR.data.message;
+            const roomTT = stringToTable(roomfetch.timetable);
+    
+            courseTT.forEach(({ row, col }) => {
+              roomTT[row][col] = course;
+            });
+    
+            roomfetch.timetable = convertTableToString(roomTT);
+    
+            await axios.put(`${BACKEND_URL}/rooms`, {
+              originalName: room,
+              room: roomfetch
+            }, {
+              headers: { authorization: localStorage.getItem("token") }
+            });
+          }
+        }
+    
+        toast.success("Saved Elective Cluster Successfully");
+    
+      } catch (error) {
+        toast.error("Failed to update elective cluster. Please try again.");
+      }
+    };
+    
   
     const handleModalSubmit = () => {
 
@@ -537,4 +614,4 @@ const AddElectivepage: React.FC = () => {
   );
 };
 
-export default AddElectivepage;
+export default EditElectivepage;

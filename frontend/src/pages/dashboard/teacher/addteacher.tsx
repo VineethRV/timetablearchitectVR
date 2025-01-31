@@ -178,7 +178,7 @@ const AddTeacherpage = () => {
           <UneditableTimeTable
             buttonStatus={buttonStatus}
             setButtonStatus={setButtonStatus}
-            editable={false}
+            editable={true}
           />
           <div className="flex justify-end">
             <div className="flex space-x-4">
