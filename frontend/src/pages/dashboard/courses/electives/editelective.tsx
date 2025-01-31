@@ -111,6 +111,7 @@ const EditElectivepage: React.FC = () => {
     const handleSubmit = async () => {
       try {
         // Extracting necessary data
+        toast.message("Updating Elective Cluster...");
         const courses = eledata.map(e => e.course).join(";");
         const teachers = eledata.map(e => e.teachers?.join(",")).join(";");
         const rooms = eledata.map(e => e.rooms?.join(",")).join(";");
@@ -152,7 +153,8 @@ const EditElectivepage: React.FC = () => {
         if (oldcourses && oldteachers) {
           const courses = oldcourses?.split(";");
           const teachers=oldteachers.split(";").map((teacher)=>teacher.split(","));
-          const rooms=oldrooms?.split(";");
+          const rooms=oldrooms?.split(";").map((room)=>room.split(","));
+          console.log(rooms)
           courses.forEach(async (course, i) => {
           for (const teacher of teachers[i]) {
             const resT = await axios.post(`${BACKEND_URL}/teachers/peek`, { name: teacher }, {
@@ -182,11 +184,13 @@ const EditElectivepage: React.FC = () => {
             {
               continue;
             }
+            console.log("roomName",room)
             const resR = await axios.post(`${BACKEND_URL}/rooms/peek`, { name: room }, {
               headers: { authorization: localStorage.getItem("token") }
             });
     
             const roomfetch = resR.data.message;
+            console.log("room",roomfetch)
             const roomTT = stringToTable(roomfetch.timetable);
     
             roomTT.forEach((day, i) => day.forEach((hour, j) => {
@@ -266,7 +270,7 @@ const EditElectivepage: React.FC = () => {
           }
         }
     
-        toast.success("Saved Elective Cluster Successfully");
+        toast.success("Updated Elective Cluster Successfully");
     
       } catch (error) {
         toast.error("Failed to update elective cluster. Please try again.");
