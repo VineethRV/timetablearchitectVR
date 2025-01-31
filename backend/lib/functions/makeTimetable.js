@@ -557,7 +557,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                     return [3 /*break*/, 4];
                 case 12:
                     roomTT = (0, common_1.convertStringToTable)(roomTimetable);
-                    console.log(roomTT);
+                    console.log("roomtTT", roomTT);
                     i = 0;
                     _b.label = 13;
                 case 13:
@@ -576,6 +576,7 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                         })];
                 case 15:
                     existingRoom = _b.sent();
+                    console.log("existingRoom", existingRoom);
                     if (!existingRoom) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.NOT_FOUND,
@@ -601,10 +602,12 @@ function saveTimetable(JWTtoken, name, courses, teachers, rooms, electives, labs
                 case 18:
                     i++;
                     return [3 /*break*/, 13];
-                case 19: return [2 /*return*/, {
-                        status: statusCodes_1.statusCodes.OK,
-                        section: newCourse
-                    }];
+                case 19:
+                    console.log("We came till here;");
+                    return [2 /*return*/, {
+                            status: statusCodes_1.statusCodes.OK,
+                            section: newCourse
+                        }];
                 case 20: 
                 // If role is viewer
                 return [2 /*return*/, {
@@ -899,7 +902,9 @@ function updateTimetable(JWTtoken, id, oldname, section, teachers, rooms) {
                         var roomResponse, TT, i, j, updateroom;
                         return __generator(this, function (_a) {
                             switch (_a.label) {
-                                case 0: return [4 /*yield*/, (0, room_1.peekRoom)(JWTtoken, room, user_1.department)];
+                                case 0:
+                                    if (!(room !== '0')) return [3 /*break*/, 3];
+                                    return [4 /*yield*/, (0, room_1.peekRoom)(JWTtoken, room, user_1.department)];
                                 case 1:
                                     roomResponse = _a.sent();
                                     if (roomResponse.status !== statusCodes_1.statusCodes.OK || !roomResponse.room) {
@@ -920,7 +925,8 @@ function updateTimetable(JWTtoken, id, oldname, section, teachers, rooms) {
                                     if (updateroom.status !== statusCodes_1.statusCodes.OK) {
                                         return [2 /*return*/, { status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR }];
                                     }
-                                    return [2 /*return*/];
+                                    _a.label = 3;
+                                case 3: return [2 /*return*/];
                             }
                         });
                     }); });
