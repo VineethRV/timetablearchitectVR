@@ -1118,6 +1118,7 @@ app.delete("/api/tempSection", async (req, res) => {
 app.post("/api/teachers/peekWithInitials", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { name, department } = req.body;
+  console.log(name)
   if (!token || !name) {
     return res
       .status(200)

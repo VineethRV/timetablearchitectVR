@@ -141,6 +141,22 @@ const EditSectionPage: React.FC = () => {
 // Extract first and second elements separately
                         const teachers = teacherCourse.map((tC: any[]) => tC[0]);
                         const coursecode = teacherCourse.map((tC : any[]) => tC[1]);
+                        let teach:string[]=[];
+                        for(let i=0;i<teachers.length;i++)
+                        {
+                          await axios.post(BACKEND_URL + "/teachers/peekWithInitials",
+                          { name: teachers[i] },
+                          { headers: { authorization: localStorage.getItem("token") } }
+                          ).then((resp) => {
+                            console.log(resp.data)
+                            if (resp.data.status === statusCodes.OK)
+                            {
+                              teach.push(resp.data.message.name)
+                            }
+                          })
+
+                        }
+                        console.log(teach)
                         const tablel: courseList[] = [];
                          for(let i=0;i<coursecode.length;i++)
                         {
@@ -158,7 +174,7 @@ const EditSectionPage: React.FC = () => {
                                 tablel.push({
                                   key: i.toString(),
                                   course:resp.data.message.name,
-                                  teacher: teachers[i],
+                                  teacher: teach[i],
                                   room: "--"
                                 })
                               }
