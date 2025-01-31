@@ -36,6 +36,7 @@ import { CoreCoursesTemplate, RoomTemplate, TeacherTemplate } from "./components
 import SectionTabledisplay from "./pages/dashboard/section/sectiondisplay";
 import EditLabPage from "./pages/dashboard/courses/lab/editlab";
 import EditSectionPage from "./pages/dashboard/section/editsection";
+import EditElectivepage from "./pages/dashboard/courses/electives/editelective";
 
 function App() {
   return (
@@ -105,6 +106,7 @@ function App() {
               path="/dashboard/courses/electives/add"
               element={<AddElectivepage />}
             />
+          <Route path="/dashboard/courses/electives/edit/:oldname/:olddepartment/:oldsemester" element={<EditElectivepage/>}/>
           </Route>
           <Route path="/dashboard/section" element={<Section />}>
           <Route index element={<SectionTabledisplay />} />

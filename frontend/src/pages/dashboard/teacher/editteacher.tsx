@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { useNavigate, useParams } from "react-router-dom";
-import TimeTable from "../../../components/TimetableComponents/timetable";
 import { BACKEND_URL } from "../../../../config";
 import axios from "axios";
 import { toast } from "sonner";
@@ -20,6 +19,7 @@ import {
   timeslots,
   weekdays,
 } from "../../../utils/main";
+import UneditableTimeTable from "../../../components/TimetableComponents/uneditableTimetable";
 
 const EditTeacherpage = () => {
   const [form] = Form.useForm();
@@ -268,9 +268,10 @@ const EditTeacherpage = () => {
               </Tooltip>
             </div>
           </label>
-          <TimeTable
+          <UneditableTimeTable
             buttonStatus={buttonStatus}
             setButtonStatus={setButtonStatus}
+            editable={true}
           />
           <div className="flex justify-end">
             <div className="flex space-x-4">
