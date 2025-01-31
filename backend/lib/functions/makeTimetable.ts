@@ -384,6 +384,7 @@ export async function recommendCourse(
         };
     }
 }
+
 export async function saveTimetable(
     JWTtoken: string,
     name: string,
