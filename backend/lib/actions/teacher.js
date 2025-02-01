@@ -597,9 +597,9 @@ function peekTeacherWithInitials(token_1, name_1) {
                     }
                     if (!(status_6 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 3];
                     teacher = void 0;
-                    return [4 /*yield*/, prisma.teacher.findFirst({
+                    return [4 /*yield*/, prisma.teacher.findMany({
                             where: {
-                                initials: name,
+                                initials: { in: name },
                                 orgId: user.orgId,
                             },
                             select: {
@@ -622,7 +622,7 @@ function peekTeacherWithInitials(token_1, name_1) {
                     if (teacher)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.OK,
-                                teacher: __assign(__assign({}, teacher), { alternateDepartments: teacher.alternateDepartments.map(function (dep) { return dep.name; }) })
+                                teacher: __assign({}, teacher)
                             }];
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.NOT_FOUND,

@@ -502,9 +502,9 @@ export async function peekTeacher(
 
 export async function peekTeacherWithInitials(
   token: string,
-  name: string,
+  name: [string],
   department: string | null = null
-): Promise<{ status: number; teacher: Teacher | null }> {
+): Promise<{ status: number; teacher: any }> {
   try {
     //get position of user
     const { status, user } = await auth.getPosition(token);
@@ -519,9 +519,9 @@ export async function peekTeacherWithInitials(
     //if verification of rules is okay, perform the following
     if (status == statusCodes.OK && user) {
       let teacher 
-      teacher=await prisma.teacher.findFirst({
+      teacher=await prisma.teacher.findMany({
         where: {
-          initials: name,
+          initials: {in:name},
           orgId: user.orgId,
         },
         select: {
@@ -544,8 +544,7 @@ export async function peekTeacherWithInitials(
           status: statusCodes.OK,
           teacher: 
                   {
-                    ...teacher,
-                    alternateDepartments: teacher.alternateDepartments.map(dep => dep.name)
+                    ...teacher
                   }
         };
       return{

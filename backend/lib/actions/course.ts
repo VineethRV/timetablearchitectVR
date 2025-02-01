@@ -322,9 +322,9 @@ export async function peekCourse(
 
 export async function peekCourseWithCode(
   JWTtoken: string,
-  name: string,
+  name: [string],
   semester: number,
-  department: string | null = null,): Promise<{ status: number; course: Course | null }>{
+  department: string | null = null,): Promise<{ status: number; course: any }>{
     
     try {
       console.log(JWTtoken)
@@ -339,9 +339,9 @@ export async function peekCourseWithCode(
       if (status == statusCodes.OK && user) {
         let course
         if(user.role=='admin'){
-          course = await prisma.course.findFirst({
+          course = await prisma.course.findMany({
             where: {
-              code: name,
+              code: {in:name},
               orgId: user.orgId,
               semester: semester,
               department:department?department:user.department,
@@ -351,7 +351,7 @@ export async function peekCourseWithCode(
         else{
           course = await prisma.course.findFirst({
             where: {
-              code: name,
+              code: {in:name},
               department:user.department,
               orgId: user.orgId,
               semester: semester,

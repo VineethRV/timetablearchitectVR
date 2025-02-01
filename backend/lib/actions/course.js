@@ -409,9 +409,9 @@ function peekCourseWithCode(JWTtoken_1, name_1, semester_1) {
                     if (!(status_6 == statusCodes_1.statusCodes.OK && user)) return [3 /*break*/, 6];
                     course = void 0;
                     if (!(user.role == 'admin')) return [3 /*break*/, 3];
-                    return [4 /*yield*/, prisma.course.findFirst({
+                    return [4 /*yield*/, prisma.course.findMany({
                             where: {
-                                code: name,
+                                code: { in: name },
                                 orgId: user.orgId,
                                 semester: semester,
                                 department: department ? department : user.department,
@@ -422,7 +422,7 @@ function peekCourseWithCode(JWTtoken_1, name_1, semester_1) {
                     return [3 /*break*/, 5];
                 case 3: return [4 /*yield*/, prisma.course.findFirst({
                         where: {
-                            code: name,
+                            code: { in: name },
                             department: user.department,
                             orgId: user.orgId,
                             semester: semester,
