@@ -622,7 +622,7 @@ function peekTeacherWithInitials(token_1, name_1) {
                     if (teacher)
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.OK,
-                                teacher: __assign({}, teacher)
+                                teacher: teacher
                             }];
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.NOT_FOUND,

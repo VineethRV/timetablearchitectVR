@@ -70,3 +70,7 @@
 ~~[ ] ToolTip should display room allocated(V)~~
 
 ~~***[ ] SAVE SECION NOT DONE***~~
+
+
+* Elective Default Staff name and room
+* importing problem

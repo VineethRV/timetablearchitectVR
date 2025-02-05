@@ -82,13 +82,15 @@ const SectionTabledisplay = () => {
 
           // Process each set of section data (up to 4 sets per row)
           for (let i = 1; i <= 10; i += 1) {
-            if (row[`Section name_${i}`] && row[`Section name_${i}`] !== '-') {
+            if (row[`Section name_${i}`] && row[`semester_${i}`] && row[`subject code_${i}`]) {
               sections.push(row[`Section name_${i}`]);
               semesters.push(Number(row[`semester_${i}`]));
               courseCodes.push(row[`subject code_${i}`]);
             }
           }
-
+          console.log("sections",sections)
+          console.log("semesters",semesters)
+          console.log("courseCodes",courseCodes)
           return {
             teacherInitials: row['Teacher initials'],
             sections,
@@ -96,7 +98,7 @@ const SectionTabledisplay = () => {
             courseCodes
           };
         });
-
+        console.log("data",data)
         try {
           const response = await axios.post(
             `${BACKEND_URL}/createTempTable`,

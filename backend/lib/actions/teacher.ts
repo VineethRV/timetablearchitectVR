@@ -542,10 +542,7 @@ export async function peekTeacherWithInitials(
       if(teacher)
         return {
           status: statusCodes.OK,
-          teacher: 
-                  {
-                    ...teacher
-                  }
+          teacher:teacher
         };
       return{
         status:statusCodes.NOT_FOUND,
