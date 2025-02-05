@@ -127,6 +127,7 @@ const EditSectionPage: React.FC = () => {
         }
       )
       .then(async (res) => {
+        toast.message("Fetching Section details...");
         const status = res.data.status;
         console.log("recieved data is ",res.data)
         switch (status) {
@@ -139,7 +140,6 @@ const EditSectionPage: React.FC = () => {
 // Extract first and second elements separately
                         const teachers = teacherCourse.map((tC: any[]) => tC[0]);
                         const coursecode = teacherCourse.map((tC : any[]) => tC[1]);
-                        console.log("coursecode",coursecode)
                         let teach:string[]=[]
                           await axios.post(BACKEND_URL + "/teachers/peekWithInitials",
                           { name: teachers },
@@ -162,7 +162,6 @@ const EditSectionPage: React.FC = () => {
                             { headers:
                                { authorization: localStorage.getItem("token") }
                              }).then((resp) => {
-                              console.log("ok course is",resp.data)
                               if (resp.data.status === statusCodes.OK)
                               {
                                 const courseslist=Object.values(resp.data.message).map((item) => (item as { name: string }).name);
@@ -201,6 +200,7 @@ const EditSectionPage: React.FC = () => {
         }
       )
       .then((res) => {
+        toast.message("Fetching Section details...");
         const status = res.data.status;
   
         switch (status) {
@@ -234,7 +234,6 @@ const EditSectionPage: React.FC = () => {
             const timetableString = res.data.message.courseTable
             ? stringToTable(res.data.message.courseTable)
             : Array(6).fill(Array(6).fill("Free"));
-            console.log("timetableString",timetableString)
             setButtonStatus1(timetableString)
              setTimetable(stringToTable(res.data.message.timeTable));
              SetshowTT(true);
