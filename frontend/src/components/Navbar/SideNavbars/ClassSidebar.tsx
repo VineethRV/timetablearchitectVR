@@ -32,6 +32,7 @@ const ClassSidebar = () => {
 
   const handleSemesterChange = (value: number) => {
     setSelectedSemester(value);
+    window.location.reload();
     localStorage.setItem("semester", value.toString()); // Save to localStorage
   };
 
