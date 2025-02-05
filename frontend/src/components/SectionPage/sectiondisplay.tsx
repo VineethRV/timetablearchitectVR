@@ -108,7 +108,7 @@ const SectionTable = ({
             <Tooltip title="Delete">
               <Button
                className="bg-red-400 "
-               onClick={()=>deleteSection(record)}
+               onClick={()=>deleteSection(record,record.temporary?record.temporary:0)}
                 type="primary"
                 shape="circle"
                 icon={<MdDelete />}
@@ -133,8 +133,29 @@ const SectionTable = ({
     );
   }
   }
-  function deleteSection(record: Section) {
+  function deleteSection(record: Section,temp: any) {
     console.log("rec",record)
+    if(temp==1)
+    {
+      axios.delete(
+        BACKEND_URL+"/tempSection",
+        {
+          data: { id: Number(record.id) },
+          headers: {
+            authorization: localStorage.getItem("token"),
+          }
+        }
+      );
+      toast.success("Temporary Section deleted successfully");
+      setSectionData((sec) => {
+        const newEles = sec.filter((t) => {
+            if (record.id == t.id && (record.name==t.name)) return false;
+          return true;
+        });
+        return newEles;
+      });
+    }
+    else{
     const res = axios
       .delete(BACKEND_URL + "/sections", {
         data: {
@@ -220,7 +241,7 @@ const SectionTable = ({
             })
             setSectionData((ele) => {
               const newEles = ele.filter((t) => {
-                  if (record.id == t.id) return false;
+                  if ((record.id == t.id && (record.name==t.name))) return false;
                 return true;
               });
               return newEles;
@@ -239,6 +260,7 @@ const SectionTable = ({
     toast.promise(res, {
       loading: "Deleting the Section",
     });
+  }
    }
   return <Table columns={columns} dataSource={sectionData} rowKey="name" />;
 };
