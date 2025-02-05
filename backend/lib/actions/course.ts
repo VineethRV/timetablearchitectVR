@@ -327,9 +327,7 @@ export async function peekCourseWithCode(
   department: string | null = null,): Promise<{ status: number; course: any }>{
     
     try {
-      console.log(JWTtoken)
       const { status, user } = await auth.getPosition(JWTtoken);
-      console.log("status",status)
       if (user?.orgId == null) {
         return {
           status: statusCodes.BAD_REQUEST,
@@ -349,7 +347,7 @@ export async function peekCourseWithCode(
           });
         }
         else{
-          course = await prisma.course.findFirst({
+          course = await prisma.course.findMany({
             where: {
               code: {in:name},
               department:user.department,

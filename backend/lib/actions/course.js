@@ -395,11 +395,9 @@ function peekCourseWithCode(JWTtoken_1, name_1, semester_1) {
             switch (_c.label) {
                 case 0:
                     _c.trys.push([0, 7, , 8]);
-                    console.log(JWTtoken);
                     return [4 /*yield*/, auth.getPosition(JWTtoken)];
                 case 1:
                     _a = _c.sent(), status_6 = _a.status, user = _a.user;
-                    console.log("status", status_6);
                     if ((user === null || user === void 0 ? void 0 : user.orgId) == null) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
@@ -420,7 +418,7 @@ function peekCourseWithCode(JWTtoken_1, name_1, semester_1) {
                 case 2:
                     course = _c.sent();
                     return [3 /*break*/, 5];
-                case 3: return [4 /*yield*/, prisma.course.findFirst({
+                case 3: return [4 /*yield*/, prisma.course.findMany({
                         where: {
                             code: { in: name },
                             department: user.department,

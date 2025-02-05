@@ -131,8 +131,6 @@ const EditSectionPage: React.FC = () => {
         console.log("recieved data is ",res.data)
         switch (status) {
           case statusCodes.OK:
-  
-            console.log("data is",res.data)
             form.setFieldsValue({
               className: res.data.message.name,
              });
@@ -141,30 +139,23 @@ const EditSectionPage: React.FC = () => {
 // Extract first and second elements separately
                         const teachers = teacherCourse.map((tC: any[]) => tC[0]);
                         const coursecode = teacherCourse.map((tC : any[]) => tC[1]);
-                        let teach:string[]=[];
-                        for(let i=0;i<teachers.length;i++)
-                        {
+                        console.log("coursecode",coursecode)
+                        let teach:string[]=[]
                           await axios.post(BACKEND_URL + "/teachers/peekWithInitials",
-                          { name: teachers[i] },
+                          { name: teachers },
                           { headers: { authorization: localStorage.getItem("token") } }
                           ).then((resp) => {
-                            console.log(resp.data)
                             if (resp.data.status === statusCodes.OK)
                             {
-                              teach.push(resp.data.message.name)
+                              teach = Object.values(resp.data.message).map((item) => (item as { name: string }).name);
                             }
                             else{
-                              teach.push("--")
+                              teach = Array(teachers.length).fill('--');
                             }
                           })
-
-                        }
-                        console.log(teach)
                         const tablel: courseList[] = [];
-                         for(let i=0;i<coursecode.length;i++)
-                        {
                           await axios.post(BACKEND_URL + "/courses/peekWithCode", 
-                            { name: coursecode[i],
+                            { name: coursecode,
                               semester:res.data.message.semester,
                               department:res.data.message.department
                              }, 
@@ -174,16 +165,18 @@ const EditSectionPage: React.FC = () => {
                               console.log("ok course is",resp.data)
                               if (resp.data.status === statusCodes.OK)
                               {
-                                console.log("now",resp.data.message.name,teach[i])
-                                tablel.push({
-                                  key: i.toString(),
-                                  course:resp.data.message.name,
-                                  teacher: teach[i],
-                                  room: "--"
-                                })
+                                const courseslist=Object.values(resp.data.message).map((item) => (item as { name: string }).name);
+                                for(let i=0;i<courseslist.length;i++)
+                                {
+                                  tablel.push({
+                                    key: i.toString(),
+                                    course:courseslist[i],
+                                    teacher: teach[i],
+                                    room: "--"
+                                  })
+                                }
                               }
                           });
-                        }
                         setTableData(tablel);
 
              toast.success("Section details fetched successfully!");
