@@ -99,13 +99,13 @@ const AddLabPage: React.FC = () => {
       (_, index) => ({
         key: `${index}`,
         course: form1.getFieldValue(`course-${index}`),
-        teachers: form1.getFieldValue(`teacher-${index}`),
-        rooms: [form1.getFieldValue(`room-${index}`)],
+        teachers: form1.getFieldValue(`teacher-${index}`)?form1.getFieldValue(`teacher-${index}`):[""],
+        rooms: [form1.getFieldValue(`room-${index}`)?form1.getFieldValue(`room-${index}`):""],
       })
     );
-
+    console.log(newFormFields)
     for (const field of newFormFields) {
-      if (!field.course || !field.teachers || !field.rooms) {
+      if (!field.course) {
         message.error("Fill all the required Fields");
         return;
       }
@@ -173,7 +173,7 @@ const AddLabPage: React.FC = () => {
         message.error("Please ensure all fields are filled!");
         return;
       }
-      // console.log(courseSets,teachers,rooms,convertTableToString(buttonStatus))
+       console.log(courseSets,teachers,rooms,convertTableToString(buttonStatus))
       const promise = axios.post(
         BACKEND_URL + "/getLabRecommendation",
         {
@@ -381,6 +381,7 @@ const AddLabPage: React.FC = () => {
   
           // Update each teacher for the current courseSet sequentially
           for (const teacher of teacherlist[i]) {
+            if(teacher==="") continue;
             console.log("Updating teacher:", teacher, "for courseSet:", courseSet);
   
             const resT = await axios.post(
@@ -411,7 +412,7 @@ const AddLabPage: React.FC = () => {
   
             teach.labtable = convertTableToString(teacherlabTT);
             teach.timetable = convertTableToString(teacherTT);
-  
+            
             await axios.put(
               BACKEND_URL + "/teachers",
               {
@@ -430,6 +431,7 @@ const AddLabPage: React.FC = () => {
   
           // Update each room for the current courseSet sequentially
           for (const room of rooms[i]) {
+            if(room==="") continue;
             console.log("Updating room:", room, "for courseSet:", courseSet);
   
             const resR = await axios.post(
@@ -610,6 +612,7 @@ const AddLabPage: React.FC = () => {
                         >
                           <Select
                             maxTagCount={2}
+                            allowClear
                             mode="tags"
                             placeholder="Select Teachers"
                             onChange={(val) =>
@@ -635,6 +638,7 @@ const AddLabPage: React.FC = () => {
                         >
                           <Select
                             placeholder="Enter Room Details"
+                            allowClear={true}
                             onChange={(val) =>
                               handleBatchChange(index, "rooms", val.join(","))
                             }

@@ -113,8 +113,8 @@ const EditLabPage: React.FC = () => {
       (_, index) => ({
         key: `${index}`,
         course: form1.getFieldValue(`course-${index}`),
-        teachers: form1.getFieldValue(`teacher-${index}`),
-        rooms: [form1.getFieldValue(`room-${index}`)],
+        teachers: form1.getFieldValue(`teacher-${index}`)?form1.getFieldValue(`teacher-${index}`):[""],
+        rooms: [form1.getFieldValue(`room-${index}`)?form1.getFieldValue(`room-${index}`):""],
       })
     );
 
@@ -466,7 +466,7 @@ const EditLabPage: React.FC = () => {
   
           // Update each teacher for the current courseSet sequentially
           for (const teacher of teacherlist[i]) {
-  
+            if(teacher==="") continue;
             const resT = await axios.post(
               BACKEND_URL + "/teachers/peek",
               {
@@ -512,7 +512,7 @@ const EditLabPage: React.FC = () => {
   
           // Update each room for the current courseSet sequentially
           for (const room of rooms[i]) {
-  
+            if(room==="") continue;
             const resR = await axios.post(
               BACKEND_URL + "/rooms/peek",
               {
@@ -750,6 +750,7 @@ const EditLabPage: React.FC = () => {
                         >
                           <Select
                             maxTagCount={2}
+                            allowClear
                             mode="tags"
                             placeholder="Select Teachers"
                             onChange={(val) =>
@@ -775,6 +776,7 @@ const EditLabPage: React.FC = () => {
                         >
                           <Select
                             placeholder="Enter Room Details"
+                            allowClear
                             onChange={(val) =>
                               handleBatchChange(index, "rooms", val.join(","))
                             }

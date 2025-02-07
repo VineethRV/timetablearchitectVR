@@ -83,7 +83,7 @@ const LabAddTable = ({
       dataIndex: "rooms",
       render: (_, { rooms }) => (
         <>
-          {rooms[0].split(",").map((tag) => (
+          {rooms[0]?.split(",").map((tag) => (
             <Tag color="purple" key={tag}>
               {tag.toUpperCase()}
             </Tag>

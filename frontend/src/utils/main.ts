@@ -141,7 +141,7 @@ export const fetchTeachers = async (setTeacherOptions: (options: string[]) => vo
       setTeacherOptions(teacherNames);
     } else {
       console.warn("No teachers found in the response.");
-      setTeacherOptions([]);
+      setTeacherOptions(["No Teacher"]);
     }
   } catch (error) {
     console.error("Failed to fetch teachers:", error);

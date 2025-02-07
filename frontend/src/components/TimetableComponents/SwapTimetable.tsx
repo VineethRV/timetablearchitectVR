@@ -3,7 +3,7 @@ import { Table, Button, Tooltip } from "antd";
 import { toast } from "sonner";
 import axios from "axios";
 import { BACKEND_URL } from "../../../config";
-import {  stringToTable } from "../../utils/main";
+import {  stringToTable, timeslots, weekdays } from "../../utils/main";
 
 // Define the type for the timetable props
 interface TimetableProps {
@@ -14,16 +14,6 @@ interface TimetableProps {
   rooms: string[][];
 }
 
-const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-const timeslots = [
-  "9:00-10:00",
-  "10:00-11:00",
-  "11:30-12:30",
-  "12:30-1:30",
-  "2:30-3:30",
-  "3:30-4:30",
-];
 
 const SwapTimetable: React.FC<TimetableProps> = ({
   buttonStatus,

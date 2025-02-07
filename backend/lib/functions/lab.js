@@ -45,7 +45,7 @@ var common_1 = require("./common");
 // function convertStringToTable(timetableString: string): string[][] {
 //     return timetableString.split(";").map((row) => row.split(","));
 // }
-//create a lab object and pass to this function to generate the optimised 
+//create a lab object and pass to this function to generate the optimised
 //To call this function place an api call to /api/getLabRecommendation with the body, couse list, teachername list and room name list. also pass token in the header
 //after that the function returns a status of 200 and a timetable string, with 0 in place of empty slots and names of subjects in place of filled slots. parse it using the convertStringToTable function(available in common.ts)
 //if a collision occurs it returns alloted timetable till the collisiion occured and status code 503(Servie unavailable)
@@ -66,7 +66,14 @@ function getRecommendations(token, lab, blocks) {
                             switch (_g.label) {
                                 case 0:
                                     teachers = [];
-                                    score = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+                                    score = [
+                                        [0, 0, 0, 0, 0, 0],
+                                        [0, 0, 0, 0, 0, 0],
+                                        [0, 0, 0, 0, 0, 0],
+                                        [0, 0, 0, 0, 0, 0],
+                                        [0, 0, 0, 0, 0, 0],
+                                        [0, 0, 0, 0, 0, 0],
+                                    ];
                                     //block places in score where timetable is already alloted
                                     if (timetable) {
                                         for (j = 0; j < timetable.length; j++) {
@@ -88,9 +95,12 @@ function getRecommendations(token, lab, blocks) {
                                     _g.label = 1;
                                 case 1:
                                     if (!(j < lab.teachers[i].length)) return [3 /*break*/, 4];
+                                    if (lab.teachers[i][j] == "") {
+                                        return [3 /*break*/, 3];
+                                    }
                                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, lab.teachers[i][j])];
                                 case 2:
-                                    _c = (_g.sent()), status_1 = _c.status, teacher = _c.teacher;
+                                    _c = _g.sent(), status_1 = _c.status, teacher = _c.teacher;
                                     if (status_1 == statusCodes_1.statusCodes.OK && teacher) {
                                         teachers.push(teacher);
                                         scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
@@ -115,7 +125,7 @@ function getRecommendations(token, lab, blocks) {
                                     else
                                         return [2 /*return*/, { value: {
                                                     status: status_1,
-                                                    timetable: "teacher error"
+                                                    timetable: "teacher error",
                                                 } }];
                                     _g.label = 3;
                                 case 3:
@@ -127,6 +137,9 @@ function getRecommendations(token, lab, blocks) {
                                     _g.label = 5;
                                 case 5:
                                     if (!(k < lab.rooms[i].length)) return [3 /*break*/, 8];
+                                    if (lab.rooms[i][k] == "") {
+                                        return [3 /*break*/, 7];
+                                    }
                                     return [4 /*yield*/, (0, room_1.peekRoom)(token, lab.rooms[i][k])];
                                 case 6:
                                     _d = _g.sent(), status_2 = _d.status, room = _d.room;
@@ -137,7 +150,7 @@ function getRecommendations(token, lab, blocks) {
                                         if (!score) {
                                             return [2 /*return*/, { value: {
                                                         status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                                        timetable: null
+                                                        timetable: null,
                                                     } }];
                                         }
                                         for (i_2 = 0; i_2 < scoreValue.length; i_2++) {
@@ -151,7 +164,7 @@ function getRecommendations(token, lab, blocks) {
                                     else {
                                         return [2 /*return*/, { value: {
                                                     status: status_2,
-                                                    timetable: "Room error"
+                                                    timetable: "Room error",
                                                 } }];
                                     }
                                     _g.label = 7;
@@ -162,14 +175,16 @@ function getRecommendations(token, lab, blocks) {
                                     if (!score) {
                                         return [2 /*return*/, { value: {
                                                     status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                                    timetable: null
+                                                    timetable: null,
                                                 } }];
                                     }
                                     console.log(score);
                                     console.log(timetable);
                                     //we have got the top valid intersections.
                                     if (!timetable) {
-                                        timetable = Array(score.length).fill(null).map(function () { return Array(score[0].length).fill("0"); });
+                                        timetable = Array(score.length)
+                                            .fill(null)
+                                            .map(function () { return Array(score[0].length).fill("0"); });
                                     }
                                     //group 2 periods together
                                     for (i_3 = 0; i_3 < score.length; i_3++) {
@@ -197,7 +212,9 @@ function getRecommendations(token, lab, blocks) {
                                     labAllocated[maxSumIndices.i] = true;
                                     return [3 /*break*/, 23];
                                 case 9:
-                                    score_1 = Array(6).fill(0).map(function () { return Array(6).fill(0); });
+                                    score_1 = Array(6)
+                                        .fill(0)
+                                        .map(function () { return Array(6).fill(0); });
                                     for (t = 0; t < teachers.length; t++) {
                                         teacherScore = (0, common_1.scoreTeachers)(teachers[t].timetable, teachers[t].labtable);
                                         for (i_5 = 0; i_5 < teacherScore.length; i_5++) {
@@ -230,10 +247,14 @@ function getRecommendations(token, lab, blocks) {
                                     _g.label = 11;
                                 case 11:
                                     if (!(period < score_1[day].length && !alloted)) return [3 /*break*/, 21];
-                                    if (!(score_1[day][period] >= 0 && blocks && blocks[day][period] == "0")) return [3 /*break*/, 20];
+                                    if (!(score_1[day][period] >= 0 &&
+                                        blocks &&
+                                        blocks[day][period] == "0")) return [3 /*break*/, 20];
                                     courseIndex = lab.courses.indexOf(timetable[day][period]);
                                     if (!(courseIndex !== -1)) return [3 /*break*/, 20];
-                                    subScore = Array(6).fill(0).map(function () { return Array(6).fill(0); });
+                                    subScore = Array(6)
+                                        .fill(0)
+                                        .map(function () { return Array(6).fill(0); });
                                     subTeachers = lab.teachers[courseIndex];
                                     subRooms = lab.rooms[courseIndex];
                                     t = 0;
@@ -291,7 +312,9 @@ function getRecommendations(token, lab, blocks) {
                                         }
                                         else {
                                             for (j = 0; j < subScore[i_9].length; j++) {
-                                                if (subScore[i_9][j] >= 0 && timetable && timetable[i_9][j] !== "0") {
+                                                if (subScore[i_9][j] >= 0 &&
+                                                    timetable &&
+                                                    timetable[i_9][j] !== "0") {
                                                     subScore[i_9][j] = -1;
                                                 }
                                             }
@@ -308,9 +331,12 @@ function getRecommendations(token, lab, blocks) {
                                             }
                                         }
                                     }
-                                    if (maxSubScoreIndices.i !== -1 && maxSubScoreIndices.j !== -1) {
-                                        timetable[maxSubScoreIndices.i][maxSubScoreIndices.j] = lab.courses[courseIndex];
-                                        timetable[maxSubScoreIndices.i][maxSubScoreIndices.j + 1] = lab.courses[courseIndex];
+                                    if (maxSubScoreIndices.i !== -1 &&
+                                        maxSubScoreIndices.j !== -1) {
+                                        timetable[maxSubScoreIndices.i][maxSubScoreIndices.j] =
+                                            lab.courses[courseIndex];
+                                        timetable[maxSubScoreIndices.i][maxSubScoreIndices.j + 1] =
+                                            lab.courses[courseIndex];
                                         labAllocated[maxSubScoreIndices.i] = true;
                                         alloted = true;
                                         timetable[day][period + 1] = lab.courses[i];
@@ -327,7 +353,7 @@ function getRecommendations(token, lab, blocks) {
                                     if (!alloted)
                                         return [2 /*return*/, { value: {
                                                     status: statusCodes_1.statusCodes.SERVICE_UNAVAILABLE,
-                                                    timetable: (0, common_1.convertTableToString)(timetable)
+                                                    timetable: (0, common_1.convertTableToString)(timetable),
                                                 } }];
                                     _g.label = 23;
                                 case 23: return [2 /*return*/];
@@ -349,13 +375,13 @@ function getRecommendations(token, lab, blocks) {
                     return [3 /*break*/, 2];
                 case 5: return [2 /*return*/, {
                         status: statusCodes_1.statusCodes.OK,
-                        timetable: (0, common_1.convertTableToString)(timetable)
+                        timetable: (0, common_1.convertTableToString)(timetable),
                     }];
                 case 6:
                     _a = _b.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
-                            timetable: null
+                            timetable: null,
                         }];
                 case 7: return [2 /*return*/];
             }
@@ -364,7 +390,7 @@ function getRecommendations(token, lab, blocks) {
 }
 function recommendLab(token, Lteachers, Lrooms, blocks) {
     return __awaiter(this, void 0, void 0, function () {
-        var timetable, errMessage, teachers, score, j, k, j, _a, status_5, teacher, scoreValue, i, j_2, rooms, k, _b, status_6, room, scoreValue, i, j, i, j, i, j, maxScore, i, j, _c;
+        var timetable, errMessage, teachers, score, j, k, j, _a, status_5, teacher, scoreValue, i, j_2, rooms, k, _b, status_6, room, scoreValue, i, j, i, j, maxScore, i, j, i, j, _c;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
@@ -374,7 +400,14 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                 case 1:
                     _d.trys.push([1, 10, , 11]);
                     teachers = [];
-                    score = [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]];
+                    score = [
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0],
+                    ];
                     errMessage = "error while fetching timetable";
                     if (timetable) {
                         for (j = 0; j < timetable.length; j++) {
@@ -391,9 +424,10 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                 case 2:
                     if (!(j < Lteachers.length)) return [3 /*break*/, 5];
                     errMessage = "error when fetching teacher: " + Lteachers[j];
+                    if (!(Lteachers[j] != "")) return [3 /*break*/, 4];
                     return [4 /*yield*/, (0, teacher_1.peekTeacher)(token, Lteachers[j])];
                 case 3:
-                    _a = (_d.sent()), status_5 = _a.status, teacher = _a.teacher;
+                    _a = _d.sent(), status_5 = _a.status, teacher = _a.teacher;
                     if (status_5 == statusCodes_1.statusCodes.OK && teacher) {
                         teachers.push(teacher);
                         scoreValue = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
@@ -418,7 +452,7 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                     else {
                         return [2 /*return*/, {
                                 status: status_5,
-                                timetable: errMessage
+                                timetable: errMessage,
                             }];
                     }
                     _d.label = 4;
@@ -432,6 +466,9 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                     _d.label = 6;
                 case 6:
                     if (!(k < Lrooms.length)) return [3 /*break*/, 9];
+                    if (Lrooms[k] == "") {
+                        return [3 /*break*/, 8];
+                    }
                     errMessage = "error when fetching: " + Lrooms[k];
                     return [4 /*yield*/, (0, room_1.peekRoom)(token, Lrooms[k])];
                 case 7:
@@ -443,7 +480,7 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                         if (!score) {
                             return [2 /*return*/, {
                                     status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                    timetable: errMessage
+                                    timetable: errMessage,
                                 }];
                         }
                         for (i = 0; i < scoreValue.length; i++) {
@@ -457,7 +494,7 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                     else {
                         return [2 /*return*/, {
                                 status: status_6,
-                                timetable: errMessage
+                                timetable: errMessage,
                             }];
                     }
                     _d.label = 8;
@@ -468,7 +505,7 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                     if (!score) {
                         return [2 /*return*/, {
                                 status: statusCodes_1.statusCodes.BAD_REQUEST,
-                                timetable: "score is null"
+                                timetable: "score is null",
                             }];
                     }
                     for (i = 0; i < timetable.length; i++) {
@@ -479,14 +516,6 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                         }
                     }
                     errMessage = "error when merging timetable";
-                    for (i = 0; i < score.length; i++) {
-                        for (j = 0; j < score[i].length - 1; j += 2) {
-                            if (score[i][j] < 0 || score[i][j + 1] < 0) {
-                                score[i][j] = -1;
-                                score[i][j + 1] = -1;
-                            }
-                        }
-                    }
                     maxScore = Math.max.apply(Math, score.flat());
                     if (maxScore > 0) {
                         for (i = 0; i < score.length; i++) {
@@ -497,15 +526,23 @@ function recommendLab(token, Lteachers, Lrooms, blocks) {
                             }
                         }
                     }
+                    for (i = 0; i < score.length; i++) {
+                        for (j = 0; j < score[i].length - 1; j += 2) {
+                            if (score[i][j] < 0 || score[i][j + 1] < 0) {
+                                score[i][j] = -1;
+                                score[i][j + 1] = -1;
+                            }
+                        }
+                    }
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.OK,
-                            timetable: (0, common_1.convertTableToString)(score.map(function (row) { return row.map(function (val) { return val.toString(); }); }))
+                            timetable: (0, common_1.convertTableToString)(score.map(function (row) { return row.map(function (val) { return val.toString(); }); })),
                         }];
                 case 10:
                     _c = _d.sent();
                     return [2 /*return*/, {
                             status: statusCodes_1.statusCodes.INTERNAL_SERVER_ERROR,
-                            timetable: errMessage
+                            timetable: errMessage,
                         }];
                 case 11: return [2 /*return*/];
             }
