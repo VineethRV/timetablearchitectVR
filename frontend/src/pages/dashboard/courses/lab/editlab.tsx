@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import {
@@ -23,6 +23,7 @@ import SwapTimetable from "../../../../components/TimetableComponents/SwapTimeta
 import UneditableTimeTable from "../../../../components/TimetableComponents/uneditableTimetable";
 import { statusCodes } from "../../../../types/statusCodes";
 import { Lab } from "../../../../types/main";
+  const bottomRef = useRef<HTMLDivElement>(null);
 
 const EditLabPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,7 +105,15 @@ const EditLabPage: React.FC = () => {
     fetchRooms(setRoomOptions);
     fetchElectives(setElectiveOptions);
     setTableData(tableData);
-  }, [oldname, olddepartment,oldsemester]);
+    if (showTT) {
+      handleViewTimetable();
+    }
+  }, [oldname, olddepartment,oldsemester,showTT]);
+  const handleViewTimetable = () => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const handleModalSubmit = () => {
     const currentBatches = form.getFieldValue("numberOfBatches");
@@ -208,6 +217,7 @@ const EditLabPage: React.FC = () => {
           if (response.data.status === 200) {
         SetshowTT(true);
         setButtonStatus1(stringToTable(response.data.timetable))
+        handleViewTimetable();
         return "Timetable generated successfully!";
           } else {
         return "Failed to generate timetable.";

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CiImport } from "react-icons/ci";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import {
@@ -34,6 +34,7 @@ const AddLabPage: React.FC = () => {
   const [electiveOptions, setElectiveOptions] = useState<string[]>([]);
   const [showTT, SetshowTT] = useState(false);
   const [roomOptions, setRoomOptions] = useState<string[]>([]);
+    const bottomRef = useRef<HTMLDivElement>(null);
   const [buttonStatus, setButtonStatus] = useState(
     weekdays.map(() => timeslots.map(() => "Free"))
   );
@@ -90,7 +91,10 @@ const AddLabPage: React.FC = () => {
     fetchRooms(setRoomOptions);
     fetchElectives(setElectiveOptions);
     setTableData(tableData);
-  }, [tableData]);
+    if (showTT) {
+      handleViewTimetable();
+    }
+  }, [tableData,showTT]);
 
   const handleModalSubmit = () => {
     const currentBatches = form.getFieldValue("numberOfBatches");
@@ -196,6 +200,7 @@ const AddLabPage: React.FC = () => {
           if (response.data.status === 200) {
         SetshowTT(true);
         setButtonStatus1(stringToTable(response.data.timetable))
+        handleViewTimetable();
         return "Timetable generated successfully!";
           } else {
         return "Failed to generate timetable.";
@@ -243,6 +248,12 @@ const AddLabPage: React.FC = () => {
     } catch (error) {
       console.error("Error fetching lab recommendations:", error);
       message.error("An error occurred while fetching recommendations.");
+    }
+  };
+
+  const handleViewTimetable = () => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   };
 
