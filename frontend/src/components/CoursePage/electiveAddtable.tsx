@@ -32,7 +32,7 @@ const ElectiveAddTable = ({
       dataIndex: 'teachers',
       render: (_, { teachers }) => (
         <>
-          {teachers.map((tag) => (
+          {teachers?.map((tag) => (
             <Tag color="blue" key={tag}>
               {tag.toUpperCase()}
             </Tag>

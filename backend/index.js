@@ -957,7 +957,7 @@ app.post("/api/getIntersection", async (req, res) => {
   const token = req.headers.authorization?.split(" ")[1];
   const { teachers, rooms } = req.body;
   console.log(teachers,rooms)
-  if (!token || !teachers || !rooms) {
+  if (!token) {
     return res.status(200).json({
       status: 400,
       message: "Token, teachers, and rooms are required",

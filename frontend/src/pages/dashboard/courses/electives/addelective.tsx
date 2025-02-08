@@ -60,17 +60,20 @@ const AddElectivepage: React.FC = () => {
     };
 
     const handleSubmit=async ()=>{
-      //name, courses, teachers, rooms, semester, timetable, department 
+      //name, courses, teachers, rooms, semester, timetable, department
+      console.log(eledata) 
      const courses = eledata.map((elective) => elective.course).join(";");
-      const teachers = eledata.map((elective) => elective.teachers.map((teacher)=>teacher).join(',')).join(";");
-      const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room).join(',')).join(";");
-      const department= await fetchdept()
+      const teachers = eledata.map((elective) => elective.teachers?(elective.teachers.map((teacher)=>teacher?teacher:"").join(',')):'').join(";");
+      const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room?room:"").join(',')).join(";");
+      const department= fetchdept()
       const name=form.getFieldValue("clusterName")
-      if(!name || !courses || !teachers||!rooms)
+      console.log("teachers",teachers)
+      if(!name || !courses ||!rooms)
       {
         message.error("Fill all the required Fields");
         return;
       }
+      
       const response=axios.post(
         BACKEND_URL+"/electives",{
           name: name,
@@ -107,7 +110,8 @@ const AddElectivepage: React.FC = () => {
                 }
               }
               const teachers=eledata[k].teachers
-              teachers.forEach(async teacher=>{
+              teachers?.forEach(async teacher=>{
+                console.log("teacher",teacher)
                 const resT=await axios.post(
                   BACKEND_URL+"/teachers/peek",{
                     name:teacher,
@@ -140,7 +144,6 @@ const AddElectivepage: React.FC = () => {
                 );
               })
               const rooms=eledata[k].rooms
-              console.log("rooms",rooms)
               rooms?.forEach(async room=>{
                 const resR=await axios.post(
                   BACKEND_URL+"/rooms/peek",{
@@ -219,7 +222,7 @@ const AddElectivepage: React.FC = () => {
       const course = form.getFieldValue("course");
       const teachers = form.getFieldValue("teachers");
       const rooms = form.getFieldValue("rooms");
-    
+
       const newElective: Elective = {
         course: course,
         teachers: teachers,
@@ -261,14 +264,13 @@ const AddElectivepage: React.FC = () => {
     
     const getrecommendation=async ()=>{
       setCourseName(form.getFieldValue("course"))
-      const teachers = form.getFieldValue("teachers");
+      const teachers = form.getFieldValue("teachers")?form.getFieldValue("teachers"):[''];
       const rooms = form.getFieldValue("rooms");
-      if(!teachers || !rooms)
+      if(!form.getFieldValue("course"))
       {
         message.error("Fill all the required details!")
         return;
       }
-      console.log(teachers,rooms)
       const response=axios.post(
         BACKEND_URL+"/getIntersection",{
           teachers: teachers,

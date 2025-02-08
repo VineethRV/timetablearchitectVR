@@ -91,8 +91,8 @@ const EditElectivepage: React.FC = () => {
             SetEleData(
               res.data.message.courses.split(";").map((course: string, index: number) => ({
                 course: course,
-                teachers: (res.data.message.teachers.split(";"))[index].split(","),
-                rooms: (res.data.message.rooms.split(";"))[index]?.split(","),
+                teachers: (res.data.message.teachers.split(";")[index].split(",").length === 1 && res.data.message.teachers.split(";")[index].split(",")[0] === "") ? [] : res.data.message.teachers.split(";")[index].split(","),
+                rooms:  (res.data.message.rooms.split(";")[index].split(",").length === 1 && res.data.message.rooms.split(";")[index].split(",")[0] === "") ? [] : res.data.message.rooms.split(";")[index].split(","),
               }))
             );
             setButtonStatus(stringToTable(res.data.message.timetable));
@@ -113,8 +113,8 @@ const EditElectivepage: React.FC = () => {
         // Extracting necessary data
         toast.message("Updating Elective Cluster...");
         const courses = eledata.map(e => e.course).join(";");
-        const teachers = eledata.map(e => e.teachers?.join(",")).join(";");
-        const rooms = eledata.map(e => e.rooms?.join(",")).join(";");
+        const teachers = eledata.map((elective) => elective.teachers?(elective.teachers.map((teacher)=>teacher?teacher:"").join(',')):'').join(";");
+        const rooms = eledata.map((elective) => elective.rooms?.map((room)=>room?room:"").join(',')).join(";");
         const name = form.getFieldValue("clusterName");
     
         if (!name || !courses || !teachers || !rooms) {
@@ -157,6 +157,10 @@ const EditElectivepage: React.FC = () => {
           console.log(rooms)
           courses.forEach(async (course, i) => {
           for (const teacher of teachers[i]) {
+            if(teacher=="")
+            {
+              continue;
+            }
             const resT = await axios.post(`${BACKEND_URL}/teachers/peek`, { name: teacher }, {
               headers: { authorization: localStorage.getItem("token") },
             });
@@ -225,6 +229,10 @@ const EditElectivepage: React.FC = () => {
     
           // 3.1 **Update Teachers**
           for (const teacher of elective.teachers) {
+            if(teacher=="")
+            {
+              continue;
+            }
             const resT = await axios.post(`${BACKEND_URL}/teachers/peek`, { name: teacher }, {
               headers: { authorization: localStorage.getItem("token") }
             });
@@ -248,6 +256,10 @@ const EditElectivepage: React.FC = () => {
     
           // 3.2 **Update Rooms**
           for (const room of elective.rooms || []) {
+            if(room=="0"||room=="")
+            {
+              continue;
+            }
             const resR = await axios.post(`${BACKEND_URL}/rooms/peek`, { name: room }, {
               headers: { authorization: localStorage.getItem("token") }
             });
@@ -342,9 +354,9 @@ const EditElectivepage: React.FC = () => {
     
     const getrecommendation=async ()=>{
       setCourseName(form.getFieldValue("course"))
-      const teachers = form.getFieldValue("teachers");
+      const teachers = (form.getFieldValue("teachers").lenght==0)?form.getFieldValue("teachers"):[""];
       const rooms = form.getFieldValue("rooms");
-      if(!teachers || !rooms)
+      if(!form.getFieldValue("course"))
       {
         message.error("Fill all the required details!")
         return;

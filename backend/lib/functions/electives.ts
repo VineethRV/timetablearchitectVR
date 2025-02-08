@@ -25,6 +25,8 @@ const prisma = PrismaClientManager.getInstance().getPrismaClient();
 
 export async function getIntersection(teachers: string[], rooms: string[]): Promise<{status:number,intersection:number[][]}> {
   try{
+    const intersection: number[][] = weekdays.map(() => timeslots.map(() => 0));
+      if(!(teachers.length === 1 && teachers[0] === "")){
       const teacherObjects = await prisma.teacher.findMany({
       where: {
         name: { in: teachers },
@@ -34,8 +36,6 @@ export async function getIntersection(teachers: string[], rooms: string[]): Prom
         labtable: true,
       }
     });
-    const intersection: number[][] = weekdays.map(() => timeslots.map(() => 0));
-    
     teacherObjects.map((teacher) => {
       const teacherScore: number[][] = scoreTeachers(
         teacher.timetable,
@@ -54,6 +54,13 @@ export async function getIntersection(teachers: string[], rooms: string[]): Prom
     });
     console.log(teacherObjects);
     console.log("intersection: ",intersection);
+  }
+  else{
+    intersection.forEach((row, rowIndex) => {
+      intersection[rowIndex] = row.map(() => 10); 
+  });
+  }
+  if(rooms){
     const roomObjects = await prisma.room.findMany({
       where: {
         name: { in: rooms },
@@ -74,6 +81,7 @@ export async function getIntersection(teachers: string[], rooms: string[]): Prom
       }
     });
     console.log("intersection: ",intersection);
+  }
     return {intersection: intersection,status:200};
   }
   catch(err){

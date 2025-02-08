@@ -59,11 +59,13 @@ exports.timeslots = [
 var prisma = pgConnect_1.default.getInstance().getPrismaClient();
 function getIntersection(teachers, rooms) {
     return __awaiter(this, void 0, void 0, function () {
-        var teacherObjects, intersection_1, roomObjects, err_1;
+        var intersection_1, teacherObjects, roomObjects, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    _a.trys.push([0, 3, , 4]);
+                    _a.trys.push([0, 6, , 7]);
+                    intersection_1 = exports.weekdays.map(function () { return exports.timeslots.map(function () { return 0; }); });
+                    if (!!(teachers.length === 1 && teachers[0] === "")) return [3 /*break*/, 2];
                     return [4 /*yield*/, prisma.teacher.findMany({
                             where: {
                                 name: { in: teachers },
@@ -75,8 +77,6 @@ function getIntersection(teachers, rooms) {
                         })];
                 case 1:
                     teacherObjects = _a.sent();
-                    intersection_1 = exports.weekdays.map(function () { return exports.timeslots.map(function () { return 0; }); });
-                    console.log("teacherobjs", teacherObjects);
                     teacherObjects.map(function (teacher) {
                         var teacherScore = (0, common_1.scoreTeachers)(teacher.timetable, teacher.labtable);
                         for (var i = 0; i < 6; i++) {
@@ -92,6 +92,14 @@ function getIntersection(teachers, rooms) {
                     });
                     console.log(teacherObjects);
                     console.log("intersection: ", intersection_1);
+                    return [3 /*break*/, 3];
+                case 2:
+                    intersection_1.forEach(function (row, rowIndex) {
+                        intersection_1[rowIndex] = row.map(function () { return 10; });
+                    });
+                    _a.label = 3;
+                case 3:
+                    if (!rooms) return [3 /*break*/, 5];
                     return [4 /*yield*/, prisma.room.findMany({
                             where: {
                                 name: { in: rooms },
@@ -100,7 +108,7 @@ function getIntersection(teachers, rooms) {
                                 timetable: true,
                             }
                         })];
-                case 2:
+                case 4:
                     roomObjects = _a.sent();
                     console.log(roomObjects);
                     roomObjects.map(function (room) {
@@ -114,11 +122,12 @@ function getIntersection(teachers, rooms) {
                         }
                     });
                     console.log("intersection: ", intersection_1);
-                    return [2 /*return*/, { intersection: intersection_1, status: 200 }];
-                case 3:
+                    _a.label = 5;
+                case 5: return [2 /*return*/, { intersection: intersection_1, status: 200 }];
+                case 6:
                     err_1 = _a.sent();
                     return [2 /*return*/, { intersection: [], status: 500 }];
-                case 4: return [2 /*return*/];
+                case 7: return [2 /*return*/];
             }
         });
     });
