@@ -111,7 +111,10 @@ const AddSectionPage: React.FC = () => {
     fetchCourse(setCourseOptions);
     fetchElectives(setElectiveOptions);
     fetchlabs(setLabOptions);
-  }, []);
+      if (showTT) {
+        handleViewTimetable();
+      }
+  }, [showTT]);
   
   async function getRecommendation() {
     const block = buttonStatus.map((row) => [...row]); // Create a deep copy of buttonStatus
@@ -220,6 +223,7 @@ const AddSectionPage: React.FC = () => {
               setRoomTT(convertTableToString(res.data.returnVal.roomtable));
               setButtonStatus1(convertedTimetable);
               setTimetable(res.data.returnVal.timetable);
+              handleViewTimetable();
               return "Generated timetable!!";
             case statusCodes.UNAUTHORIZED:
               return "You are not authorized!";
@@ -323,14 +327,6 @@ const AddSectionPage: React.FC = () => {
       },
       footer: (
         <div className="flex justify-between">
-          <Button
-            onClick={() => {
-              handleViewTimetable();
-              Modal.destroyAll();
-            }}
-          >
-            View TimeTable
-          </Button>
           <div className="space-x-2">
             <Button onClick={() => Modal.destroyAll()}>Cancel</Button>
             <Button
