@@ -108,7 +108,10 @@ const EditSectionPage: React.FC = () => {
     if(id){
       fetchSectiondetails(id);
       }
-  },[]);
+      if (showTT) {
+        handleViewTimetable();
+      }
+  },[showTT]);
 
   const fetchSectiondetails = async (id: string) => {
     console.log(temp)
@@ -355,6 +358,7 @@ const EditSectionPage: React.FC = () => {
               setRoomTT(convertTableToString(res.data.returnVal.roomtable));
               setButtonStatus1(convertedTimetable);
               setTimetable(res.data.returnVal.timetable);
+              handleViewTimetable();
               return "Generated timetable!!";
             case statusCodes.UNAUTHORIZED:
               return "You are not authorized!";
@@ -530,14 +534,6 @@ const EditSectionPage: React.FC = () => {
       },
       footer: (
         <div className="flex justify-between">
-          <Button
-            onClick={() => {
-              handleViewTimetable();
-              Modal.destroyAll();
-            }}
-          >
-            View TimeTable
-          </Button>
           <div className="space-x-2">
             <Button onClick={() => Modal.destroyAll()}>Cancel</Button>
             <Button
